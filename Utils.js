@@ -1271,6 +1271,9 @@ const Utils = {
       return null;
     }
 
+    // Trim each line but preserve empty lines
+    lines = lines.map(line => line ? line.trim() : "");
+
     // Create mapping arrays for proper alignment
     const originalNonSectionLines = [];
     const originalNonSectionIndices = [];
@@ -1289,9 +1292,6 @@ const Utils = {
       (line) =>
         line && line.trim() !== "" && !this.isSectionHeader(line.trim())
     );
-
-    // Use the clean translation lines for mapping
-    lines = cleanTranslationLines;
 
     // Smart mapping that accounts for section headers and empty lines
     const mapped = lyrics.map((line, i) => {
@@ -1318,12 +1318,23 @@ const Utils = {
       // Find the translation index for this non-section, non-empty line
       const positionInNonSectionLines =
         originalNonSectionIndices.indexOf(i);
-      const translatedText =
-        lines[positionInNonSectionLines]?.trim() || "";
+      
+      // Ensure we don't go out of bounds and have a valid translation
+      if (positionInNonSectionLines >= 0 && positionInNonSectionLines < cleanTranslationLines.length) {
+        const translatedText = cleanTranslationLines[positionInNonSectionLines]?.trim() || "";
+        if (translatedText) {
+          return {
+            ...line,
+            text: translatedText,
+            originalText: originalText,
+          };
+        }
+      }
 
+      // If translation line not found or empty, return original
       return {
         ...line,
-        text: translatedText || line?.text || "",
+        text: line?.text || "",
         originalText: originalText,
       };
     });
