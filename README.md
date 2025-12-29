@@ -13,7 +13,6 @@ Spicetify용 가사 확장 프로그램입니다. Google Gemini API를 활용하
 * Google Gemini API를 통한 실시간 가사 번역
 * 일본어, 한국어, 중국어 등 다양한 언어의 로마자 발음 표기 지원
 * 일본어 가사에 후리가나(ふりがな) 표시 기능
-* **최신 업데이트**: 일본어 발음 표기(romaji) 한 줄씩 밀리는 문제 수정
 
 ### 사용자 인터페이스
 
@@ -143,17 +142,7 @@ spicetify apply
 
 * **가사가 표시되지 않음**: 설정에서 가사 제공자가 활성화되어 있는지 확인하세요.
 * **번역이 작동하지 않음**: Gemini API 키가 올바르게 입력되었는지 확인하세요.
-* **일본어 발음 표기가 한 줄씩 밀림**: 최신 버전(2.4.4 이상)으로 업데이트하세요. 이 문제는 수정되었습니다.
 * **Spotify가 실행되지 않음**: `spicetify restore` 후 `spicetify apply`를 다시 실행하세요.
-
----
-
-## 최신 변경사항
-
-### 버전 2.4.4
-
-* **수정**: 일본어 발음 표기(romaji)가 원본 가사와 한 줄씩 밀리는 문제를 수정했습니다.
-* `Utils.js`의 `processTranslationResult` 함수를 개선하여 번역 결과와 원본 가사의 라인 매핑 정확도를 향상시켰습니다.
 
 ---
 
@@ -161,19 +150,5 @@ spicetify apply
 
 개발을 지원해주시려면 커피 한 잔 사주세요.
 
-[Buy Me A Coffee](https://www.buymeacoffee.com)
-
----
-
-## 라이선스
-
-이 프로젝트는 LGPL-2.1 라이선스 하에 배포됩니다.
-
----
-
-## 기여하기
-
-버그 리포트, 기능 제안, 풀 리퀘스트를 환영합니다!
-
-GitHub Issues: https://github.com/gnuoey-nuj-iohc/lyrics-plus/issues
+Buy Me A Coffee
 
