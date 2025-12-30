@@ -1,4 +1,4 @@
-<img width="100%" alt="preview" src="https://github.com/user-attachments/assets/679830cb-2bad-485f-9b22-9fed6f2e1773" />
+<img width="2208" height="512" alt="ko" src="https://github.com/user-attachments/assets/e4723922-2b91-466f-9f5e-b0b1604f8ebe" />
 
 ---
 
@@ -9,7 +9,7 @@
 
 ---
 
-### Lyrics Plus - 당신의 언어로 즐기는, 그런 음악.
+### ivLyrics - 당신의 언어로 즐기는, 그런 음악.
 
 
 Spicetify용 가사 확장 프로그램입니다. Google Gemini API를 활용하여 다양한 언어의 발음 표기와 번역을 지원합니다.
@@ -92,26 +92,26 @@ Spicetify 설치 직후라면 PowerShell 또는 터미널을 재시작한 후 �
 
 ##### Windows
 ```powershell
-iwr -useb https://ivlis.kr/lyrics-plus/install.ps1 | iex
+iwr -useb https://ivlis.kr/ivLyrics/install.ps1 | iex
 ```
 
 ##### macOS / Linux
 ```bash
-curl -fsSL https://ivlis.kr/lyrics-plus/install.sh | sh
+curl -fsSL https://ivlis.kr/ivLyrics/install.sh | sh
 ```
 
 업데이트도 동일한 명령어로 가능합니다.
 
 #### 수동 설치
 
-1. [GitHub Releases](https://github.com/ivLis-Studio/lyrics-plus/releases)에서 최신 버전을 다운로드합니다.
-2. 압축을 해제하고 폴더 이름을 `lyrics-plus`로 변경합니다.
+1. [GitHub Releases](https://github.com/ivLis-Studio/ivLyrics/releases)에서 최신 버전을 다운로드합니다.
+2. 압축을 해제하고 폴더 이름을 `ivLyrics`로 변경합니다.
 3. 해당 폴더를 Spicetify CustomApps 디렉토리에 복사합니다:
    - Windows: `%LocalAppData%\spicetify\CustomApps`
    - macOS/Linux: `~/.config/spicetify/CustomApps`
 4. 터미널에서 다음 명령어를 실행합니다:
    ```
-   spicetify config custom_apps lyrics-plus
+   spicetify config custom_apps ivLyrics
    spicetify apply
    ```
 
@@ -151,4 +151,5 @@ curl -fsSL https://ivlis.kr/lyrics-plus/install.sh | sh
 개발을 지원해주시려면 커피 한 잔 사주세요.
 
 <a href="https://www.buymeacoffee.com/ivlis" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
 
