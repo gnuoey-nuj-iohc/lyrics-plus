@@ -1,4 +1,4 @@
-<img width="100%" alt="preview-eng" src="https://github.com/user-attachments/assets/f42d4732-4960-4f2b-99e6-a68973b00f7d" />
+<img width="2208" height="512" alt="en" src="https://github.com/user-attachments/assets/8441680c-68a3-435c-b22a-d674948807a3" />
 
 ---
 
@@ -9,7 +9,7 @@
 
 ---
 
-### Lyrics Plus - Enjoy Music, with your Language.
+### ivLyrics - Enjoy Music, with your Language.
 
 A lyrics extension for Spicetify. Supports pronunciation display and translation for various languages using the Google Gemini API.
 
@@ -91,26 +91,26 @@ If you just installed Spicetify, restart PowerShell or Terminal before proceedin
 
 ##### Windows
 ```powershell
-iwr -useb https://ivlis.kr/lyrics-plus/install.ps1 | iex
+iwr -useb https://ivlis.kr/ivLyrics/install.ps1 | iex
 ```
 
 ##### macOS / Linux
 ```bash
-curl -fsSL https://ivlis.kr/lyrics-plus/install.sh | sh
+curl -fsSL https://ivlis.kr/ivLyrics/install.sh | sh
 ```
 
 Updates can also be done with the same command.
 
 #### Manual Installation
 
-1. Download the latest version from [GitHub Releases](https://github.com/ivLis-Studio/lyrics-plus/releases).
-2. Extract and rename the folder to `lyrics-plus`.
+1. Download the latest version from [GitHub Releases](https://github.com/ivLis-Studio/ivLyrics/releases).
+2. Extract and rename the folder to `ivLyrics`.
 3. Copy the folder to the Spicetify CustomApps directory:
    - Windows: `%LocalAppData%\spicetify\CustomApps`
    - macOS/Linux: `~/.config/spicetify/CustomApps`
 4. Run the following commands in the terminal:
    ```
-   spicetify config custom_apps lyrics-plus
+   spicetify config custom_apps ivLyrics
    spicetify apply
    ```
 
@@ -150,5 +150,6 @@ If you experience issues with settings or lyrics display:
 If you'd like to support development, please buy me a coffee.
 
 <a href="https://www.buymeacoffee.com/ivlis" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
 
 
