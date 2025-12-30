@@ -318,17 +318,28 @@ const FullscreenOverlay = (() => {
                 } catch (e) { }
             };
 
+            // 볼륨 변경 감지 (Spotify 단축키로 변경 시에도 반영)
+            const updateVolume = () => {
+                const currentVolume = Spicetify.Player.getVolume?.() ?? 1;
+                setVolume(currentVolume);
+                setIsMuted(currentVolume === 0);
+            };
+
             // 초기 상태 설정
             updatePlayState();
             updateShuffle();
             updateRepeat();
             checkLiked();
-            setVolume(Spicetify.Player.getVolume?.() ?? 1);
+            updateVolume();
+
+            // 볼륨 변경 감지를 위한 interval (200ms 간격으로 체크)
+            const volumeInterval = setInterval(updateVolume, 200);
 
             Spicetify.Player.addEventListener("onplaypause", updatePlayState);
             Spicetify.Player.addEventListener("songchange", checkLiked);
 
             return () => {
+                clearInterval(volumeInterval);
                 Spicetify.Player.removeEventListener("onplaypause", updatePlayState);
                 Spicetify.Player.removeEventListener("songchange", checkLiked);
             };
@@ -690,26 +701,19 @@ const FullscreenOverlay = (() => {
         if (!show || !isFullscreen) return null;
 
         return react.createElement("div", {
-            className: "fullscreen-queue-wrapper"
+            className: "fullscreen-queue-wrapper",
+            onMouseLeave: () => setIsHovered(false)
         },
             // Hover trigger area (투명한 오른쪽 영역)
-            !isHovered && react.createElement("div", {
+            react.createElement("div", {
                 className: "fullscreen-queue-trigger-area",
                 onMouseEnter: () => setIsHovered(true)
             }),
 
-            // Queue panel
-            isHovered && react.createElement("div", {
-                className: "fullscreen-queue-panel visible",
-                onMouseLeave: (e) => {
-                    // 패널 밖으로 마우스가 나갈 때만 닫기
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    const x = e.clientX;
-                    const y = e.clientY;
-                    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
-                        setIsHovered(false);
-                    }
-                }
+            // Queue panel (항상 렌더링, visible 클래스로 애니메이션 제어)
+            react.createElement("div", {
+                className: `fullscreen-queue-panel ${isHovered ? 'visible' : ''}`,
+                onMouseEnter: () => setIsHovered(true)
             },
                 // Content
                 react.createElement("div", { className: "fullscreen-queue-content" },
