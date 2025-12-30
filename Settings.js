@@ -4632,6 +4632,52 @@ const ConfigModal = () => {
           },
         }),
         react.createElement(SectionTitle, {
+          title: I18n.t("settingsAdvanced.api.perplexity.title"),
+          subtitle: I18n.t("settingsAdvanced.api.perplexity.subtitle"),
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              text: I18n.t("settingsAdvanced.api.getPerplexityKey.button"),
+              type: ConfigButton,
+              onChange: () => {
+                window.open("https://www.perplexity.ai/settings/api", "_blank");
+              },
+            },
+            {
+              desc: I18n.t("settingsAdvanced.api.perplexityKey.desc"),
+              info: I18n.t("settingsAdvanced.api.perplexityKey.info"),
+              key: "perplexity-api-key",
+              type: ConfigKeyList,
+            },
+            {
+              desc: I18n.t("settingsAdvanced.api.perplexityModel.desc"),
+              info: I18n.t("settingsAdvanced.api.perplexityModel.info"),
+              key: "perplexity-model",
+              type: ConfigSelect,
+              options: [
+                { value: "sonar", label: "sonar" },
+                { value: "sonar-pro", label: "sonar-pro" },
+              ],
+              defaultValue: CONFIG.visual["perplexity-model"] || "sonar",
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            StorageManager.saveConfig(name, value);
+            // Clear API key cache when Perplexity settings change
+            if (name === "perplexity-api-key" || name === "perplexity-model") {
+              Translator._clearApiKeyCache();
+            }
+            lyricContainerUpdate?.();
+            window.dispatchEvent(
+              new CustomEvent("ivLyrics", {
+                detail: { type: "config", name, value },
+              })
+            );
+          },
+        }),
+        react.createElement(SectionTitle, {
           title: I18n.t("settingsAdvanced.exportImport.title"),
           subtitle: I18n.t("settingsAdvanced.exportImport.subtitle"),
         }),

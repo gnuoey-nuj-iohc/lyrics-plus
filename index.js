@@ -1203,7 +1203,7 @@ const StorageManager = {
   // Unified config save method to reduce duplication
   saveConfig(name, value) {
     saveStorageKeys(`${APP_NAME}:visual:${name}`);
-    if (name === "gemini-api-key" || name === "gemini-api-key-romaji") {
+    if (name === "gemini-api-key" || name === "gemini-api-key-romaji" || name === "perplexity-api-key" || name === "perplexity-api-key-romaji") {
       // Save sensitive keys to both storages for persistence
       this.setPersisted(`${APP_NAME}:visual:${name}`, value);
     } else if (name === "language") {
@@ -1577,6 +1577,13 @@ const CONFIG = {
     "gemini-api-key-romaji":
       StorageManager.getPersisted("ivLyrics:visual:gemini-api-key-romaji") ||
       "",
+    "perplexity-api-key":
+      StorageManager.getPersisted("ivLyrics:visual:perplexity-api-key") || "",
+    "perplexity-api-key-romaji":
+      StorageManager.getPersisted("ivLyrics:visual:perplexity-api-key-romaji") ||
+      "",
+    "perplexity-model":
+      StorageManager.getItem("ivLyrics:visual:perplexity-model") || "sonar",
     translate: StorageManager.get("ivLyrics:visual:translate", false),
     "furigana-enabled": StorageManager.get(
       "ivLyrics:visual:furigana-enabled",
@@ -2249,7 +2256,7 @@ const Prefetcher = {
         // 발음 요청 (wantSmartPhonetic = true)
         if (needPhonetic) {
           try {
-            const phoneticResponse = await Translator.callGemini({
+            const phoneticResponse = await Translator.callTranslationAPI({
               trackId,
               artist: trackInfo.artist,
               title: trackInfo.title,
@@ -2274,7 +2281,7 @@ const Prefetcher = {
         // 번역 요청 (wantSmartPhonetic = false)
         if (needTranslation) {
           try {
-            const translationResponse = await Translator.callGemini({
+            const translationResponse = await Translator.callTranslationAPI({
               trackId,
               artist: trackInfo.artist,
               title: trackInfo.title,
@@ -2732,7 +2739,7 @@ class LyricsContainer extends react.Component {
 
       // 발음 요청 (gemini_romaji)
       if (needPhonetic) {
-        phoneticResponse = await Translator.callGemini({
+        phoneticResponse = await Translator.callTranslationAPI({
           trackId,
           artist: this.state.artist || lyricsState.artist,
           title: this.state.title || lyricsState.title,
@@ -2745,7 +2752,7 @@ class LyricsContainer extends react.Component {
 
       // 번역 요청 (gemini_ko)
       if (needTranslation) {
-        translationResponse = await Translator.callGemini({
+        translationResponse = await Translator.callTranslationAPI({
           trackId,
           artist: this.state.artist || lyricsState.artist,
           title: this.state.title || lyricsState.title,
@@ -3679,6 +3686,12 @@ class LyricsContainer extends react.Component {
       const romajiKey = StorageManager.getPersisted(
         `${APP_NAME}:visual:gemini-api-key-romaji`
       );
+      const perplexityKey = StorageManager.getPersisted(
+        `${APP_NAME}:visual:perplexity-api-key`
+      );
+      const perplexityRomajiKey = StorageManager.getPersisted(
+        `${APP_NAME}:visual:perplexity-api-key-romaji`
+      );
 
       // Determine mode type and API key
       let wantSmartPhonetic = false;
@@ -3767,7 +3780,7 @@ class LyricsContainer extends react.Component {
         this.startTranslationLoading();
       }
 
-      const inflightPromise = Translator.callGemini({
+      const inflightPromise = Translator.callTranslationAPI({
         apiKey,
         artist: this.state.artist || lyricsState.artist,
         title: this.state.title || lyricsState.title,

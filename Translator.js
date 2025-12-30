@@ -665,6 +665,506 @@ class Translator {
     return requestPromise;
   }
 
+  static async callPerplexity({
+    trackId,
+    artist,
+    title,
+    text,
+    wantSmartPhonetic = false,
+    provider = null,
+    ignoreCache = false,
+  }) {
+    if (!text?.trim()) throw new Error("No text provided for translation");
+
+    // Get API key from localStorage
+    const apiKeyRaw = StorageManager.getItem("ivLyrics:visual:perplexity-api-key");
+    let apiKeys = [];
+
+    // Parse API keys (support both single string and JSON array)
+    try {
+      if (apiKeyRaw) {
+        const trimmed = apiKeyRaw.trim();
+        if (trimmed.startsWith('[')) {
+          const parsed = JSON.parse(trimmed);
+          if (Array.isArray(parsed)) {
+            apiKeys = parsed;
+          } else {
+            apiKeys = [trimmed];
+          }
+        } else {
+          apiKeys = [trimmed];
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to parse API keys, treating as single key", e);
+      apiKeys = [apiKeyRaw];
+    }
+
+    // Filter empty keys
+    apiKeys = apiKeys.filter(k => k && k.trim().length > 0);
+
+    // Check if API key is provided
+    if (apiKeys.length === 0) {
+      throw new Error(
+        I18n.t("translator.missingApiKey")
+      );
+    }
+
+    // trackId가 전달되지 않으면 현재 재생 중인 곡에서 가져옴
+    let finalTrackId = trackId;
+    if (!finalTrackId) {
+      finalTrackId = Spicetify.Player.data?.item?.uri?.split(':')[2];
+    }
+    if (!finalTrackId) {
+      throw new Error("No track ID available");
+    }
+
+    // 사용자의 현재 언어 가져오기
+    const userLang = I18n.getCurrentLanguage();
+
+    // 1. 로컬 캐시 먼저 확인 (ignoreCache가 아닌 경우)
+    if (!ignoreCache) {
+      try {
+        const localCached = await LyricsCache.getTranslation(finalTrackId, userLang, wantSmartPhonetic);
+        if (localCached) {
+          console.log(`[Translator] Using local cache for ${finalTrackId}:${userLang}:${wantSmartPhonetic ? 'phonetic' : 'translation'}`);
+          // 캐시 히트 로깅
+          if (window.ApiTracker) {
+            window.ApiTracker.logCacheHit(
+              wantSmartPhonetic ? 'phonetic' : 'translation',
+              `${finalTrackId}:${userLang}`,
+              { lineCount: localCached.phonetic?.length || localCached.translation?.length || 0 }
+            );
+          }
+          return localCached;
+        }
+      } catch (e) {
+        console.warn('[Translator] Local cache check failed:', e);
+      }
+    }
+
+    // 중복 요청 방지: 동일한 trackId + type + lang 조합에 대한 요청이 진행 중이면 해당 Promise 반환
+    const requestKey = getRequestKey(finalTrackId, wantSmartPhonetic, userLang);
+
+    // ignoreCache가 아닌 경우에만 중복 요청 체크
+    if (!ignoreCache && _inflightRequests.has(requestKey)) {
+      console.log(`[Translator] Deduplicating request for: ${requestKey}`);
+      return _inflightRequests.get(requestKey);
+    }
+
+    // 실제 API 호출을 수행하는 함수
+    const executeRequest = async (currentApiKey) => {
+      const endpoint = "https://api.perplexity.ai/chat/completions";
+
+      // API 키 검증 및 로깅
+      if (!currentApiKey || !currentApiKey.trim()) {
+        throw new Error(I18n.t("translator.missingApiKey"));
+      }
+      
+      // API 키가 pplx-로 시작하는지 확인
+      const trimmedKey = currentApiKey.trim();
+      if (!trimmedKey.startsWith('pplx-')) {
+        console.warn("[Translator] API key doesn't start with 'pplx-', but will try anyway:", trimmedKey.substring(0, 10) + "...");
+      }
+
+      // Perplexity 모델 선택 (설정에서 가져오거나 기본값 사용)
+      const perplexityModel = StorageManager.getItem("ivLyrics:visual:perplexity-model") || "sonar";
+
+      // API 요청 로깅 시작
+      const category = wantSmartPhonetic ? 'phonetic' : 'translation';
+      let logId = null;
+      if (window.ApiTracker) {
+        logId = window.ApiTracker.logRequest(category, endpoint, {
+          trackId: finalTrackId,
+          artist,
+          title,
+          lang: userLang,
+          wantSmartPhonetic,
+          textLength: text?.length || 0
+        });
+      }
+
+      // 언어 코드를 언어 이름으로 변환
+      const langNames = {
+        'ko': 'Korean', 'en': 'English', 'ja': 'Japanese', 'zh': 'Chinese',
+        'es': 'Spanish', 'fr': 'French', 'de': 'German', 'it': 'Italian',
+        'pt': 'Portuguese', 'ru': 'Russian', 'ar': 'Arabic', 'hi': 'Hindi',
+        'th': 'Thai', 'vi': 'Vietnamese', 'id': 'Indonesian'
+      };
+      const targetLang = langNames[userLang] || userLang;
+
+      // 프롬프트 생성
+      let prompt;
+      if (wantSmartPhonetic) {
+        // 발음 표기 요청 - 원본 가사의 언어를 감지하여 적절한 발음 표기로 변환
+        // 가사 텍스트에서 언어를 감지 (간단한 휴리스틱)
+        const isJapanese = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(text);
+        const isKorean = /[\uAC00-\uD7AF]/.test(text);
+        const isChinese = /[\u4E00-\u9FFF]/.test(text) && !isJapanese;
+        
+        let phoneticType = 'phonetic transcription (romanization)';
+        if (isJapanese) {
+          phoneticType = 'Romaji (Japanese romanization)';
+        } else if (isKorean) {
+          phoneticType = 'Romaja (Korean romanization)';
+        } else if (isChinese) {
+          phoneticType = 'Pinyin (Chinese romanization)';
+        }
+        
+        prompt = `You are a language expert. Convert the following lyrics to ${phoneticType}. 
+IMPORTANT: Maintain the EXACT same number of lines as the original. Keep empty lines as empty lines.
+Preserve the original line structure and format. Only provide the phonetic transcription, no explanations.
+
+Original lyrics:
+${text}
+
+Provide only the phonetic transcription, line by line, maintaining the exact same line count:`;
+      } else {
+        // 번역 요청
+        const isKorean = targetLang === 'Korean' || userLang === 'ko';
+        const translationGuidelines = isKorean ? `
+TRANSLATION GUIDELINES FOR KOREAN:
+- Use natural, fluent Korean that sounds like original Korean lyrics
+- Preserve the emotional tone, mood, and nuance of the original
+- Use appropriate Korean expressions that convey the same feeling
+- Consider the rhythm and flow of the lyrics
+- Avoid literal translations - prioritize natural Korean expressions
+- Use poetic and lyrical language when appropriate
+- Maintain the original's sentiment (sad, happy, romantic, etc.)
+- Use conversational Korean that feels natural to Korean speakers` : `
+TRANSLATION GUIDELINES:
+- Use natural, fluent language that sounds like original lyrics in ${targetLang}
+- Preserve the emotional tone, mood, and nuance of the original
+- Use appropriate expressions that convey the same feeling
+- Consider the rhythm and flow of the lyrics
+- Avoid literal translations - prioritize natural expressions
+- Use poetic and lyrical language when appropriate`;
+
+        prompt = `You are a professional translator specializing in song lyrics. Translate the following lyrics to ${targetLang}. 
+${translationGuidelines}
+
+IMPORTANT RULES:
+1. Maintain the EXACT same number of lines as the original
+2. Keep empty lines as empty lines (do not remove them)
+3. Translate ALL text completely - do not leave any original language characters in the translation
+4. Keep the original line structure and emotional tone
+5. Each line must be translated separately and completely
+6. Remove all original language characters (Japanese, Chinese, etc.) from the translated output
+7. Make the translation sound natural and fluent, as if it were originally written in ${targetLang}
+
+Original lyrics:
+${text}
+
+Provide ONLY the ${targetLang} translation, line by line, with no original language text remaining. Make it sound natural and beautiful:`;
+      }
+
+      const tryFetch = async () => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 80000);
+
+        try {
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${currentApiKey}`,
+            },
+            body: JSON.stringify({
+              model: perplexityModel,
+              messages: [
+                {
+                  role: "user",
+                  content: prompt
+                }
+              ],
+              temperature: 0.3,
+              max_tokens: 4000,
+            }),
+            signal: controller.signal,
+            mode: "cors",
+          });
+
+          clearTimeout(timeoutId);
+          return res;
+        } catch (error) {
+          clearTimeout(timeoutId);
+          throw error;
+        }
+      };
+
+      try {
+        const res = await tryFetch();
+
+        if (!res.ok) {
+          let errorData;
+          try {
+            const text = await res.text();
+            try {
+              errorData = JSON.parse(text);
+            } catch (e) {
+              errorData = { error: { message: text || `HTTP ${res.status}` } };
+            }
+          } catch (e) {
+            errorData = { error: { message: `HTTP ${res.status}` } };
+          }
+
+          // 상세한 에러 로깅
+          console.error("[Translator] Perplexity API error response:", {
+            status: res.status,
+            statusText: res.statusText,
+            errorData: errorData,
+            apiKeyPrefix: currentApiKey.substring(0, 10) + "..."
+          });
+
+          if (res.status === 429) {
+            throw new Error("429 Rate Limit Exceeded");
+          }
+
+          if (res.status === 401 || res.status === 403) {
+            throw new Error("403 Forbidden - Invalid API Key");
+          }
+
+          // Perplexity API 에러 응답 형식 처리
+          const errorMessage = errorData.error?.message || errorData.message || errorData.detail || errorData.error || `HTTP ${res.status}`;
+          
+          // 400 에러인 경우 더 자세한 정보 제공
+          if (res.status === 400) {
+            console.error("[Translator] Perplexity API 400 error details:", JSON.stringify(errorData, null, 2));
+            throw new Error(errorMessage || I18n.t("translator.invalidRequestFormat"));
+          }
+
+          const errorMsg = handleAPIError(res.status, { message: errorMessage });
+          throw new Error(errorMsg);
+        }
+
+        const data = await res.json();
+
+        // Perplexity API 응답 파싱
+        if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+          throw new Error("Invalid response format from Perplexity API");
+        }
+
+        let translatedText = data.choices[0].message.content.trim();
+        
+        // 번역 결과에서 원본 언어 문자 제거 (일본어, 중국어 등)
+        // 혼합 언어 번역을 방지하기 위해 원본 언어 패턴 제거
+        if (!wantSmartPhonetic) {
+          // 일본어 문자 제거 (히라가나, 가타카나, 한자)
+          translatedText = translatedText.replace(/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/g, '');
+          // 중국어 문자 제거 (한자)
+          translatedText = translatedText.replace(/[\u4E00-\u9FFF]/g, '');
+          // 앞뒤 공백 정리
+          translatedText = translatedText.trim();
+        }
+        
+        // 줄 단위로 분리 (빈 줄도 유지하여 원본 가사와 줄 수 맞춤)
+        let lines = translatedText.split('\n');
+        
+        // 각 줄의 앞뒤 공백 제거 (빈 줄은 빈 문자열로 유지)
+        lines = lines.map(line => {
+          if (!wantSmartPhonetic) {
+            // 번역의 경우 원본 언어 문자 제거
+            let cleanLine = line.trim();
+            cleanLine = cleanLine.replace(/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/g, '').trim();
+            return cleanLine;
+          }
+          return line.trim();
+        });
+        
+        // 응답 형식 변환 (기존 형식과 호환)
+        const result = wantSmartPhonetic 
+          ? { phonetic: lines }
+          : { translation: lines };
+
+        // API 성공 응답 로깅
+        if (window.ApiTracker && logId) {
+          const responseInfo = {
+            lineCount: lines.length,
+            cached: false
+          };
+          window.ApiTracker.logResponse(logId, responseInfo, 'success');
+        }
+
+        // 성공 시 로컬 캐시에 저장 (백그라운드)
+        LyricsCache.setTranslation(finalTrackId, userLang, wantSmartPhonetic, result).catch(() => { });
+
+        return result;
+      } catch (error) {
+        // 에러 발생 시 로깅
+        if (window.ApiTracker && logId) {
+          const errorMsg = error.name === "AbortError" ? 'timeout' : error.message;
+          window.ApiTracker.logResponse(logId, null, 'error', errorMsg);
+        }
+        if (error.name === "AbortError") {
+          throw new Error(I18n.t("translator.requestTimeout"));
+        }
+        throw error;
+      }
+    };
+
+    // 로테이션 실행 로직
+    const runWithRotation = async () => {
+      let lastError;
+      for (let i = 0; i < apiKeys.length; i++) {
+        const key = apiKeys[i];
+        try {
+          return await executeRequest(key);
+        } catch (error) {
+          lastError = error;
+          // 429(Rate Limit) 또는 403(Forbidden/Invalid)인 경우 다음 키로 시도
+          const isRateLimit = error.message.includes("429") || error.message.includes("Rate Limit");
+          const isForbidden = error.message.includes("403") || error.message.includes("Forbidden") || error.message.includes("API key not valid");
+
+          if (isRateLimit || isForbidden) {
+            console.warn(`[Translator] API Key ${key.substring(0, 8)}... failed (${isRateLimit ? 'Rate Limit' : 'Invalid'}). Rotating...`);
+            if (i === apiKeys.length - 1) {
+              break; // 마지막 키였으면 중단
+            }
+            continue; // 다음 키 시도
+          }
+
+          // 그 외 에러는 즉시 중단
+          throw error;
+        }
+      }
+      throw new Error(`${I18n.t("translator.failedPrefix")}: ${lastError ? lastError.message : "All keys failed"}`);
+    };
+
+    // Promise를 생성하고 Map에 저장
+    const requestPromise = runWithRotation().finally(() => {
+      // 요청 완료 후 Map에서 제거
+      _inflightRequests.delete(requestKey);
+    });
+
+    // ignoreCache가 아닌 경우에만 중복 요청 방지 등록
+    if (!ignoreCache) {
+      _inflightRequests.set(requestKey, requestPromise);
+    }
+
+    return requestPromise;
+  }
+
+  /**
+   * 통합 번역 API 호출 함수 - Perplexity와 Gemini를 모두 시도
+   * 먼저 Perplexity를 시도하고, 실패하면 Gemini를 시도
+   * API 키는 메모리 캐시를 사용하여 성능 최적화
+   */
+  static _apiKeyCache = {
+    perplexity: null,
+    gemini: null,
+    lastCheck: 0,
+    cacheTTL: 60000, // 1분 캐시
+  };
+
+  static _getApiKeys() {
+    const now = Date.now();
+    // 캐시가 유효하면 재사용
+    if (this._apiKeyCache.lastCheck && (now - this._apiKeyCache.lastCheck) < this._apiKeyCache.cacheTTL) {
+      return {
+        hasPerplexityKey: !!this._apiKeyCache.perplexity,
+        hasGeminiKey: !!this._apiKeyCache.gemini,
+      };
+    }
+
+    // 캐시 갱신
+    const perplexityKey = StorageManager.getItem("ivLyrics:visual:perplexity-api-key");
+    const geminiKey = StorageManager.getItem("ivLyrics:visual:gemini-api-key");
+    
+    this._apiKeyCache.perplexity = perplexityKey && perplexityKey.trim().length > 0 ? perplexityKey : null;
+    this._apiKeyCache.gemini = geminiKey && geminiKey.trim().length > 0 ? geminiKey : null;
+    this._apiKeyCache.lastCheck = now;
+
+    return {
+      hasPerplexityKey: !!this._apiKeyCache.perplexity,
+      hasGeminiKey: !!this._apiKeyCache.gemini,
+    };
+  }
+
+  static _clearApiKeyCache() {
+    this._apiKeyCache.perplexity = null;
+    this._apiKeyCache.gemini = null;
+    this._apiKeyCache.lastCheck = 0;
+  }
+
+  static async callTranslationAPI({
+    trackId,
+    artist,
+    title,
+    text,
+    wantSmartPhonetic = false,
+    provider = null,
+    ignoreCache = false,
+  }) {
+    // API 키 확인 (메모리 캐시 사용)
+    const { hasPerplexityKey, hasGeminiKey } = this._getApiKeys();
+
+    // 둘 다 없으면 에러
+    if (!hasPerplexityKey && !hasGeminiKey) {
+      throw new Error(I18n.t("translator.missingApiKey"));
+    }
+
+    // 먼저 Perplexity 시도
+    if (hasPerplexityKey) {
+      try {
+        console.log("[Translator] Trying Perplexity API first...");
+        return await this.callPerplexity({
+          trackId,
+          artist,
+          title,
+          text,
+          wantSmartPhonetic,
+          provider,
+          ignoreCache,
+        });
+      } catch (error) {
+        console.warn("[Translator] Perplexity API failed:", error.message);
+        
+        // 에러 타입 확인
+        const isRateLimit = error.message.includes("429") || error.message.includes("Rate Limit");
+        const isForbidden = error.message.includes("403") || error.message.includes("Forbidden") || error.message.includes("Invalid API Key");
+        const shouldFallback = isRateLimit || isForbidden;
+        
+        // Gemini로 fallback 가능한 경우
+        if (hasGeminiKey && shouldFallback) {
+          console.log("[Translator] Falling back to Gemini API...");
+          try {
+            return await this.callGemini({
+              trackId,
+              artist,
+              title,
+              text,
+              wantSmartPhonetic,
+              provider,
+              ignoreCache,
+            });
+          } catch (geminiError) {
+            // Gemini도 실패하면 원래 에러 throw
+            throw new Error(`${I18n.t("translator.failedPrefix")}: Perplexity (${error.message}), Gemini (${geminiError.message})`);
+          }
+        }
+        
+        // Gemini가 없거나 fallback이 불가능한 경우 원래 에러 throw
+        throw error;
+      }
+    }
+
+    // Perplexity 키가 없으면 Gemini만 시도
+    if (hasGeminiKey) {
+      console.log("[Translator] Using Gemini API (Perplexity key not available)...");
+      return await this.callGemini({
+        trackId,
+        artist,
+        title,
+        text,
+        wantSmartPhonetic,
+        provider,
+        ignoreCache,
+      });
+    }
+
+    throw new Error(I18n.t("translator.missingApiKey"));
+  }
+
   includeExternal(url) {
     return new Promise((resolve, reject) => {
       const existingScript = document.querySelector(`script[src="${url}"]`);

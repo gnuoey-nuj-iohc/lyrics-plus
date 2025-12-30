@@ -336,9 +336,9 @@ window.LANG_KO = {
     "translationLabel": "번역",
     "translationInfo": "원문 가사를 한국어로 번역하여 표시합니다",
     "apiSettings": "API 설정",
-    "apiSettingsSubtitle": "Gemini API를 구성하세요",
+    "apiSettingsSubtitle": "Perplexity API와 Google Gemini API를 구성하세요",
     "apiKeySettings": "API 키 설정",
-    "apiKeySettingsInfo": "Gemini API 키를 설정하려면 여기를 클릭하세요",
+    "apiKeySettingsInfo": "Perplexity API 키와 Google Gemini API 키를 설정하려면 여기를 클릭하세요",
     "openSettings": "설정 열기",
     "translationSettings": "변환 설정",
     "regenerateTranslation": "번역 재생성",
@@ -994,6 +994,21 @@ window.LANG_KO = {
       "geminiKey": {
         "desc": "Gemini API 키",
         "info": "Google Gemini AI를 활용한 가사 번역 기능을 사용하려면 API 키가 필요합니다"
+      },
+      "perplexity": {
+        "title": "Perplexity API 설정",
+        "subtitle": "Perplexity API를 구성하세요"
+      },
+      "getPerplexityKey": {
+        "button": "Perplexity API 키 발급 페이지 열기"
+      },
+      "perplexityKey": {
+        "desc": "Perplexity API 키",
+        "info": "Perplexity AI를 활용한 가사 번역 기능을 사용하려면 API 키가 필요합니다"
+      },
+      "perplexityModel": {
+        "desc": "Perplexity 모델",
+        "info": "Perplexity API에서 사용할 모델을 선택합니다. sonar는 기본 모델, sonar-pro는 더 강력한 모델입니다"
       }
     },
     "update": {
@@ -1045,15 +1060,15 @@ window.LANG_KO = {
     "loadingMessage": "영상 배경 로딩 중... 30초 정도 소요됩니다."
   },
   "translator": {
-    "missingApiKey": "Gemini API 키가 설정되지 않았습니다. 설정에서 API 키를 입력해주세요.",
+    "missingApiKey": "Perplexity API 키가 설정되지 않았습니다. 설정에서 API 키를 입력해주세요.",
     "invalidApiKeyFormat": "올바르지 않은 API 키 형식입니다. Gemini API 키는 'AIza'로 시작해야 합니다.",
     "invalidRequestFormat": "요청 형식이 올바르지 않습니다. API 키를 확인해주세요.",
-    "invalidApiKey": "잘못된 API 키입니다. 설정에서 Gemini API 키를 확인해주세요.",
+    "invalidApiKey": "잘못된 API 키입니다. 설정에서 Perplexity API 키를 확인해주세요.",
     "accessForbidden": "API 접근이 금지되었습니다. API 키 권한을 확인해주세요.",
     "rateLimitExceeded": "요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.",
     "serviceUnavailable": "번역 서비스를 일시적으로 사용할 수 없습니다. 나중에 다시 시도해주세요.",
     "requestFailed": "API 요청이 실패했습니다",
-    "apiKeyError": "Gemini API 키 관련 오류가 발생했습니다. 설정에서 API 키를 확인해주세요.",
+    "apiKeyError": "Perplexity API 키 관련 오류가 발생했습니다. 설정에서 API 키를 확인해주세요.",
     "translationFailed": "번역에 실패했습니다",
     "requestTimeout": "번역 요청이 시간 초과되었습니다. 다시 시도해주세요.",
     "failedPrefix": "번역 실패"
