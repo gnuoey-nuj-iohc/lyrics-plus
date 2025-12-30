@@ -636,6 +636,26 @@ window.LANG_ID = {
         "desc": "Jarak antar huruf dalam terjemahan (piksel)"
       }
     },
+    "furiganaStyle": {
+      "title": "Gaya Furigana",
+      "subtitle": "Pengaturan untuk bacaan (furigana) yang ditampilkan di atas kanji Jepang",
+      "fontSize": {
+        "label": "Ukuran font",
+        "desc": "Ukuran font untuk furigana (piksel)"
+      },
+      "fontWeight": {
+        "label": "Ketebalan font",
+        "desc": "Ketebalan font untuk furigana"
+      },
+      "opacity": {
+        "label": "Opasitas",
+        "desc": "Opasitas furigana (0-100%)"
+      },
+      "spacing": {
+        "label": "Spasi",
+        "desc": "Jarak antara furigana dan kanji (piksel)"
+      }
+    },
     "textShadow": {
       "title": "Bayangan Teks",
       "subtitle": "Efek bayangan untuk meningkatkan keterbacaan",
@@ -1119,6 +1139,26 @@ window.LANG_ID = {
     "deleteError": "Gagal menghapus video"
   },
   "close": "Tutup",
-  "cancel": "Batal"
+  "cancel": "Batal",
+  tmi: {
+    getApiKeyDesc: "Dapatkan Kunci API Gemini",
+    getApiKeyInfo: "Digunakan untuk mengambil TMI. Tersedia gratis dari Google AI Studio.",
+    viewInfo: "Klik untuk melihat detail lagu",
+    requireKey: "Kunci API Gemini diperlukan di pengaturan",
+    settingTitle: "Kunci API Gemini",
+    settingDesc: "Diperlukan untuk memuat konten TMI/Trivia lagu.",
+    title: "TMI",
+    didYouKnow: "Tahukah kamu?",
+    close: "Tutup",
+    cancel: "Batal",
+    loading: "Mencari fakta menarik...",
+    noData: "Belum ada TMI yang tersedia untuk lagu ini.",
+    clickForTMI: "Klik untuk TMI",
+    clickToClose: "Klik ✕ atau area album untuk kembali",
+    regenerate: "Regenerasi TMI",
+    errorFetch: "Terjadi kesalahan saat mengambil TMI.",
+    errorQuota: "Kuota API terlampaui.",
+    errorQuotaHint: "Silakan coba lagi nanti atau masukkan kunci API lain di pengaturan."
+  }
 };
 

@@ -636,6 +636,26 @@ window.LANG_FA = {
         "desc": "فاصله بین حروف ترجمه (پیکسل)"
       }
     },
+    "furiganaStyle": {
+      "title": "سبک فوریگانا",
+      "subtitle": "تنظیمات خواندن (فوریگانا) که بالای کانجی ژاپنی نمایش داده می‌شود",
+      "fontSize": {
+        "label": "اندازه فونت",
+        "desc": "اندازه فونت برای فوریگانا (پیکسل)"
+      },
+      "fontWeight": {
+        "label": "وزن فونت",
+        "desc": "وزن فونت برای فوریگانا"
+      },
+      "opacity": {
+        "label": "شفافیت",
+        "desc": "شفافیت فوریگانا (0-100%)"
+      },
+      "spacing": {
+        "label": "فاصله",
+        "desc": "فاصله بین فوریگانا و کانجی (پیکسل)"
+      }
+    },
     "textShadow": {
       "title": "سایه متن",
       "subtitle": "افکت سایه برای افزایش خوانایی",
@@ -1119,6 +1139,26 @@ window.LANG_FA = {
     "deleteError": "حذف ویدیو ناموفق بود"
   },
   "close": "بستن",
-  "cancel": "لغو"
+  "cancel": "لغو",
+  tmi: {
+    getApiKeyDesc: "دریافت کلید API Gemini",
+    getApiKeyInfo: "برای دریافت TMI استفاده می‌شود. به صورت رایگان از Google AI Studio در دسترس است.",
+    viewInfo: "برای مشاهده جزئیات آهنگ کلیک کنید",
+    requireKey: "کلید API Gemini در تنظیمات مورد نیاز است",
+    settingTitle: "کلید API Gemini",
+    settingDesc: "برای بارگذاری محتوای TMI/اطلاعات جانبی آهنگ مورد نیاز است.",
+    title: "TMI",
+    didYouKnow: "آیا می‌دانستید؟",
+    close: "بستن",
+    cancel: "لغو",
+    loading: "در حال جستجوی حقایق جالب...",
+    noData: "هنوز TMI برای این آهنگ در دسترس نیست.",
+    clickForTMI: "برای TMI کلیک کنید",
+    clickToClose: "برای بازگشت، روی ✕ یا ناحیه آلبوم کلیک کنید",
+    regenerate: "بازسازی TMI",
+    errorFetch: "خطایی در دریافت TMI رخ داد.",
+    errorQuota: "سهمیه API تمام شد.",
+    errorQuotaHint: "لطفاً بعداً دوباره تلاش کنید یا کلید API دیگری در تنظیمات وارد کنید."
+  }
 };
 

@@ -815,9 +815,13 @@ const FullscreenOverlay = (() => {
         isFullscreen,
         currentLyricIndex = 0,
         totalLyrics = 0,
-        translatedMetadata = null
+        translatedMetadata = null,
+        trackUri = null
     }) => {
         const [uiVisible, setUiVisible] = useState(true);
+        const [tmiMode, setTmiMode] = useState(false);
+        const [tmiData, setTmiData] = useState(null);
+        const [tmiLoading, setTmiLoading] = useState(false);
         const hideTimerRef = useRef(null);
 
         // Get settings from CONFIG
@@ -887,6 +891,90 @@ const FullscreenOverlay = (() => {
             };
         }, [isFullscreen, autoHideUI, autoHideDelay]);
 
+        // Handle album art click - toggle TMI mode
+        const handleAlbumClick = useCallback(async () => {
+            if (tmiMode) {
+                setTmiMode(false);
+                return;
+            }
+
+            const apiKey = CONFIG.visual?.["gemini-api-key"];
+            if (!apiKey || (apiKey.startsWith('[') && apiKey.includes('""') && apiKey.length < 10)) { // Simple validation
+                // If apiKey is empty list or empty string
+            }
+            // Actually original check was simple !apiKey
+            // If I change to ConfigKeyList, apiKey might be '[""]' string.
+            // !'[""]' is false. So it passes.
+            // I should improve check.
+            let hasKey = !!apiKey;
+            if (apiKey && apiKey.trim().startsWith('[')) {
+                try {
+                    const parsed = JSON.parse(apiKey);
+                    hasKey = parsed.some(k => k && k.trim().length > 0);
+                } catch (e) { hasKey = false; }
+            }
+
+            if (!hasKey) {
+                Spicetify.showNotification(I18n.t("tmi.requireKey"), true);
+                return;
+            }
+
+            const trackId = trackUri?.split(":")[2];
+            if (!trackId) return;
+
+            setTmiMode(true);
+            setTmiLoading(true);
+
+            try {
+                const data = await window.SongInfoTMI?.fetchSongInfo(trackId);
+                setTmiData(data);
+            } catch (e) {
+                console.error('[TMI] Fetch error:', e);
+                setTmiData(null);
+            } finally {
+                setTmiLoading(false);
+            }
+        }, [tmiMode, trackUri]);
+
+        // Handle Regenerate
+        const handleRegenerate = useCallback(async () => {
+            const trackId = trackUri?.split(":")[2];
+            if (!trackId) return;
+
+            setTmiLoading(true);
+            try {
+                // Pass true for regenerate
+                const data = await window.SongInfoTMI?.fetchSongInfo(trackId, true);
+                setTmiData(data);
+            } catch (e) {
+                console.error('[TMI] Regenerate error:', e);
+            } finally {
+                setTmiLoading(false);
+            }
+        }, [trackUri]);
+
+        // Close TMI mode
+        const closeTmiMode = useCallback(() => {
+            setTmiMode(false);
+        }, []);
+
+        // Reset TMI mode when track changes
+        useEffect(() => {
+            if (tmiMode) {
+                const trackId = trackUri?.split(":")[2];
+                if (trackId) {
+                    setTmiLoading(true);
+                    setTmiData(null);
+                    window.SongInfoTMI?.fetchSongInfo(trackId).then(data => {
+                        setTmiData(data);
+                        setTmiLoading(false);
+                    }).catch(() => setTmiLoading(false));
+                }
+            } else {
+                setTmiData(null);
+            }
+        }, [trackUri]);
+
         if (!isFullscreen) return null;
 
         const isTwoColumn = CONFIG?.visual?.["fullscreen-two-column"] !== false;
@@ -915,213 +1003,278 @@ const FullscreenOverlay = (() => {
                     secondsBeforeEnd: nextTrackSeconds
                 })
             ),
-            // Left panel (Album, Info & Controls)
+            // Left panel (Album, Info & Controls) OR TMI View
             isTwoColumn && !hideLeftPanel && react.createElement("div", {
-                className: `lyrics-fullscreen-left-panel ${!uiVisible && showControlsInLeftPanel ? 'controls-hidden' : ''}`
+                className: `lyrics-fullscreen-left-panel ${!uiVisible && showControlsInLeftPanel ? 'controls-hidden' : ''} ${tmiMode ? 'tmi-mode' : ''}`
             },
-                react.createElement("div", {
-                    className: "lyrics-fullscreen-left-content",
-                    style: { gap: `${infoGap}px` }
-                },
-                    // Album art
-                    showAlbum && react.createElement("img", {
-                        src: coverUrl || Spicetify.Player.data?.item?.metadata?.image_url,
-                        className: `lyrics-fullscreen-album-art ${albumShadow ? 'with-shadow' : ''}`,
-                        style: {
-                            width: `${albumSize}px`,
-                            height: `${albumSize}px`,
-                            maxWidth: `${albumSize}px`,
-                            borderRadius: `${albumRadius}px`
-                        }
-                    }),
-                    // Track info with translated metadata support
-                    showInfo && react.createElement("div", { className: "lyrics-fullscreen-track-info" },
-                        // Title (based on display mode)
-                        react.createElement("div", { className: "lyrics-fullscreen-title-container" },
-                            (() => {
+                // TMI Mode View
+                tmiMode ? (
+                    tmiLoading ?
+                        react.createElement(window.SongInfoTMI?.TMILoadingView || 'div', {
+                            onClose: closeTmiMode
+                        }) :
+                        react.createElement(window.SongInfoTMI?.TMIFullView || 'div', {
+                            info: tmiData,
+                            onClose: closeTmiMode,
+                            trackName: (() => {
                                 const mode = CONFIG?.visual?.["translate-metadata-mode"] || "translated";
-                                const originalTitle = title || Spicetify.Player.data?.item?.metadata?.title;
-                                const translatedTitle = translatedMetadata?.translated?.title;
-                                const romanizedTitle = translatedMetadata?.romanized?.title;
-                                const elements = [];
+                                const original = title || Spicetify.Player.data?.item?.metadata?.title;
+                                const trans = translatedMetadata?.translated?.title;
+                                const rom = translatedMetadata?.romanized?.title;
 
-                                switch (mode) {
-                                    case "translated":
-                                        // 번역만 표시 (없으면 원어)
-                                        elements.push(react.createElement("div", {
-                                            key: "title-main",
-                                            className: "lyrics-fullscreen-title",
-                                            style: { fontSize: `${titleSize}px` }
-                                        }, translatedTitle || originalTitle));
-                                        break;
-
-                                    case "romanized":
-                                        // 발음만 표시 (없으면 원어)
-                                        elements.push(react.createElement("div", {
-                                            key: "title-main",
-                                            className: "lyrics-fullscreen-title",
-                                            style: { fontSize: `${titleSize}px` }
-                                        }, romanizedTitle || originalTitle));
-                                        break;
-
-                                    case "original-translated":
-                                        // 원어 + 번역
-                                        elements.push(react.createElement("div", {
-                                            key: "title-original",
-                                            className: "lyrics-fullscreen-title",
-                                            style: { fontSize: `${titleSize}px` }
-                                        }, originalTitle));
-                                        if (translatedTitle && translatedTitle !== originalTitle) {
-                                            elements.push(react.createElement("div", {
-                                                key: "title-translated",
-                                                className: "lyrics-fullscreen-title-translated",
-                                                style: { fontSize: `${Math.round(titleSize * 0.6)}px` }
-                                            }, translatedTitle));
-                                        }
-                                        break;
-
-                                    case "original-romanized":
-                                        // 원어 + 발음
-                                        elements.push(react.createElement("div", {
-                                            key: "title-original",
-                                            className: "lyrics-fullscreen-title",
-                                            style: { fontSize: `${titleSize}px` }
-                                        }, originalTitle));
-                                        if (romanizedTitle && romanizedTitle !== originalTitle) {
-                                            elements.push(react.createElement("div", {
-                                                key: "title-romanized",
-                                                className: "lyrics-fullscreen-title-romanized",
-                                                style: { fontSize: `${Math.round(titleSize * 0.5)}px` }
-                                            }, romanizedTitle));
-                                        }
-                                        break;
-
-                                    case "all":
-                                    default:
-                                        // 모두 표시 (원어 + 번역 + 발음)
-                                        elements.push(react.createElement("div", {
-                                            key: "title-original",
-                                            className: "lyrics-fullscreen-title",
-                                            style: { fontSize: `${titleSize}px` }
-                                        }, originalTitle));
-                                        if (translatedTitle && translatedTitle !== originalTitle) {
-                                            elements.push(react.createElement("div", {
-                                                key: "title-translated",
-                                                className: "lyrics-fullscreen-title-translated",
-                                                style: { fontSize: `${Math.round(titleSize * 0.6)}px` }
-                                            }, translatedTitle));
-                                        }
-                                        if (romanizedTitle && romanizedTitle !== originalTitle && romanizedTitle !== translatedTitle) {
-                                            elements.push(react.createElement("div", {
-                                                key: "title-romanized",
-                                                className: "lyrics-fullscreen-title-romanized",
-                                                style: { fontSize: `${Math.round(titleSize * 0.5)}px` }
-                                            }, romanizedTitle));
-                                        }
-                                        break;
-                                }
-
-                                return elements;
-                            })()
-                        ),
-                        // Artist (based on display mode)
-                        react.createElement("div", { className: "lyrics-fullscreen-artist-container" },
-                            (() => {
+                                if (mode === "translated") return trans || original;
+                                if (mode === "romanized") return rom || original;
+                                if (mode === "original-translated") return (trans && trans !== original) ? `${original} (${trans})` : original;
+                                if (mode === "original-romanized") return (rom && rom !== original) ? `${original} (${rom})` : original;
+                                if (mode === "all") return (trans && trans !== original) ? `${original} (${trans})` : original;
+                                return original;
+                            })(),
+                            artistName: (() => {
                                 const mode = CONFIG?.visual?.["translate-metadata-mode"] || "translated";
-                                const originalArtist = artist || Spicetify.Player.data?.item?.metadata?.artist_name;
-                                const translatedArtist = translatedMetadata?.translated?.artist;
-                                const romanizedArtist = translatedMetadata?.romanized?.artist;
-                                const elements = [];
+                                const original = artist || Spicetify.Player.data?.item?.metadata?.artist_name;
+                                const trans = translatedMetadata?.translated?.artist;
+                                const rom = translatedMetadata?.romanized?.artist;
 
-                                switch (mode) {
-                                    case "translated":
-                                        elements.push(react.createElement("div", {
-                                            key: "artist-main",
-                                            className: "lyrics-fullscreen-artist",
-                                            style: { fontSize: `${artistSize}px` }
-                                        }, translatedArtist || originalArtist));
-                                        break;
-
-                                    case "romanized":
-                                        elements.push(react.createElement("div", {
-                                            key: "artist-main",
-                                            className: "lyrics-fullscreen-artist",
-                                            style: { fontSize: `${artistSize}px` }
-                                        }, romanizedArtist || originalArtist));
-                                        break;
-
-                                    case "original-translated":
-                                        elements.push(react.createElement("div", {
-                                            key: "artist-original",
-                                            className: "lyrics-fullscreen-artist",
-                                            style: { fontSize: `${artistSize}px` }
-                                        }, originalArtist));
-                                        if (translatedArtist && translatedArtist !== originalArtist) {
-                                            elements.push(react.createElement("div", {
-                                                key: "artist-translated",
-                                                className: "lyrics-fullscreen-artist-translated",
-                                                style: { fontSize: `${Math.round(artistSize * 0.8)}px` }
-                                            }, translatedArtist));
-                                        }
-                                        break;
-
-                                    case "original-romanized":
-                                        elements.push(react.createElement("div", {
-                                            key: "artist-original",
-                                            className: "lyrics-fullscreen-artist",
-                                            style: { fontSize: `${artistSize}px` }
-                                        }, originalArtist));
-                                        if (romanizedArtist && romanizedArtist !== originalArtist) {
-                                            elements.push(react.createElement("div", {
-                                                key: "artist-romanized",
-                                                className: "lyrics-fullscreen-artist-romanized",
-                                                style: { fontSize: `${Math.round(artistSize * 0.8)}px` }
-                                            }, romanizedArtist));
-                                        }
-                                        break;
-
-                                    case "all":
-                                    default:
-                                        elements.push(react.createElement("div", {
-                                            key: "artist-original",
-                                            className: "lyrics-fullscreen-artist",
-                                            style: { fontSize: `${artistSize}px` }
-                                        }, originalArtist));
-                                        if (translatedArtist && translatedArtist !== originalArtist) {
-                                            elements.push(react.createElement("div", {
-                                                key: "artist-translated",
-                                                className: "lyrics-fullscreen-artist-translated",
-                                                style: { fontSize: `${Math.round(artistSize * 0.8)}px` }
-                                            }, translatedArtist));
-                                        }
-                                        break;
-                                }
-
-                                return elements;
-                            })()
-                        )
-                    ),
-                    // Controls in left panel (under album)
-                    showControlsInLeftPanel && react.createElement("div", {
-                        className: `fullscreen-left-controls ${!uiVisible ? 'hidden' : ''}`
-                    },
-                        // Progress bar (독립적으로 표시)
-                        showProgress && react.createElement(ProgressBar, { show: true }),
-                        // Player controls
-                        react.createElement(PlayerControls, {
-                            show: true,
-                            showVolume: showVolume,
-                            buttonSize: controlButtonSize,
-                            showBackground: controlsBackground
+                                if (mode === "translated") return trans || original;
+                                if (mode === "romanized") return rom || original;
+                                if (mode === "original-translated") return (trans && trans !== original) ? `${original} (${trans})` : original;
+                                if (mode === "original-romanized") return (rom && rom !== original) ? `${original} (${rom})` : original;
+                                if (mode === "all") return (trans && trans !== original) ? `${original} (${trans})` : original;
+                                return original;
+                            })(),
+                            coverUrl: coverUrl || Spicetify.Player.data?.item?.metadata?.image_url,
+                            onRegenerate: handleRegenerate
                         })
-                    ),
-                    // Progress bar only (컨트롤 없이 진행바만 표시)
-                    !showControls && showProgress && react.createElement("div", {
-                        className: `fullscreen-left-controls ${!uiVisible ? 'hidden' : ''}`
+                ) :
+                    // Normal Mode
+                    react.createElement("div", {
+                        className: "lyrics-fullscreen-left-content",
+                        style: { gap: `${infoGap}px` }
                     },
-                        react.createElement(ProgressBar, { show: true })
+                        // Album art container (clickable for TMI)
+                        showAlbum && react.createElement("div", {
+                            className: `lyrics-fullscreen-album-container clickable-album-container`,
+                            style: {
+                                width: `${albumSize}px`,
+                                height: `${albumSize}px`,
+                                maxWidth: `${albumSize}px`,
+                                position: 'relative',
+                                cursor: 'pointer',
+                                borderRadius: `${albumRadius}px`
+                            },
+                            onClick: handleAlbumClick
+                        },
+                            react.createElement("img", {
+                                src: coverUrl || Spicetify.Player.data?.item?.metadata?.image_url,
+                                className: `lyrics-fullscreen-album-art ${albumShadow ? 'with-shadow' : ''}`,
+                                style: {
+                                    width: '100%',
+                                    height: '100%',
+                                    borderRadius: `${albumRadius}px`
+                                }
+                            }),
+                            // TMI Hint Overlay
+                            react.createElement("div", {
+                                className: "album-tmi-hint",
+                                style: { borderRadius: `${albumRadius}px` }
+                            },
+                                react.createElement("div", { className: "album-tmi-hint-content" },
+                                    react.createElement("span", { className: "album-tmi-text" },
+                                        CONFIG.visual?.["gemini-api-key"]
+                                            ? I18n.t("tmi.viewInfo")
+                                            : I18n.t("tmi.requireKey")
+                                    )
+                                )
+                            )
+                        ),
+                        // Track info with translated metadata support
+                        showInfo && react.createElement("div", { className: "lyrics-fullscreen-track-info" },
+                            // Title (based on display mode)
+                            react.createElement("div", { className: "lyrics-fullscreen-title-container" },
+                                (() => {
+                                    const mode = CONFIG?.visual?.["translate-metadata-mode"] || "translated";
+                                    const originalTitle = title || Spicetify.Player.data?.item?.metadata?.title;
+                                    const translatedTitle = translatedMetadata?.translated?.title;
+                                    const romanizedTitle = translatedMetadata?.romanized?.title;
+                                    const elements = [];
+
+                                    switch (mode) {
+                                        case "translated":
+                                            // 번역만 표시 (없으면 원어)
+                                            elements.push(react.createElement("div", {
+                                                key: "title-main",
+                                                className: "lyrics-fullscreen-title",
+                                                style: { fontSize: `${titleSize}px` }
+                                            }, translatedTitle || originalTitle));
+                                            break;
+
+                                        case "romanized":
+                                            // 발음만 표시 (없으면 원어)
+                                            elements.push(react.createElement("div", {
+                                                key: "title-main",
+                                                className: "lyrics-fullscreen-title",
+                                                style: { fontSize: `${titleSize}px` }
+                                            }, romanizedTitle || originalTitle));
+                                            break;
+
+                                        case "original-translated":
+                                            // 원어 + 번역
+                                            elements.push(react.createElement("div", {
+                                                key: "title-original",
+                                                className: "lyrics-fullscreen-title",
+                                                style: { fontSize: `${titleSize}px` }
+                                            }, originalTitle));
+                                            if (translatedTitle && translatedTitle !== originalTitle) {
+                                                elements.push(react.createElement("div", {
+                                                    key: "title-translated",
+                                                    className: "lyrics-fullscreen-title-translated",
+                                                    style: { fontSize: `${Math.round(titleSize * 0.6)}px` }
+                                                }, translatedTitle));
+                                            }
+                                            break;
+
+                                        case "original-romanized":
+                                            // 원어 + 발음
+                                            elements.push(react.createElement("div", {
+                                                key: "title-original",
+                                                className: "lyrics-fullscreen-title",
+                                                style: { fontSize: `${titleSize}px` }
+                                            }, originalTitle));
+                                            if (romanizedTitle && romanizedTitle !== originalTitle) {
+                                                elements.push(react.createElement("div", {
+                                                    key: "title-romanized",
+                                                    className: "lyrics-fullscreen-title-romanized",
+                                                    style: { fontSize: `${Math.round(titleSize * 0.5)}px` }
+                                                }, romanizedTitle));
+                                            }
+                                            break;
+
+                                        case "all":
+                                        default:
+                                            // 모두 표시 (원어 + 번역 + 발음)
+                                            elements.push(react.createElement("div", {
+                                                key: "title-original",
+                                                className: "lyrics-fullscreen-title",
+                                                style: { fontSize: `${titleSize}px` }
+                                            }, originalTitle));
+                                            if (translatedTitle && translatedTitle !== originalTitle) {
+                                                elements.push(react.createElement("div", {
+                                                    key: "title-translated",
+                                                    className: "lyrics-fullscreen-title-translated",
+                                                    style: { fontSize: `${Math.round(titleSize * 0.6)}px` }
+                                                }, translatedTitle));
+                                            }
+                                            if (romanizedTitle && romanizedTitle !== originalTitle && romanizedTitle !== translatedTitle) {
+                                                elements.push(react.createElement("div", {
+                                                    key: "title-romanized",
+                                                    className: "lyrics-fullscreen-title-romanized",
+                                                    style: { fontSize: `${Math.round(titleSize * 0.5)}px` }
+                                                }, romanizedTitle));
+                                            }
+                                            break;
+                                    }
+
+                                    return elements;
+                                })()
+                            ),
+                            // Artist (based on display mode)
+                            react.createElement("div", { className: "lyrics-fullscreen-artist-container" },
+                                (() => {
+                                    const mode = CONFIG?.visual?.["translate-metadata-mode"] || "translated";
+                                    const originalArtist = artist || Spicetify.Player.data?.item?.metadata?.artist_name;
+                                    const translatedArtist = translatedMetadata?.translated?.artist;
+                                    const romanizedArtist = translatedMetadata?.romanized?.artist;
+                                    const elements = [];
+
+                                    switch (mode) {
+                                        case "translated":
+                                            elements.push(react.createElement("div", {
+                                                key: "artist-main",
+                                                className: "lyrics-fullscreen-artist",
+                                                style: { fontSize: `${artistSize}px` }
+                                            }, translatedArtist || originalArtist));
+                                            break;
+
+                                        case "romanized":
+                                            elements.push(react.createElement("div", {
+                                                key: "artist-main",
+                                                className: "lyrics-fullscreen-artist",
+                                                style: { fontSize: `${artistSize}px` }
+                                            }, romanizedArtist || originalArtist));
+                                            break;
+
+                                        case "original-translated":
+                                            elements.push(react.createElement("div", {
+                                                key: "artist-original",
+                                                className: "lyrics-fullscreen-artist",
+                                                style: { fontSize: `${artistSize}px` }
+                                            }, originalArtist));
+                                            if (translatedArtist && translatedArtist !== originalArtist) {
+                                                elements.push(react.createElement("div", {
+                                                    key: "artist-translated",
+                                                    className: "lyrics-fullscreen-artist-translated",
+                                                    style: { fontSize: `${Math.round(artistSize * 0.8)}px` }
+                                                }, translatedArtist));
+                                            }
+                                            break;
+
+                                        case "original-romanized":
+                                            elements.push(react.createElement("div", {
+                                                key: "artist-original",
+                                                className: "lyrics-fullscreen-artist",
+                                                style: { fontSize: `${artistSize}px` }
+                                            }, originalArtist));
+                                            if (romanizedArtist && romanizedArtist !== originalArtist) {
+                                                elements.push(react.createElement("div", {
+                                                    key: "artist-romanized",
+                                                    className: "lyrics-fullscreen-artist-romanized",
+                                                    style: { fontSize: `${Math.round(artistSize * 0.8)}px` }
+                                                }, romanizedArtist));
+                                            }
+                                            break;
+
+                                        case "all":
+                                        default:
+                                            elements.push(react.createElement("div", {
+                                                key: "artist-original",
+                                                className: "lyrics-fullscreen-artist",
+                                                style: { fontSize: `${artistSize}px` }
+                                            }, originalArtist));
+                                            if (translatedArtist && translatedArtist !== originalArtist) {
+                                                elements.push(react.createElement("div", {
+                                                    key: "artist-translated",
+                                                    className: "lyrics-fullscreen-artist-translated",
+                                                    style: { fontSize: `${Math.round(artistSize * 0.8)}px` }
+                                                }, translatedArtist));
+                                            }
+                                            break;
+                                    }
+
+                                    return elements;
+                                })()
+                            )
+                        ),
+                        // Controls in left panel (under album)
+                        showControlsInLeftPanel && react.createElement("div", {
+                            className: `fullscreen-left-controls ${!uiVisible ? 'hidden' : ''}`
+                        },
+                            // Progress bar (독립적으로 표시)
+                            showProgress && react.createElement(ProgressBar, { show: true }),
+                            // Player controls
+                            react.createElement(PlayerControls, {
+                                show: true,
+                                showVolume: showVolume,
+                                buttonSize: controlButtonSize,
+                                showBackground: controlsBackground
+                            })
+                        ),
+                        // Progress bar only (컨트롤 없이 진행바만 표시)
+                        !showControls && showProgress && react.createElement("div", {
+                            className: `fullscreen-left-controls ${!uiVisible ? 'hidden' : ''}`
+                        },
+                            react.createElement(ProgressBar, { show: true })
+                        )
                     )
-                )
             ),
             // Bottom: Player controls (alternative position)
             showControlsInBottom && react.createElement("div", {

@@ -636,6 +636,26 @@ window.LANG_KO = {
         "desc": "번역 가사의 글자 사이 간격 (픽셀)"
       }
     },
+    "furiganaStyle": {
+      "title": "후리가나 스타일",
+      "subtitle": "일본어 한자 위에 표시되는 읽기(후리가나) 설정",
+      "fontSize": {
+        "label": "글꼴 크기",
+        "desc": "후리가나의 글꼴 크기 (픽셀)"
+      },
+      "fontWeight": {
+        "label": "글꼴 두께",
+        "desc": "후리가나의 글꼴 굵기"
+      },
+      "opacity": {
+        "label": "투명도",
+        "desc": "후리가나의 불투명도 (0-100%)"
+      },
+      "spacing": {
+        "label": "간격",
+        "desc": "후리가나와 한자 사이의 여백 (픽셀)"
+      }
+    },
     "textShadow": {
       "title": "텍스트 그림자",
       "subtitle": "가독성을 높이는 그림자 효과",
@@ -1115,5 +1135,25 @@ window.LANG_KO = {
     "deleteError": "영상 삭제에 실패했습니다"
   },
   "close": "닫기",
-  "cancel": "취소"
+  "cancel": "취소",
+  tmi: {
+    getApiKeyDesc: "Gemini API 키 발급받기",
+    getApiKeyInfo: "TMI를 불러올 때 사용됩니다. Google AI Studio에서 무료로 발급받을 수 있습니다.",
+    viewInfo: "눌러서 이 곡에 대한 다양한 정보를 확인하세요",
+    requireKey: "설정에서 Gemini API 키 설정이 필요합니다",
+    settingTitle: "Gemini API 키",
+    settingDesc: "곡 TMI/정보를 불러오기 위해 필요합니다.",
+    title: "TMI",
+    didYouKnow: "알고 계셨나요?",
+    close: "닫기",
+    cancel: "취소",
+    loading: "흥미로운 사실들을 찾는 중...",
+    noData: "이 곡에 대한 TMI가 아직 없습니다.",
+    clickForTMI: "TMI 보러가기",
+    clickToClose: "✕ 또는 앨범 아트를 클릭하여 닫기",
+    regenerate: "TMI를 재생성합니다.",
+    errorFetch: "TMI를 불러오는 중 오류가 발생했습니다.",
+    errorQuota: "API 할당량을 초과했습니다.",
+    errorQuotaHint: "잠시 후 다시 시도하거나, 설정에서 다른 API 키를 입력해주세요."
+  }
 };

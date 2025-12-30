@@ -636,6 +636,26 @@ window.LANG_VI = {
         "desc": "Khoảng cách giữa các chữ trong bản dịch (pixel)"
       }
     },
+    "furiganaStyle": {
+      "title": "Kiểu Furigana",
+      "subtitle": "Cài đặt cho cách đọc (furigana) hiển thị phía trên chữ Hán Nhật Bản",
+      "fontSize": {
+        "label": "Kích thước phông",
+        "desc": "Kích thước phông cho furigana (pixel)"
+      },
+      "fontWeight": {
+        "label": "Độ dày phông",
+        "desc": "Độ dày phông cho furigana"
+      },
+      "opacity": {
+        "label": "Độ mờ",
+        "desc": "Độ mờ của furigana (0-100%)"
+      },
+      "spacing": {
+        "label": "Khoảng cách",
+        "desc": "Khoảng cách giữa furigana và kanji (pixel)"
+      }
+    },
     "textShadow": {
       "title": "Bóng văn bản",
       "subtitle": "Hiệu ứng bóng để tăng khả năng đọc",
@@ -1119,6 +1139,26 @@ window.LANG_VI = {
     "deleteError": "Không thể xóa video"
   },
   "close": "Đóng",
-  "cancel": "Hủy"
+  "cancel": "Hủy",
+  tmi: {
+    getApiKeyDesc: "Lấy Gemini API Key",
+    getApiKeyInfo: "Được sử dụng để lấy TMI. Có sẵn miễn phí từ Google AI Studio.",
+    viewInfo: "Nhấp để xem chi tiết bài hát",
+    requireKey: "Yêu cầu Gemini API Key trong cài đặt",
+    settingTitle: "Gemini API Key",
+    settingDesc: "Yêu cầu để tải nội dung TMI/Thông tin bên lề bài hát.",
+    title: "TMI",
+    didYouKnow: "Bạn có biết?",
+    close: "Đóng",
+    cancel: "Hủy",
+    loading: "Đang tìm kiếm sự thật thú vị...",
+    noData: "Chưa có TMI cho bài hát này.",
+    clickForTMI: "Nhấp để xem TMI",
+    clickToClose: "Nhấp ✕ hoặc vùng album để quay lại",
+    regenerate: "Tạo lại TMI",
+    errorFetch: "Đã xảy ra lỗi khi tải TMI.",
+    errorQuota: "Hạn mức API đã vượt quá.",
+    errorQuotaHint: "Vui lòng thử lại sau hoặc nhập API key khác trong cài đặt."
+  }
 };
 

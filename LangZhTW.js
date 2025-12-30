@@ -636,6 +636,26 @@ window.LANG_ZH_TW = {
         "desc": "翻譯歌詞的字元間距（像素）"
       }
     },
+    "furiganaStyle": {
+      "title": "注音樣式",
+      "subtitle": "顯示在日文漢字上方的假名注音設定",
+      "fontSize": {
+        "label": "字體大小",
+        "desc": "注音的字體大小（像素）"
+      },
+      "fontWeight": {
+        "label": "字體粗細",
+        "desc": "注音的字體粗細"
+      },
+      "opacity": {
+        "label": "透明度",
+        "desc": "注音的不透明度 (0-100%)"
+      },
+      "spacing": {
+        "label": "間距",
+        "desc": "注音與漢字之間的間距（像素）"
+      }
+    },
     "textShadow": {
       "title": "文字陰影",
       "subtitle": "提高可讀性的陰影效果",
@@ -1115,5 +1135,25 @@ window.LANG_ZH_TW = {
     "deleteError": "刪除影片失敗"
   },
   "close": "關閉",
-  "cancel": "取消"
+  "cancel": "取消",
+  tmi: {
+    getApiKeyDesc: "獲取 Gemini API 金鑰",
+    getApiKeyInfo: "用於獲取 TMI。可從 Google AI Studio 免費獲取。",
+    viewInfo: "點擊查看歌曲詳細資訊",
+    requireKey: "需要在設定中配置 Gemini API 金鑰",
+    settingTitle: "Gemini API 金鑰",
+    settingDesc: "用於載入歌曲 TMI/趣聞內容。",
+    title: "TMI",
+    didYouKnow: "你知道嗎？",
+    close: "關閉",
+    cancel: "取消",
+    loading: "正在查找趣聞...",
+    noData: "暫無此歌曲的 TMI。",
+    clickForTMI: "點擊查看 TMI",
+    clickToClose: "點擊 ✕ 或專輯區域返回",
+    regenerate: "重新生成 TMI",
+    errorFetch: "獲取 TMI 時發生錯誤。",
+    errorQuota: "API 配額已超出。",
+    errorQuotaHint: "請稍後重試或在設定中輸入其他 API 金鑰。"
+  }
 };

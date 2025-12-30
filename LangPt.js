@@ -636,6 +636,26 @@ window.LANG_PT = {
         "desc": "Espaço entre as letras na tradução (pixels)"
       }
     },
+    "furiganaStyle": {
+      "title": "Estilo Furigana",
+      "subtitle": "Configurações para a leitura (furigana) exibida acima dos kanji japoneses",
+      "fontSize": {
+        "label": "Tamanho da fonte",
+        "desc": "Tamanho da fonte para furigana (pixels)"
+      },
+      "fontWeight": {
+        "label": "Peso da fonte",
+        "desc": "Peso da fonte para furigana"
+      },
+      "opacity": {
+        "label": "Opacidade",
+        "desc": "Opacidade do furigana (0-100%)"
+      },
+      "spacing": {
+        "label": "Espaçamento",
+        "desc": "Espaço entre furigana e kanji (pixels)"
+      }
+    },
     "textShadow": {
       "title": "Sombra do Texto",
       "subtitle": "Efeito de sombra para melhorar a legibilidade",
@@ -1115,6 +1135,26 @@ window.LANG_PT = {
     "deleteError": "Falha ao excluir vídeo"
   },
   "close": "Fechar",
-  "cancel": "Cancelar"
+  "cancel": "Cancelar",
+  tmi: {
+    getApiKeyDesc: "Obter Chave API Gemini",
+    getApiKeyInfo: "Usado para buscar TMI. Disponível gratuitamente no Google AI Studio.",
+    viewInfo: "Clique para ver detalhes da música",
+    requireKey: "Chave API Gemini necessária nas configurações",
+    settingTitle: "Chave API Gemini",
+    settingDesc: "Necessário para carregar conteúdos de TMI/Curiosidades da música.",
+    title: "TMI",
+    didYouKnow: "Você sabia?",
+    close: "Fechar",
+    cancel: "Cancelar",
+    loading: "Procurando fatos interessantes...",
+    noData: "Ainda não há TMI disponíveis para esta música.",
+    clickForTMI: "Clique para TMI",
+    clickToClose: "Clique em ✕ ou na área do álbum para voltar",
+    regenerate: "Regenerar TMI",
+    errorFetch: "Ocorreu um erro ao buscar TMI.",
+    errorQuota: "Cota de API excedida.",
+    errorQuotaHint: "Tente novamente mais tarde ou insira outra chave API nas configurações."
+  }
 };
 

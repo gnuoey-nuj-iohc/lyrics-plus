@@ -636,6 +636,26 @@ window.LANG_JA = {
         "desc": "翻訳歌詞の文字間隔（ピクセル）"
       }
     },
+    "furiganaStyle": {
+      "title": "ふりがなスタイル",
+      "subtitle": "漢字の上に表示されるふりがなの設定",
+      "fontSize": {
+        "label": "フォントサイズ",
+        "desc": "ふりがなのフォントサイズ（ピクセル）"
+      },
+      "fontWeight": {
+        "label": "フォントの太さ",
+        "desc": "ふりがなのフォントの太さ"
+      },
+      "opacity": {
+        "label": "不透明度",
+        "desc": "ふりがなの不透明度 (0-100%)"
+      },
+      "spacing": {
+        "label": "間隔",
+        "desc": "ふりがなと漢字の間隔（ピクセル）"
+      }
+    },
     "textShadow": {
       "title": "テキストシャドウ",
       "subtitle": "可読性を向上させるシャドウ効果",
@@ -1115,5 +1135,25 @@ window.LANG_JA = {
     "deleteError": "動画の削除に失敗しました"
   },
   "close": "閉じる",
-  "cancel": "キャンセル"
+  "cancel": "キャンセル",
+  tmi: {
+    getApiKeyDesc: "Gemini API キーを取得する",
+    getApiKeyInfo: "TMIの取得に使用されます。Google AI Studioから無料で取得できます。",
+    viewInfo: "クリックして曲の更なる情報を確認する",
+    requireKey: "設定で Gemini API キーの設定が必要です",
+    settingTitle: "Gemini API キー",
+    settingDesc: "曲の TMI/情報を読み込むために必要です。",
+    title: "TMI",
+    didYouKnow: "ご存知ですか？",
+    close: "閉じる",
+    cancel: "キャンセル",
+    loading: "興味深い事実を検索中...",
+    noData: "この曲のTMIはまだありません。",
+    clickForTMI: "TMIを見る",
+    clickToClose: "✕またはアルバムエリアをクリックして閉じる",
+    regenerate: "TMIを再生成します",
+    errorFetch: "TMIの取得中にエラーが発生しました。",
+    errorQuota: "APIの割り当て量を超過しました。",
+    errorQuotaHint: "しばらくしてから再試行するか、設定で別のAPIキーを入力してください。"
+  }
 };

@@ -636,6 +636,26 @@ window.LANG_DE = {
         "desc": "Abstand zwischen den Buchstaben in der Übersetzung (Pixel)"
       }
     },
+    "furiganaStyle": {
+      "title": "Furigana-Stil",
+      "subtitle": "Einstellungen für die Lesung (Über-Kanji-Zeichen) bei japanischen Texten",
+      "fontSize": {
+        "label": "Schriftgröße",
+        "desc": "Schriftgröße für Furigana (Pixel)"
+      },
+      "fontWeight": {
+        "label": "Schriftstärke",
+        "desc": "Schriftstärke für Furigana"
+      },
+      "opacity": {
+        "label": "Transparenz",
+        "desc": "Deckkraft der Furigana (0-100%)"
+      },
+      "spacing": {
+        "label": "Abstand",
+        "desc": "Abstand zwischen Furigana und Kanji (Pixel)"
+      }
+    },
     "textShadow": {
       "title": "Textschatten",
       "subtitle": "Schatteneffekt zur Verbesserung der Lesbarkeit",
@@ -1115,6 +1135,26 @@ window.LANG_DE = {
     "deleteError": "Video konnte nicht gelöscht werden"
   },
   "close": "Schließen",
-  "cancel": "Abbrechen"
+  "cancel": "Abbrechen",
+  tmi: {
+    getApiKeyDesc: "Gemini API-Key erhalten",
+    getApiKeyInfo: "Wird verwendet, um TMI abzurufen. Kostenlos über Google AI Studio erhältlich.",
+    viewInfo: "Klicken, um Songdetails anzuzeigen",
+    requireKey: "Gemini API-Key in den Einstellungen erforderlich",
+    settingTitle: "Gemini API-Key",
+    settingDesc: "Erforderlich zum Laden von Song TMI/Trivia-Inhalten.",
+    title: "TMI",
+    didYouKnow: "Wussten Sie schon?",
+    close: "Schließen",
+    cancel: "Abbrechen",
+    loading: "Suche nach interessanten Fakten...",
+    noData: "Noch keine TMI für diesen Titel verfügbar.",
+    clickForTMI: "Klicken für TMI",
+    clickToClose: "Klicken Sie auf ✕ oder den Albumbereich, um zurückzukehren",
+    regenerate: "TMI neu generieren",
+    errorFetch: "Beim Abrufen der TMI ist ein Fehler aufgetreten.",
+    errorQuota: "API-Kontingent überschritten.",
+    errorQuotaHint: "Bitte versuchen Sie es später erneut oder geben Sie einen anderen API-Schlüssel in den Einstellungen ein."
+  }
 };
 

@@ -636,6 +636,26 @@ window.LANG_FR = {
         "desc": "Espace entre les lettres dans la traduction (pixels)"
       }
     },
+    "furiganaStyle": {
+      "title": "Style Furigana",
+      "subtitle": "Paramètres pour la lecture (furigana) affichée au-dessus des kanji japonais",
+      "fontSize": {
+        "label": "Taille de police",
+        "desc": "Taille de police pour le furigana (pixels)"
+      },
+      "fontWeight": {
+        "label": "Épaisseur de police",
+        "desc": "Épaisseur de police pour le furigana"
+      },
+      "opacity": {
+        "label": "Opacité",
+        "desc": "Opacité du furigana (0-100%)"
+      },
+      "spacing": {
+        "label": "Espacement",
+        "desc": "Espace entre le furigana et le kanji (pixels)"
+      }
+    },
     "textShadow": {
       "title": "Ombre du texte",
       "subtitle": "Effet d'ombre améliorant la lisibilité",
@@ -1115,6 +1135,26 @@ window.LANG_FR = {
     "deleteError": "Échec de la suppression de la vidéo"
   },
   "close": "Fermer",
-  "cancel": "Annuler"
+  "cancel": "Annuler",
+  tmi: {
+    getApiKeyDesc: "Obtenir la clé API Gemini",
+    getApiKeyInfo: "Utilisé pour récupérer les TMI. Disponible gratuitement sur Google AI Studio.",
+    viewInfo: "Cliquez pour voir les détails de la chanson",
+    requireKey: "Clé API Gemini requise dans les paramètres",
+    settingTitle: "Clé API Gemini",
+    settingDesc: "Requise pour charger les contenus TMI/Anecdotes de la chanson.",
+    title: "TMI",
+    didYouKnow: "Le saviez-vous ?",
+    close: "Fermer",
+    cancel: "Annuler",
+    loading: "Recherche de faits intéressants...",
+    noData: "Aucune TMI disponible pour ce titre pour le moment.",
+    clickForTMI: "Cliquez pour les TMI",
+    clickToClose: "Cliquez sur ✕ ou sur la zone de l'album pour revenir",
+    regenerate: "Régénérer TMI",
+    errorFetch: "Une erreur s'est produite lors de la récupération des TMI.",
+    errorQuota: "Quota API dépassé.",
+    errorQuotaHint: "Veuillez réessayer plus tard ou entrer une autre clé API dans les paramètres."
+  }
 };
 

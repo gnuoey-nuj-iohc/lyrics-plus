@@ -636,6 +636,26 @@ window.LANG_IT = {
         "desc": "Spazio tra le lettere nella traduzione (pixel)"
       }
     },
+    "furiganaStyle": {
+      "title": "Stile Furigana",
+      "subtitle": "Impostazioni per la lettura (furigana) visualizzata sopra i kanji giapponesi",
+      "fontSize": {
+        "label": "Dimensione carattere",
+        "desc": "Dimensione del carattere per furigana (pixel)"
+      },
+      "fontWeight": {
+        "label": "Spessore carattere",
+        "desc": "Spessore del carattere per furigana"
+      },
+      "opacity": {
+        "label": "Opacità",
+        "desc": "Opacità del furigana (0-100%)"
+      },
+      "spacing": {
+        "label": "Spaziatura",
+        "desc": "Spazio tra furigana e kanji (pixel)"
+      }
+    },
     "textShadow": {
       "title": "Ombra Testo",
       "subtitle": "Effetto ombra per migliorare la leggibilità",
@@ -1115,6 +1135,26 @@ window.LANG_IT = {
     "deleteError": "Impossibile eliminare il video"
   },
   "close": "Chiudi",
-  "cancel": "Annulla"
+  "cancel": "Annulla",
+  tmi: {
+    getApiKeyDesc: "Ottieni la chiave API Gemini",
+    getApiKeyInfo: "Utilizzata per recuperare i TMI. Disponibile gratuitamente su Google AI Studio.",
+    viewInfo: "Clicca per visualizzare i dettagli della canzone",
+    requireKey: "Chiave API Gemini richiesta nelle impostazioni",
+    settingTitle: "Chiave API Gemini",
+    settingDesc: "Richiesta per caricare i contenuti TMI/Curiosità della canzone.",
+    title: "TMI",
+    didYouKnow: "Lo sapevi?",
+    close: "Chiudi",
+    cancel: "Annulla",
+    loading: "Ricerca di fatti interessanti...",
+    noData: "Nessun TMI disponibile per questo brano al momento.",
+    clickForTMI: "Clicca per TMI",
+    clickToClose: "Clicca su ✕ o sull'area dell'album per tornare indietro",
+    regenerate: "Rigenera TMI",
+    errorFetch: "Si è verificato un errore durante il recupero dei TMI.",
+    errorQuota: "Quota API superata.",
+    errorQuotaHint: "Riprova più tardi o inserisci un'altra chiave API nelle impostazioni."
+  }
 };
 

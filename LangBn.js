@@ -636,6 +636,26 @@ window.LANG_BN = {
         "desc": "অনুবাদে অক্ষরের মধ্যে দূরত্ব (পিক্সেল)"
       }
     },
+    "furiganaStyle": {
+      "title": "ফুরিগানা স্টাইল",
+      "subtitle": "জাপানি কান্জির উপরে প্রদর্শিত পঠন (ফুরিগানা) এর জন্য সেটিংস",
+      "fontSize": {
+        "label": "ফন্ট সাইজ",
+        "desc": "ফুরিগানার জন্য ফন্ট সাইজ (পিক্সেল)"
+      },
+      "fontWeight": {
+        "label": "ফন্ট ওয়েট",
+        "desc": "ফুরিগানার জন্য ফন্ট ওয়েট"
+      },
+      "opacity": {
+        "label": "অস্বচ্ছতা",
+        "desc": "ফুরিগানার অস্বচ্ছতা (0-100%)"
+      },
+      "spacing": {
+        "label": "ব্যবধান",
+        "desc": "ফুরিগানা এবং কান্জির মধ্যে ব্যবধান (পিক্সেল)"
+      }
+    },
     "textShadow": {
       "title": "টেক্সট শ্যাডো",
       "subtitle": "ছায়া প্রভাব যা পড়ার সুবিধা বাড়ায়",
@@ -1119,6 +1139,26 @@ window.LANG_BN = {
     "deleteError": "ভিডিও মুছে ফেলা যায়নি"
   },
   "close": "বন্ধ করুন",
-  "cancel": "বাতিল"
+  "cancel": "বাতিল",
+  tmi: {
+    getApiKeyDesc: "Gemini API Key পান",
+    getApiKeyInfo: "TMI আনতে ব্যবহৃত হয়। Google AI Studio থেকে বিনামূল্যে পাওয়া যায়।",
+    viewInfo: "গানের বিস্তারিত দেখতে ক্লিক করুন",
+    requireKey: "সেটিংসে Gemini API Key প্রয়োজন",
+    settingTitle: "Gemini API Key",
+    settingDesc: "গানের TMI/ট্রিভিয়া বিষয়বস্তু লোড করতে প্রয়োজন।",
+    title: "TMI",
+    didYouKnow: "আপনি কি জানতেন?",
+    close: "বন্ধ করুন",
+    cancel: "বাতিল করুন",
+    loading: "আকর্ষণীয় তথ্য খুঁজছি...",
+    noData: "এই ট্র্যাকের জন্য এখনও কোনো TMI উপলব্ধ নেই।",
+    clickForTMI: "TMI এর জন্য ক্লিক করুন",
+    clickToClose: "ফিরে যেতে ✕ বা অ্যালবাম এলাকায় ক্লিক করুন",
+    regenerate: "TMI পুনর্নির্মাণ করুন",
+    errorFetch: "TMI আনতে ত্রুটি হয়েছে।",
+    errorQuota: "API কোটা শেষ হয়ে গেছে।",
+    errorQuotaHint: "অনুগ্রহ করে পরে চেষ্টা করুন বা সেটিংসে অন্য API কী দিন।"
+  }
 };
 

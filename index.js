@@ -4591,6 +4591,8 @@ class LyricsContainer extends react.Component {
           document.removeEventListener("fullscreenchange", this._fullscreenChangeHandler);
           this._fullscreenChangeHandler = null;
         }
+        // 전체화면 종료 이벤트 발생 (GlobalShortcuts에서 이전 페이지로 이동하기 위해)
+        window.dispatchEvent(new CustomEvent("ivLyrics:fullscreen-closed"));
       }
 
       this.setState({
@@ -5154,7 +5156,8 @@ class LyricsContainer extends react.Component {
         isFullscreen: this.state.isFullscreen,
         currentLyricIndex: this.state.currentLyricIndex || 0,
         totalLyrics: Array.isArray(this.state.currentLyrics) ? this.state.currentLyrics.length : 0,
-        translatedMetadata: this.state.translatedMetadata
+        translatedMetadata: this.state.translatedMetadata,
+        trackUri: this.state.uri
       }),
       // Tab bar for mode switching
       topBarContent,

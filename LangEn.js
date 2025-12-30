@@ -636,6 +636,26 @@ window.LANG_EN = {
         "desc": "Spacing between letters in translation (pixels)"
       }
     },
+    "furiganaStyle": {
+      "title": "Furigana Style",
+      "subtitle": "Settings for reading (furigana) displayed above Japanese kanji",
+      "fontSize": {
+        "label": "Font Size",
+        "desc": "Font size for furigana (pixels)"
+      },
+      "fontWeight": {
+        "label": "Font Weight",
+        "desc": "Font weight for furigana"
+      },
+      "opacity": {
+        "label": "Opacity",
+        "desc": "Opacity of furigana (0-100%)"
+      },
+      "spacing": {
+        "label": "Spacing",
+        "desc": "Gap between furigana and kanji (pixels)"
+      }
+    },
     "textShadow": {
       "title": "Text Shadow",
       "subtitle": "Shadow effects for better readability",
@@ -1115,5 +1135,25 @@ window.LANG_EN = {
     "deleteError": "Failed to delete video"
   },
   "close": "Close",
-  "cancel": "Cancel"
+  "cancel": "Cancel",
+  tmi: {
+    getApiKeyDesc: "Get Gemini API Key",
+    getApiKeyInfo: "Used to fetch TMI. Available for free from Google AI Studio.",
+    viewInfo: "Click to view song details",
+    requireKey: "Gemini API Key required in settings",
+    settingTitle: "Gemini API Key",
+    settingDesc: "Required to load Song TMI/Trivia contents.",
+    title: "TMI",
+    didYouKnow: "Did you know?",
+    close: "Close",
+    cancel: "Cancel",
+    loading: "Looking up interesting facts...",
+    noData: "No TMI available for this track yet.",
+    clickForTMI: "Click for TMI",
+    clickToClose: "Click ✕ or album area to go back",
+    regenerate: "Regenerate TMI",
+    errorFetch: "An error occurred while fetching TMI.",
+    errorQuota: "API quota exceeded.",
+    errorQuotaHint: "Please try again later or enter a different API key in settings."
+  }
 };

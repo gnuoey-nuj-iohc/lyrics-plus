@@ -1369,7 +1369,7 @@ const ConfigSelection = ({
   );
 };
 
-const ConfigInput = ({ name, defaultValue, onChange = () => { } }) => {
+const ConfigInput = ({ name, defaultValue, onChange = () => { }, inputType = "text" }) => {
   const [value, setValue] = useState(defaultValue);
 
   const setValueCallback = useCallback(
@@ -1398,7 +1398,7 @@ const ConfigInput = ({ name, defaultValue, onChange = () => { } }) => {
         "div",
         { className: "setting-row-right" },
         react.createElement("input", {
-          type: "text",
+          type: inputType,
           value,
           onChange: setValueCallback,
         })
@@ -1724,7 +1724,7 @@ const ConfigKeyList = ({ name, defaultValue, onChange = () => { } }) => {
           react.createElement("input", {
             type: "text",
             value: key,
-            placeholder: `${I18n.t("settingsAdvanced.api.geminiKey.desc")} ${index + 1}`,
+            placeholder: `${name} ${index + 1}`,
             onChange: (e) => updateKey(index, e.target.value),
             style: { flex: 1 }
           }),
@@ -4299,6 +4299,71 @@ const ConfigModal = () => {
           },
         }),
         react.createElement(SectionTitle, {
+          title: I18n.t("settingsAdvanced.furiganaStyle.title"),
+          subtitle: I18n.t("settingsAdvanced.furiganaStyle.subtitle"),
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: I18n.t("settingsAdvanced.furiganaStyle.fontSize.label"),
+              info: I18n.t("settingsAdvanced.furiganaStyle.fontSize.desc"),
+              key: "furigana-font-size",
+              type: ConfigSliderRange,
+              min: 8,
+              max: 48,
+              step: 1,
+              unit: "px",
+            },
+            {
+              desc: I18n.t("settingsAdvanced.furiganaStyle.fontWeight.label"),
+              info: I18n.t("settingsAdvanced.furiganaStyle.fontWeight.desc"),
+              key: "furigana-font-weight",
+              type: ConfigSelection,
+              options: {
+                100: "Thin (100)",
+                200: "Extra Light (200)",
+                300: "Light (300)",
+                400: "Regular (400)",
+                500: "Medium (500)",
+                600: "Semi Bold (600)",
+                700: "Bold (700)",
+                800: "Extra Bold (800)",
+                900: "Black (900)",
+              },
+            },
+            {
+              desc: I18n.t("settingsAdvanced.furiganaStyle.opacity.label"),
+              info: I18n.t("settingsAdvanced.furiganaStyle.opacity.desc"),
+              key: "furigana-opacity",
+              type: ConfigSliderRange,
+              min: 0,
+              max: 100,
+              step: 5,
+              unit: "%",
+            },
+            {
+              desc: I18n.t("settingsAdvanced.furiganaStyle.spacing.label"),
+              info: I18n.t("settingsAdvanced.furiganaStyle.spacing.desc"),
+              key: "furigana-spacing",
+              type: ConfigSliderRange,
+              min: -5,
+              max: 20,
+              step: 1,
+              unit: "px",
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            StorageManager.setItem(`${APP_NAME}:visual:${name}`, value);
+            lyricContainerUpdate?.();
+            window.dispatchEvent(
+              new CustomEvent("ivLyrics", {
+                detail: { type: "config", name, value },
+              })
+            );
+          },
+        }),
+        react.createElement(SectionTitle, {
           title: I18n.t("settingsAdvanced.textShadow.title"),
           subtitle: I18n.t("settingsAdvanced.textShadow.subtitle"),
         }),
@@ -4619,6 +4684,7 @@ const ConfigModal = () => {
               key: "gemini-api-key",
               type: ConfigKeyList,
             },
+
           ],
           onChange: (name, value) => {
             CONFIG.visual[name] = value;

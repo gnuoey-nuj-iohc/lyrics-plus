@@ -636,6 +636,26 @@ window.LANG_ES = {
         "desc": "Espacio entre letras en la traducción (píxeles)"
       }
     },
+    "furiganaStyle": {
+      "title": "Estilo de Furigana",
+      "subtitle": "Configuración para la lectura (furigana) que se muestra sobre los kanji japoneses",
+      "fontSize": {
+        "label": "Tamaño de fuente",
+        "desc": "Tamaño de fuente para furigana (píxeles)"
+      },
+      "fontWeight": {
+        "label": "Grosor de fuente",
+        "desc": "Grosor de fuente para furigana"
+      },
+      "opacity": {
+        "label": "Opacidad",
+        "desc": "Opacidad del furigana (0-100%)"
+      },
+      "spacing": {
+        "label": "Espaciado",
+        "desc": "Espacio entre furigana y kanji (píxeles)"
+      }
+    },
     "textShadow": {
       "title": "Sombra de texto",
       "subtitle": "Efecto de sombra que mejora la legibilidad",
@@ -1115,6 +1135,26 @@ window.LANG_ES = {
     "deleteError": "Error al eliminar el video"
   },
   "close": "Cerrar",
-  "cancel": "Cancelar"
+  "cancel": "Cancelar",
+  tmi: {
+    getApiKeyDesc: "Obtener clave API de Gemini",
+    getApiKeyInfo: "Se usa para obtener TMI. Disponible gratis en Google AI Studio.",
+    viewInfo: "Haz clic para ver detalles de la canción",
+    requireKey: "Se requiere la clave API de Gemini en los ajustes",
+    settingTitle: "Clave API de Gemini",
+    settingDesc: "Requerida para cargar contenidos de TMI/Curiosidades de la canción.",
+    title: "TMI",
+    didYouKnow: "¿Sabías que?",
+    close: "Cerrar",
+    cancel: "Cancelar",
+    loading: "Buscando datos interesantes...",
+    noData: "Aún no hay TMI disponibles para esta canción.",
+    clickForTMI: "Haz clic para ver TMI",
+    clickToClose: "Haz clic en ✕ o en el área del álbum para volver",
+    regenerate: "Regenerar TMI",
+    errorFetch: "Ocurrió un error al obtener TMI.",
+    errorQuota: "Cuota de API excedida.",
+    errorQuotaHint: "Inténtalo de nuevo más tarde o ingresa otra clave API en los ajustes."
+  }
 };
 

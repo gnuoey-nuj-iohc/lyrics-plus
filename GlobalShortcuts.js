@@ -26,6 +26,9 @@
     let globalMousetrap = null;
     let currentBoundKey = null;
 
+    // 전체화면 진입 전 페이지 저장 (GlobalShortcuts를 통해 진입한 경우만)
+    let previousPathBeforeFullscreen = null;
+
     // 전체화면 토글 함수 (LyricsContainer가 있으면 해당 메서드 사용, 없으면 직접 처리)
     const toggleFullscreen = () => {
         // ivLyrics 페이지에 있으면, LyricsContainer가 처리하도록 함
@@ -43,6 +46,14 @@
 
         // LyricsContainer가 없으면 ivLyrics 페이지로 이동 후 전체화면
         if (!window.lyricContainer) {
+            // 현재 경로 저장 (나중에 돌아오기 위해)
+            const currentPath = Spicetify.Platform?.History?.location?.pathname || "";
+            if (!currentPath.includes("/ivLyrics")) {
+                previousPathBeforeFullscreen = currentPath;
+                // 전역으로 저장 (index.js에서 접근 가능하도록)
+                window._ivLyricsPreviousPath = currentPath;
+            }
+
             // 먼저 ivLyrics 페이지로 이동
             Spicetify.Platform?.History?.push?.("/ivLyrics");
 
@@ -54,6 +65,20 @@
             }, 300);
         }
     };
+
+    // 전체화면 종료 시 이전 페이지로 돌아가기
+    const goBackToPreviousPage = () => {
+        if (previousPathBeforeFullscreen) {
+            Spicetify.Platform?.History?.push?.(previousPathBeforeFullscreen);
+            previousPathBeforeFullscreen = null;
+            window._ivLyricsPreviousPath = null;
+        }
+    };
+
+    // 전체화면 종료 이벤트 리스너 (index.js에서 발생시킴)
+    window.addEventListener("ivLyrics:fullscreen-closed", () => {
+        goBackToPreviousPage();
+    });
 
     // 단축키 바인딩 업데이트
     const updateKeyBinding = () => {
