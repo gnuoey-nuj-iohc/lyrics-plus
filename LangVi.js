@@ -1,9 +1,9 @@
-﻿// Vietnamese language file for Lyrics Plus
+﻿// Vietnamese language file for ivLyrics
 window.LANG_VI = {
   "meta": {
     "language": "Tiếng Việt",
     "code": "vi",
-    "author": "lyrics-plus"
+    "author": "ivLyrics"
   },
   "tabs": {
     "general": "Chung",
@@ -49,7 +49,23 @@ window.LANG_VI = {
     "contributors": "Người đóng góp",
     "fadWarningTitle": "⚠️ Tiện ích mở rộng Full Screen đang hoạt động",
     "fadWarningDesc": "Không hỗ trợ khi tiện ích mở rộng Full Screen đang được sử dụng.",
-    "fadWarningTip": "Vui lòng thay đổi cách sắp xếp trong cài đặt của tiện ích mở rộng Full Screen."
+    "fadWarningTip": "Vui lòng thay đổi cách sắp xếp trong cài đặt của tiện ích mở rộng Full Screen.",
+    "desktopOverlay": "Lớp phủ Desktop",
+    "desktopOverlaySubtitle": "Hiển thị lời bài hát dưới dạng lớp phủ trên desktop"
+  },
+  "overlay": {
+    "enabled": {
+      "label": "Kích hoạt lớp phủ Desktop",
+      "desc": "Gửi lời bài hát đến ứng dụng lớp phủ desktop"
+    },
+    "status": {
+      "connected": "✓ Đã kết nối",
+      "disconnected": "Chưa kết nối",
+      "checking": "Đang kiểm tra..."
+    },
+    "openApp": "Mở ứng dụng",
+    "download": "Tải ứng dụng",
+    "downloadDesc": "Tải xuống nếu ứng dụng lớp phủ chưa được cài đặt"
   },
   "settings": {
     "language": {
@@ -398,6 +414,14 @@ window.LANG_VI = {
       "share": "Sao chép liên kết chia sẻ",
       "shareCopied": "🔗 Đã sao chép liên kết chia sẻ"
     },
+    "queue": {
+      "title": "Hàng đợi",
+      "recentlyPlayed": "Mới phát",
+      "nowPlaying": "Đang phát",
+      "upNext": "Tiếp theo",
+      "empty": "Hàng đợi trống",
+      "noRecent": "Không có bài hát nào được phát gần đây"
+    },
     "contextType": {
       "playlist": "Danh sách phát",
       "album": "Album",
@@ -637,7 +661,7 @@ window.LANG_VI = {
       "subtitle": "Cài đặt các chức năng liên quan đến phát nhạc",
       "replaceButton": {
         "label": "Thay thế nút lời bài hát",
-        "info": "Thay thế nút lời bài hát mặc định của Spotify bằng Lyrics Plus"
+        "info": "Thay thế nút lời bài hát mặc định của Spotify bằng ivLyrics"
       },
       "fullscreenShortcut": {
         "label": "Phím tắt toàn màn hình",
@@ -877,6 +901,10 @@ window.LANG_VI = {
       "showLyricsProgress": {
         "desc": "Hiển thị tiến trình lời bài hát",
         "info": "Hiển thị số dòng hiện tại và tổng số dòng lời bài hát"
+      },
+      "showQueue": {
+        "desc": "Hiển thị bảng hàng đợi",
+        "info": "Hiển thị hàng đợi phát khi chuột ở phía bên phải màn hình"
       }
     },
     "controllerStyle": {
@@ -935,7 +963,7 @@ window.LANG_VI = {
         "subtitle": "Lịch sử cập nhật gần đây",
         "loading": "Đang tải ghi chú bản vá..."
       },
-      "subtitle": "Về Lyrics Plus",
+      "subtitle": "Về ivLyrics",
       "appDescription": "Tiện ích mở rộng lời bài hát cho Spicetify hỗ trợ tiếng Việt.",
       "versionPrefix": "Phiên bản",
       "viewOnGithub": "Xem trên GitHub",
@@ -1012,7 +1040,7 @@ window.LANG_VI = {
     "autoSubmitEnabled": "⚡ Tự động gửi đang được bật"
   },
   "playbarButton": {
-    "label": "Lyrics Plus"
+    "label": "ivLyrics"
   },
   "videoBackground": {
     "loading": "Đang tải thông tin video...",

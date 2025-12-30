@@ -1,9 +1,9 @@
-﻿// German language file for Lyrics Plus
+﻿// German language file for ivLyrics
 window.LANG_DE = {
   "meta": {
     "language": "Deutsch",
     "code": "de",
-    "author": "lyrics-plus"
+    "author": "ivLyrics"
   },
   "tabs": {
     "general": "Allgemein",
@@ -411,8 +411,16 @@ window.LANG_DE = {
       "repeatOne": "Einen wiederholen",
       "mute": "Stumm",
       "unmute": "Ton an",
-      "share": "Link kopieren",
-      "shareCopied": "🔗 Link kopiert"
+      "share": "Link zum Teilen kopieren",
+      "shareCopied": "🔗 Link zum Teilen kopiert"
+    },
+    "queue": {
+      "title": "Warteschlange",
+      "recentlyPlayed": "Kürzlich gespielt",
+      "nowPlaying": "Aktuell läuft",
+      "upNext": "Als Nächstes",
+      "empty": "Die Warteschlange ist leer",
+      "noRecent": "Keine kürzlichen Wiedergaben"
     },
     "contextType": {
       "playlist": "Playlist",
@@ -653,7 +661,7 @@ window.LANG_DE = {
       "subtitle": "Einstellungen für wiedergabebezogene Funktionen",
       "replaceButton": {
         "label": "Songtext-Button ersetzen",
-        "info": "Ersetzt den Standard-Spotify-Songtext-Button durch Lyrics Plus"
+        "info": "Ersetzt den Standard-Spotify-Songtext-Button durch ivLyrics"
       },
       "fullscreenShortcut": {
         "label": "Vollbild-Tastenkürzel",
@@ -889,6 +897,10 @@ window.LANG_DE = {
       "showLyricsProgress": {
         "desc": "Songtext-Fortschritt anzeigen",
         "info": "Zeigt die aktuelle Zeilennummer und die Gesamtanzahl der Zeilen an"
+      },
+      "showQueue": {
+        "desc": "Warteschlange-Panel anzeigen",
+        "info": "Zeigt die Wiedergabewarteschlange an, wenn die Maus auf die rechte Seite des Bildschirms bewegt wird"
       }
     },
     "controllerStyle": {
@@ -947,7 +959,7 @@ window.LANG_DE = {
         "subtitle": "Verlauf der letzten Updates",
         "loading": "Lade Patch-Notizen..."
       },
-      "subtitle": "Über Lyrics Plus",
+      "subtitle": "Über ivLyrics",
       "appDescription": "Songtext-Erweiterung mit deutscher Unterstützung für Spicetify.",
       "versionPrefix": "Version",
       "viewOnGithub": "Auf GitHub ansehen",
@@ -1024,7 +1036,7 @@ window.LANG_DE = {
     "autoSubmitEnabled": "⚡ Automatisches Senden ist aktiviert"
   },
   "playbarButton": {
-    "label": "Lyrics Plus"
+    "label": "ivLyrics"
   },
   "videoBackground": {
     "loading": "Lade Videoinformationen...",

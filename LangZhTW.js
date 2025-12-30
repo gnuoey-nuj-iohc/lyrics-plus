@@ -1,9 +1,9 @@
-// Traditional Chinese language file for Lyrics Plus
+// Traditional Chinese language file for ivLyrics
 window.LANG_ZH_TW = {
   "meta": {
     "language": "繁體中文",
     "code": "zh-TW",
-    "author": "lyrics-plus"
+    "author": "ivLyrics"
   },
   "tabs": {
     "general": "一般",
@@ -414,6 +414,14 @@ window.LANG_ZH_TW = {
       "share": "複製分享連結",
       "shareCopied": "🔗 分享連結已複製"
     },
+    "queue": {
+      "title": "播放佇列",
+      "recentlyPlayed": "最近播放",
+      "nowPlaying": "正在播放",
+      "upNext": "即將播放",
+      "empty": "佇列為空",
+      "noRecent": "沒有最近播放記錄"
+    },
     "contextType": {
       "playlist": "播放清單",
       "album": "專輯",
@@ -653,7 +661,7 @@ window.LANG_ZH_TW = {
       "subtitle": "與播放相關的功能設定",
       "replaceButton": {
         "label": "取代Spotify歌詞按鈕",
-        "info": "用Lyrics Plus取代Spotify的預設歌詞按鈕"
+        "info": "用ivLyrics取代Spotify的預設歌詞按鈕"
       },
       "fullscreenShortcut": {
         "label": "全螢幕快速鍵",
@@ -889,6 +897,10 @@ window.LANG_ZH_TW = {
       "showLyricsProgress": {
         "desc": "顯示歌詞進度",
         "info": "顯示目前歌詞行號和總行數"
+      },
+      "showQueue": {
+        "desc": "顯示佇列面板",
+        "info": "當滑鼠懸停在螢幕右側時顯示播放佇列"
       }
     },
     "controllerStyle": {
@@ -947,7 +959,7 @@ window.LANG_ZH_TW = {
         "subtitle": "最新更新歷史",
         "loading": "正在載入更新說明..."
       },
-      "subtitle": "關於Lyrics Plus",
+      "subtitle": "關於ivLyrics",
       "appDescription": "Spicetify的多語言歌詞擴充功能。",
       "versionPrefix": "版本",
       "viewOnGithub": "在GitHub上查看",
@@ -1024,7 +1036,7 @@ window.LANG_ZH_TW = {
     "autoSubmitEnabled": "⚡ 自動提交已啟用"
   },
   "playbarButton": {
-    "label": "Lyrics Plus"
+    "label": "ivLyrics"
   },
   "videoBackground": {
     "loading": "正在載入影片資訊...",

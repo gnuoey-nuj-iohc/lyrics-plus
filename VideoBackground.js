@@ -43,7 +43,7 @@ const VideoBackground = ({ trackUri, firstLyricTime, brightness, blurAmount, cov
     // Fetch Video Info & Manage Player Lifecycle
     useEffect(() => {
         if (!trackUri) return;
-        
+
         // 외부에서 전달된 videoInfo가 있으면 fetch 스킵
         if (externalVideoInfo && externalVideoInfo.youtubeVideoId) {
             return;
@@ -89,7 +89,7 @@ const VideoBackground = ({ trackUri, firstLyricTime, brightness, blurAmount, cov
 
             // 2. 프리페치된 비디오 정보가 있는지 확인
             const prefetchedInfo = typeof Prefetcher !== 'undefined' ? Prefetcher.getVideoInfo(trackUri) : null;
-            
+
             if (prefetchedInfo && isMounted) {
                 // 프리페치된 데이터 사용
                 console.log(`[VideoBackground] Using prefetched video info for trackId: ${trackId}`);
@@ -98,7 +98,7 @@ const VideoBackground = ({ trackUri, firstLyricTime, brightness, blurAmount, cov
                 setStatusMessage("");
                 return;
             }
-            
+
             // 3. 로컬 캐시 확인 (IndexedDB)
             try {
                 const cachedYouTube = await LyricsCache.getYouTube(trackId);
@@ -119,33 +119,33 @@ const VideoBackground = ({ trackUri, firstLyricTime, brightness, blurAmount, cov
             } catch (e) {
                 console.warn('[VideoBackground] Cache check failed:', e);
             }
-            
+
             // 4. 캐시가 없으면 API 호출 (커뮤니티 우선)
             try {
                 const userHash = Utils.getUserHash();
                 const youtubeUrl = `https://lyrics.api.ivl.is/lyrics/youtube?trackId=${trackId}&userHash=${userHash}&useCommunity=true`;
-                
+
                 // API 요청 로깅
                 let logId = null;
                 if (window.ApiTracker) {
                     logId = window.ApiTracker.logRequest('youtube', youtubeUrl, { trackId, userHash });
                 }
-                
+
                 const res = await fetch(youtubeUrl);
                 const data = await res.json();
-                
+
                 if (!isMounted) return;
                 setIsLoading(false);
                 if (data.success) {
                     // 성공 로깅
                     if (window.ApiTracker && logId) {
-                        window.ApiTracker.logResponse(logId, { 
+                        window.ApiTracker.logResponse(logId, {
                             videoId: data.data?.youtubeVideoId,
                             hasCaption: data.data?.captionStartTime != null
                         }, 'success');
                     }
                     // 로컬 캐시에 저장
-                    LyricsCache.setYouTube(trackId, data.data).catch(() => {});
+                    LyricsCache.setYouTube(trackId, data.data).catch(() => { });
                     setVideoInfo(data.data);
                     setStatusMessage("");
                 } else {
@@ -208,11 +208,11 @@ const VideoBackground = ({ trackUri, firstLyricTime, brightness, blurAmount, cov
             }
         };
 
-        window.addEventListener('lyrics-plus:offset-changed', handleOffsetChange);
+        window.addEventListener('ivLyrics:offset-changed', handleOffsetChange);
 
         return () => {
             isMounted = false;
-            window.removeEventListener('lyrics-plus:offset-changed', handleOffsetChange);
+            window.removeEventListener('ivLyrics:offset-changed', handleOffsetChange);
         };
     }, [trackUri]);
 
@@ -313,8 +313,8 @@ const VideoBackground = ({ trackUri, firstLyricTime, brightness, blurAmount, cov
 
             // captionStartTime이 null이면 (자막이 없는 영상) 오프셋 계산 없이 Spotify 시간을 그대로 사용
             // captionStartTime이 있는 경우에만 가사와 자막 시작 시간 차이를 계산하여 오프셋 적용
-            const offset = (captionStartTime !== null && captionStartTime !== undefined) 
-                ? (captionStartTime - lyricsStartTime) 
+            const offset = (captionStartTime !== null && captionStartTime !== undefined)
+                ? (captionStartTime - lyricsStartTime)
                 : 0;
             const globalDelayMs = typeof CONFIG !== "undefined" && CONFIG.visual ? Number(CONFIG.visual.delay || 0) : 0;
             const additionalDelaySeconds = (trackOffsetMs + globalDelayMs) / 1000;
@@ -456,8 +456,8 @@ const VideoBackground = ({ trackUri, firstLyricTime, brightness, blurAmount, cov
                 height: useCoverMode ? "56.25vw" : "100%", // 16:9 aspect ratio: 100vw * 9/16
                 minWidth: useCoverMode ? "100%" : undefined,
                 minHeight: useCoverMode ? "100%" : undefined,
-                transform: useCoverMode 
-                    ? `translate(-50%, -50%)${blurValue ? " scale(1.05)" : ""}` 
+                transform: useCoverMode
+                    ? `translate(-50%, -50%)${blurValue ? " scale(1.05)" : ""}`
                     : (blurValue ? "scale(1.05)" : undefined),
                 opacity: isPlayerReady && isPlaying ? 1 : 0, // Hide when paused or not ready
                 transition: "opacity 0.5s ease",

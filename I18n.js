@@ -1,14 +1,14 @@
-// I18n.js - Internationalization System for lyrics-plus
+// I18n.js - Internationalization System for ivLyrics
 // This module provides language support for the extension
 // IMPORTANT: This file must be loaded AFTER LangKo.js and LangEn.js
 
 // Define I18n on window object immediately using IIFE
-(function() {
+(function () {
     // Cached language data
     var currentLanguage = null;
     var languageData = {};
     var fallbackData = {};
-    var STORAGE_KEY = "lyrics-plus:visual:language";
+    var STORAGE_KEY = "ivLyrics:visual:language";
     var DEFAULT_LANGUAGE = "ko";
     var AVAILABLE_LANGUAGES = ["ko", "en", "zh-CN", "zh-TW", "ja", "es", "fr", "de", "it", "ru", "pt", "hi", "ar", "fa", "bn", "ur", "th", "vi", "id"];
 
@@ -121,32 +121,32 @@
      */
     function getString(keyPath, params) {
         if (!keyPath) return "";
-        
+
         // Try to initialize if not done yet
         if (currentLanguage === null) {
             initSync();
         }
-        
+
         // Try current language
         var value = getNestedValue(languageData, keyPath);
-        
+
         // Try fallback language
         if (value === null && fallbackData) {
             value = getNestedValue(fallbackData, keyPath);
         }
-        
+
         // Return key if no translation found
         if (value === null) {
             return keyPath;
         }
-        
+
         // Replace parameters
         if (typeof value === "string" && params && typeof params === "object") {
-            return value.replace(/\{(\w+)\}/g, function(match, paramKey) {
+            return value.replace(/\{(\w+)\}/g, function (match, paramKey) {
                 return params[paramKey] !== undefined ? params[paramKey] : match;
             });
         }
-        
+
         return value;
     }
 
@@ -155,28 +155,28 @@
      */
     function initSync() {
         if (currentLanguage !== null) return;
-        
+
         // Get saved language
         var savedLang = null;
         try {
             if (typeof Spicetify !== 'undefined' && Spicetify.LocalStorage) {
                 savedLang = Spicetify.LocalStorage.get(STORAGE_KEY);
             }
-        } catch (e) {}
-        
+        } catch (e) { }
+
         if (!savedLang || AVAILABLE_LANGUAGES.indexOf(savedLang) === -1) {
             try {
                 savedLang = localStorage.getItem(STORAGE_KEY);
-            } catch (e) {}
+            } catch (e) { }
         }
-        
+
         if (!savedLang || AVAILABLE_LANGUAGES.indexOf(savedLang) === -1) {
             savedLang = DEFAULT_LANGUAGE;
         }
-        
+
         // Load fallback data first
         fallbackData = getLanguageData(DEFAULT_LANGUAGE) || {};
-        
+
         // Load selected language
         var data = getLanguageData(savedLang);
         if (data) {
@@ -186,7 +186,7 @@
             languageData = fallbackData;
             currentLanguage = DEFAULT_LANGUAGE;
         }
-        
+
         console.log("[I18n] Initialized: " + currentLanguage);
     }
 
@@ -214,35 +214,35 @@
             console.error("[I18n] Invalid language: " + langCode);
             return Promise.resolve(false);
         }
-        
+
         if (langCode === currentLanguage) {
             return Promise.resolve(true);
         }
-        
+
         var newData = getLanguageData(langCode);
         if (!newData) {
             console.error("[I18n] Language data not found: " + langCode);
             return Promise.resolve(false);
         }
-        
+
         // Update fallback if switching away from default
         if (langCode !== DEFAULT_LANGUAGE) {
             fallbackData = getLanguageData(DEFAULT_LANGUAGE) || {};
         }
-        
+
         languageData = newData;
         currentLanguage = langCode;
-        
+
         // Save to storage
         try {
             if (typeof Spicetify !== 'undefined' && Spicetify.LocalStorage) {
                 Spicetify.LocalStorage.set(STORAGE_KEY, langCode);
             }
-        } catch (e) {}
+        } catch (e) { }
         try {
             localStorage.setItem(STORAGE_KEY, langCode);
-        } catch (e) {}
-        
+        } catch (e) { }
+
         console.log("[I18n] Language changed to: " + langCode);
         return Promise.resolve(true);
     }
@@ -251,7 +251,7 @@
      * Get list of available languages
      */
     function getAvailableLanguages() {
-        return AVAILABLE_LANGUAGES.map(function(code) {
+        return AVAILABLE_LANGUAGES.map(function (code) {
             return { code: code, name: LANGUAGE_NAMES[code] || code };
         });
     }
@@ -289,7 +289,7 @@
     window.I18n = I18n;
 
     // Create global helper function
-    window.t = function(key, params) {
+    window.t = function (key, params) {
         return I18n.t(key, params);
     };
 

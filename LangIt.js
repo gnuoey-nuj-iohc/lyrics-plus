@@ -1,9 +1,9 @@
-﻿// Italian language file for Lyrics Plus
+﻿// Italian language file for ivLyrics
 window.LANG_IT = {
   "meta": {
     "language": "Italiano",
     "code": "it",
-    "author": "lyrics-plus"
+    "author": "ivLyrics"
   },
   "tabs": {
     "general": "Generale",
@@ -49,7 +49,23 @@ window.LANG_IT = {
     "contributors": "Collaboratori",
     "fadWarningTitle": "⚠️ Estensione Full Screen in uso",
     "fadWarningDesc": "Non supportato mentre l'estensione Full Screen è in uso.",
-    "fadWarningTip": "Si prega di modificare l'allineamento nelle impostazioni di Full Screen."
+    "fadWarningTip": "Si prega di modificare l'allineamento nelle impostazioni di Full Screen.",
+    "desktopOverlay": "Overlay Desktop",
+    "desktopOverlaySubtitle": "Mostra i testi come overlay sul desktop"
+  },
+  "overlay": {
+    "enabled": {
+      "label": "Abilita Overlay Desktop",
+      "desc": "Invia i testi all'app overlay desktop"
+    },
+    "status": {
+      "connected": "✓ Connesso",
+      "disconnected": "Non connesso",
+      "checking": "Verifica..."
+    },
+    "openApp": "Apri App",
+    "download": "Scarica App",
+    "downloadDesc": "Scarica se l'app overlay non è installata"
   },
   "settings": {
     "language": {
@@ -398,6 +414,14 @@ window.LANG_IT = {
       "share": "Copia link",
       "shareCopied": "🔗 Link copiato"
     },
+    "queue": {
+      "title": "Coda",
+      "recentlyPlayed": "Ascoltati di recente",
+      "nowPlaying": "In riproduzione",
+      "upNext": "In coda",
+      "empty": "La coda è vuota",
+      "noRecent": "Nessuna riproduzione recente"
+    },
     "contextType": {
       "playlist": "Playlist",
       "album": "Album",
@@ -637,7 +661,7 @@ window.LANG_IT = {
       "subtitle": "Impostazioni funzioni relative alla riproduzione",
       "replaceButton": {
         "label": "Sostituisci Pulsante Testo",
-        "info": "Sostituisci il pulsante testo predefinito di Spotify con Lyrics Plus"
+        "info": "Sostituisci il pulsante testo predefinito di Spotify con ivLyrics"
       },
       "fullscreenShortcut": {
         "label": "Scorciatoia Schermo Intero",
@@ -801,10 +825,6 @@ window.LANG_IT = {
       "twoColumnLayout": {
         "desc": "Usa Layout a 2 Colonne"
       },
-      "overlay": {
-        "label": "Overlay",
-        "desc": "Mostra overlay sulla schermata dei testi"
-      },
       "browserFullscreen": {
         "desc": "Usa Schermo Intero Spotify",
         "info": "Quando si entra in modalità schermo intero, Spotify passa a schermo intero per riempire l'intero monitor"
@@ -877,6 +897,10 @@ window.LANG_IT = {
       "showLyricsProgress": {
         "desc": "Mostra Progresso Testo",
         "info": "Mostra numero riga corrente e totale righe"
+      },
+      "showQueue": {
+        "desc": "Mostra Pannello Coda",
+        "info": "Mostra la coda di riproduzione quando il mouse passa sul lato destro dello schermo"
       }
     },
     "controllerStyle": {
@@ -935,7 +959,7 @@ window.LANG_IT = {
         "subtitle": "Cronologia aggiornamenti recenti",
         "loading": "Caricamento note patch..."
       },
-      "subtitle": "Informazioni su Lyrics Plus",
+      "subtitle": "Informazioni su ivLyrics",
       "appDescription": "Estensione testi con supporto italiano per Spicetify.",
       "versionPrefix": "Versione",
       "viewOnGithub": "Vedi su GitHub",
@@ -1012,7 +1036,7 @@ window.LANG_IT = {
     "autoSubmitEnabled": "⚡ Invio automatico attivo"
   },
   "playbarButton": {
-    "label": "Lyrics Plus"
+    "label": "ivLyrics"
   },
   "videoBackground": {
     "loading": "Caricamento informazioni video...",

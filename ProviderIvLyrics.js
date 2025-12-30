@@ -1,28 +1,8 @@
 const ProviderIvLyrics = (() => {
-	/**
-	 * ivLyrics API를 통해 가사를 검색합니다.
-	 * 
-	 * @param {Object} info - 트랙 정보 객체
-	 * @param {string} info.uri - Spotify 트랙 URI (형식: "spotify:track:TRACK_ID")
-	 * @returns {Promise<Object>} 가사 데이터 객체 또는 에러 객체
-	 * 
-	 * @example
-	 * const lyrics = await ProviderIvLyrics.findLyrics({
-	 *   uri: "spotify:track:7GVUmCP00eSsqc4tzj1sDD"
-	 * });
-	 */
 	async function findLyrics(info) {
 		const trackId = info.uri.split(":")[2];
-		
-		if (!trackId) {
-			console.warn('[ProviderIvLyrics] Invalid track URI:', info.uri);
-			return {
-				error: "Invalid track URI",
-				uri: info.uri,
-			};
-		}
 
-		// ApiTracker에 현재 트랙 설정 (트랙 변경 감지)
+		// ApiTracker에 현재 트랙 설정
 		if (window.ApiTracker) {
 			window.ApiTracker.setCurrentTrack(trackId);
 		}
@@ -57,44 +37,12 @@ const ProviderIvLyrics = (() => {
 		}
 
 		try {
-			// API 요청 전에 트랙이 변경되었는지 확인
-			// ApiTracker의 현재 트랙과 요청한 trackId가 일치하는지 검증
-			if (window.ApiTracker) {
-				const currentTrack = window.ApiTracker.getCurrentTrack?.();
-				if (currentTrack && currentTrack !== trackId) {
-					console.warn(`[ProviderIvLyrics] Track changed during request. Requested: ${trackId}, Current: ${currentTrack}`);
-					// 트랙이 변경되었으면 요청 취소
-					if (window.ApiTracker && logId) {
-						window.ApiTracker.logResponse(logId, null, 'error', 'Track changed during request');
-					}
-					return {
-						error: "Track changed during request",
-						uri: info.uri,
-					};
-				}
-			}
-
 			const body = await fetch(baseURL, {
 				headers: {
 					"User-Agent": `spicetify v${Spicetify.Config.version} (https://github.com/spicetify/cli)`,
 				},
 				cache: "no-cache",  // 브라우저 HTTP 캐시 우회
 			});
-
-			// 응답 후에도 트랙이 변경되었는지 다시 확인
-			if (window.ApiTracker) {
-				const currentTrack = window.ApiTracker.getCurrentTrack?.();
-				if (currentTrack && currentTrack !== trackId) {
-					console.warn(`[ProviderIvLyrics] Track changed after request. Requested: ${trackId}, Current: ${currentTrack}`);
-					if (window.ApiTracker && logId) {
-						window.ApiTracker.logResponse(logId, null, 'error', 'Track changed after request');
-					}
-					return {
-						error: "Track changed after request",
-						uri: info.uri,
-					};
-				}
-			}
 
 			if (body.status !== 200) {
 				const errorResult = {
@@ -144,14 +92,6 @@ const ProviderIvLyrics = (() => {
 		}
 	}
 
-	/**
-	 * 응답 본문에서 비동기 가사를 추출합니다.
-	 * 
-	 * @param {Object} body - API 응답 본문
-	 * @param {string} body.lyrics_type - 가사 타입 ("synced", "unsynced", "word_by_word")
-	 * @param {string} body.lyrics - 가사 텍스트 (JSON 또는 문자열)
-	 * @returns {Array<Object>|null} 비동기 가사 배열 또는 null
-	 */
 	function getUnsynced(body) {
 		if (body.error) return null;
 
@@ -170,14 +110,6 @@ const ProviderIvLyrics = (() => {
 		return null;
 	}
 
-	/**
-	 * 응답 본문에서 동기화된 가사를 추출합니다.
-	 * 
-	 * @param {Object} body - API 응답 본문
-	 * @param {string} body.lyrics_type - 가사 타입 ("synced", "unsynced", "word_by_word")
-	 * @param {string} body.lyrics - 가사 텍스트 (JSON 또는 문자열)
-	 * @returns {Array<Object>|null} 동기화된 가사 배열 (startTime 포함) 또는 null
-	 */
 	function getSynced(body) {
 		if (body.error) return null;
 
@@ -195,18 +127,6 @@ const ProviderIvLyrics = (() => {
 		return null;
 	}
 
-	/**
-	 * 응답 본문에서 가라오케(단어 단위 동기화) 가사를 추출합니다.
-	 * 
-	 * @param {Object} body - API 응답 본문
-	 * @param {string} body.lyrics_type - 가사 타입 (반드시 "word_by_word")
-	 * @param {string} body.lyrics - 가사 JSON 문자열
-	 * @returns {Array<Object>|null} 가라오케 가사 배열 (syllables 포함) 또는 null
-	 * 
-	 * @description
-	 * 가라오케 가사는 단어별/음절별 타이밍 정보를 포함합니다.
-	 * 여러 보컬 트랙(리드/백그라운드)을 지원합니다.
-	 */
 	function getKaraoke(body) {
 		if (body.error) return null;
 

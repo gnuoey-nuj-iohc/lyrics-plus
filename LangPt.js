@@ -1,9 +1,9 @@
-﻿// Portuguese language file for Lyrics Plus
+﻿// Portuguese language file for ivLyrics
 window.LANG_PT = {
   "meta": {
     "language": "Português",
     "code": "pt",
-    "author": "lyrics-plus"
+    "author": "ivLyrics"
   },
   "tabs": {
     "general": "Geral",
@@ -49,7 +49,23 @@ window.LANG_PT = {
     "contributors": "Colaboradores",
     "fadWarningTitle": "⚠️ Extensão Full Screen em uso",
     "fadWarningDesc": "Não suportado enquanto a extensão Full Screen estiver em uso.",
-    "fadWarningTip": "Por favor, altere o alinhamento nas configurações do Full Screen."
+    "fadWarningTip": "Por favor, altere o alinhamento nas configurações do Full Screen.",
+    "desktopOverlay": "Overlay de Desktop",
+    "desktopOverlaySubtitle": "Exibir letras como overlay no desktop"
+  },
+  "overlay": {
+    "enabled": {
+      "label": "Ativar Overlay de Desktop",
+      "desc": "Enviar letras para o aplicativo de overlay de desktop"
+    },
+    "status": {
+      "connected": "✓ Conectado",
+      "disconnected": "Não conectado",
+      "checking": "Verificando..."
+    },
+    "openApp": "Abrir App",
+    "download": "Baixar App",
+    "downloadDesc": "Baixe se o app de overlay não estiver instalado"
   },
   "settings": {
     "language": {
@@ -398,6 +414,14 @@ window.LANG_PT = {
       "share": "Copiar Link de Compartilhamento",
       "shareCopied": "🔗 Link de compartilhamento copiado"
     },
+    "queue": {
+      "title": "Fila",
+      "recentlyPlayed": "Reproduzidos recentemente",
+      "nowPlaying": "Tocando agora",
+      "upNext": "Próximas",
+      "empty": "A fila está vazia",
+      "noRecent": "Nenhuma reprodução recente"
+    },
     "contextType": {
       "playlist": "Playlist",
       "album": "Álbum",
@@ -637,7 +661,7 @@ window.LANG_PT = {
       "subtitle": "Configurações de funções relacionadas à reprodução",
       "replaceButton": {
         "label": "Substituir Botão de Letra",
-        "info": "Substituir o botão de letra padrão do Spotify pelo Lyrics Plus"
+        "info": "Substituir o botão de letra padrão do Spotify pelo ivLyrics"
       },
       "fullscreenShortcut": {
         "label": "Atalho de Tela Cheia",
@@ -801,10 +825,6 @@ window.LANG_PT = {
       "twoColumnLayout": {
         "desc": "Usar Layout de 2 Colunas"
       },
-      "overlay": {
-        "label": "Overlay",
-        "desc": "Mostrar overlay na tela de letras"
-      },
       "browserFullscreen": {
         "desc": "Usar Tela Cheia do Spotify",
         "info": "Ao entrar no modo tela cheia, o Spotify entra em tela cheia para preencher todo o monitor"
@@ -877,6 +897,10 @@ window.LANG_PT = {
       "showLyricsProgress": {
         "desc": "Mostrar Progresso da Letra",
         "info": "Mostrar número da linha atual e quantidade total de linhas"
+      },
+      "showQueue": {
+        "desc": "Mostrar Painel de Fila",
+        "info": "Mostra a fila de reprodução quando o mouse passa sobre o lado direito da tela"
       }
     },
     "controllerStyle": {
@@ -935,7 +959,7 @@ window.LANG_PT = {
         "subtitle": "Histórico de atualizações recentes",
         "loading": "Carregando notas de patch..."
       },
-      "subtitle": "Sobre o Lyrics Plus",
+      "subtitle": "Sobre o ivLyrics",
       "appDescription": "Extensão de letras com suporte a português para Spicetify.",
       "versionPrefix": "Versão",
       "viewOnGithub": "Ver no GitHub",
@@ -1012,7 +1036,7 @@ window.LANG_PT = {
     "autoSubmitEnabled": "⚡ Envio automático ativado"
   },
   "playbarButton": {
-    "label": "Lyrics Plus"
+    "label": "ivLyrics"
   },
   "videoBackground": {
     "loading": "Carregando informações do vídeo...",

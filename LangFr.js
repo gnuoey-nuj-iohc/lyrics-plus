@@ -1,9 +1,9 @@
-﻿// French language file for Lyrics Plus
+﻿// French language file for ivLyrics
 window.LANG_FR = {
   "meta": {
     "language": "Français",
     "code": "fr",
-    "author": "lyrics-plus"
+    "author": "ivLyrics"
   },
   "tabs": {
     "general": "Général",
@@ -414,6 +414,14 @@ window.LANG_FR = {
       "share": "Copier le lien de partage",
       "shareCopied": "🔗 Lien de partage copié"
     },
+    "queue": {
+      "title": "File d'attente",
+      "recentlyPlayed": "Récemment écoutés",
+      "nowPlaying": "En cours de lecture",
+      "upNext": "À suivre",
+      "empty": "La file d'attente est vide",
+      "noRecent": "Aucune lecture récente"
+    },
     "contextType": {
       "playlist": "Playlist",
       "album": "Album",
@@ -653,7 +661,7 @@ window.LANG_FR = {
       "subtitle": "Paramètres des fonctions liées à la lecture",
       "replaceButton": {
         "label": "Remplacer le bouton des paroles",
-        "info": "Remplace le bouton des paroles par défaut de Spotify par Lyrics Plus"
+        "info": "Remplace le bouton des paroles par défaut de Spotify par ivLyrics"
       },
       "fullscreenShortcut": {
         "label": "Raccourci plein écran",
@@ -889,6 +897,10 @@ window.LANG_FR = {
       "showLyricsProgress": {
         "desc": "Afficher la progression des paroles",
         "info": "Affiche le numéro de la ligne actuelle et le nombre total de lignes"
+      },
+      "showQueue": {
+        "desc": "Afficher le panneau de file d'attente",
+        "info": "Affiche la file d'attente de lecture lorsque la souris passe sur le côté droit de l'écran"
       }
     },
     "controllerStyle": {
@@ -947,7 +959,7 @@ window.LANG_FR = {
         "subtitle": "Historique des mises à jour récentes",
         "loading": "Chargement des notes de patch..."
       },
-      "subtitle": "À propos de Lyrics Plus",
+      "subtitle": "À propos de ivLyrics",
       "appDescription": "Extension de paroles compatible avec le français pour Spicetify.",
       "versionPrefix": "Version",
       "viewOnGithub": "Voir sur GitHub",
@@ -1024,7 +1036,7 @@ window.LANG_FR = {
     "autoSubmitEnabled": "⚡ L'envoi automatique est activé"
   },
   "playbarButton": {
-    "label": "Lyrics Plus"
+    "label": "ivLyrics"
   },
   "videoBackground": {
     "loading": "Chargement des informations vidéo...",

@@ -1,9 +1,9 @@
-// Korean language file for Lyrics Plus
+// Korean language file for ivLyrics
 window.LANG_KO = {
   "meta": {
     "language": "한국어",
     "code": "ko",
-    "author": "lyrics-plus"
+    "author": "ivLyrics"
   },
   "tabs": {
     "general": "일반",
@@ -336,9 +336,9 @@ window.LANG_KO = {
     "translationLabel": "번역",
     "translationInfo": "원문 가사를 한국어로 번역하여 표시합니다",
     "apiSettings": "API 설정",
-    "apiSettingsSubtitle": "Perplexity API와 Google Gemini API를 구성하세요",
+    "apiSettingsSubtitle": "Gemini API를 구성하세요",
     "apiKeySettings": "API 키 설정",
-    "apiKeySettingsInfo": "Perplexity API 키와 Google Gemini API 키를 설정하려면 여기를 클릭하세요",
+    "apiKeySettingsInfo": "Gemini API 키를 설정하려면 여기를 클릭하세요",
     "openSettings": "설정 열기",
     "translationSettings": "변환 설정",
     "regenerateTranslation": "번역 재생성",
@@ -413,6 +413,14 @@ window.LANG_KO = {
       "unmute": "음소거 해제",
       "share": "공유 링크 복사",
       "shareCopied": "🔗 공유 링크가 복사되었습니다"
+    },
+    "queue": {
+      "title": "재생목록",
+      "recentlyPlayed": "최근 재생한 항목",
+      "nowPlaying": "지금 재생 중",
+      "upNext": "다음 재생 목록",
+      "empty": "대기열이 비어 있습니다",
+      "noRecent": "최근 재생 기록이 없습니다"
     },
     "contextType": {
       "playlist": "플레이리스트",
@@ -653,7 +661,7 @@ window.LANG_KO = {
       "subtitle": "재생 관련 기능 설정",
       "replaceButton": {
         "label": "가사 버튼 교체",
-        "info": "Spotify의 기본 가사 버튼을 Lyrics Plus로 교체합니다"
+        "info": "Spotify의 기본 가사 버튼을 ivLyrics로 교체합니다"
       },
       "fullscreenShortcut": {
         "label": "전체화면 단축키",
@@ -802,8 +810,6 @@ window.LANG_KO = {
           "all": "모두 표시 (원어 + 번역 + 발음)",
           "translated": "번역만 표시 (없으면 원어)",
           "romanized": "발음만 표시 (없으면 원어)",
-          "original-translated": "원어 + 번역",
-          "original-romanized": "원어 + 발음",
           "originalTranslated": "원어 + 번역",
           "originalRomanized": "원어 + 발음"
         }
@@ -891,6 +897,10 @@ window.LANG_KO = {
       "showLyricsProgress": {
         "desc": "가사 진행률 표시",
         "info": "현재 가사 줄 번호와 전체 가사 줄 수를 표시합니다"
+      },
+      "showQueue": {
+        "desc": "대기열 패널 표시",
+        "info": "화면 오른쪽에 마우스를 가져가면 재생 대기열을 표시합니다"
       }
     },
     "controllerStyle": {
@@ -949,7 +959,7 @@ window.LANG_KO = {
         "subtitle": "최신 업데이트 내역",
         "loading": "패치 노트를 불러오는 중..."
       },
-      "subtitle": "Lyrics Plus에 대해",
+      "subtitle": "ivLyrics에 대해",
       "appDescription": "Spicetify를 위한 한국어 대응 가사 확장 프로그램.",
       "versionPrefix": "버전",
       "viewOnGithub": "GitHub에서 보기",
@@ -978,25 +988,12 @@ window.LANG_KO = {
       "title": "API 설정",
       "getApiKey": {
         "desc": "API 키 발급받기",
-        "info": "Perplexity AI에서 Perplexity API 키를 발급받을 수 있습니다",
-        "button": "API 키 발급 페이지 열기"
-      },
-      "geminiKey": {
-        "desc": "Perplexity API 키",
-        "info": "Perplexity AI를 활용한 가사 번역 기능을 사용하려면 API 키가 필요합니다"
-      },
-      "googleGeminiKey": {
-        "desc": "Google Gemini API 키",
-        "info": "Google Gemini AI를 활용한 가사 번역 기능을 사용하려면 API 키가 필요합니다"
-      },
-      "getGoogleApiKey": {
-        "desc": "API 키 발급받기",
         "info": "Google AI Studio에서 무료로 Gemini API 키를 발급받을 수 있습니다",
         "button": "API 키 발급 페이지 열기"
       },
-      "perplexityModel": {
-        "desc": "Perplexity 모델",
-        "info": "Perplexity API에서 사용할 모델을 선택합니다. sonar는 기본 모델, sonar-pro는 더 강력한 모델입니다"
+      "geminiKey": {
+        "desc": "Gemini API 키",
+        "info": "Google Gemini AI를 활용한 가사 번역 기능을 사용하려면 API 키가 필요합니다"
       }
     },
     "update": {
@@ -1048,15 +1045,15 @@ window.LANG_KO = {
     "loadingMessage": "영상 배경 로딩 중... 30초 정도 소요됩니다."
   },
   "translator": {
-    "missingApiKey": "Perplexity API 키가 설정되지 않았습니다. 설정에서 API 키를 입력해주세요.",
-    "invalidApiKeyFormat": "올바르지 않은 API 키 형식입니다.",
+    "missingApiKey": "Gemini API 키가 설정되지 않았습니다. 설정에서 API 키를 입력해주세요.",
+    "invalidApiKeyFormat": "올바르지 않은 API 키 형식입니다. Gemini API 키는 'AIza'로 시작해야 합니다.",
     "invalidRequestFormat": "요청 형식이 올바르지 않습니다. API 키를 확인해주세요.",
-    "invalidApiKey": "잘못된 API 키입니다. 설정에서 Perplexity API 키를 확인해주세요.",
+    "invalidApiKey": "잘못된 API 키입니다. 설정에서 Gemini API 키를 확인해주세요.",
     "accessForbidden": "API 접근이 금지되었습니다. API 키 권한을 확인해주세요.",
     "rateLimitExceeded": "요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.",
     "serviceUnavailable": "번역 서비스를 일시적으로 사용할 수 없습니다. 나중에 다시 시도해주세요.",
     "requestFailed": "API 요청이 실패했습니다",
-    "apiKeyError": "Perplexity API 키 관련 오류가 발생했습니다. 설정에서 API 키를 확인해주세요.",
+    "apiKeyError": "Gemini API 키 관련 오류가 발생했습니다. 설정에서 API 키를 확인해주세요.",
     "translationFailed": "번역에 실패했습니다",
     "requestTimeout": "번역 요청이 시간 초과되었습니다. 다시 시도해주세요.",
     "failedPrefix": "번역 실패"

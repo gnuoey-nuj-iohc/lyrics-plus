@@ -8,7 +8,7 @@
         initialize();
     };
 
-    const logPrefix = "[LyricsPlus VBD]";
+    const logPrefix = "[ivLyrics VBD]";
 
     const blockedPatterns = [
         /doubleclick\.net/i,

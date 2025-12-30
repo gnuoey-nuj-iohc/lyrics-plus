@@ -205,7 +205,7 @@ window.ApiTracker = ApiTracker;
 // API 호출 횟수를 90% 이상 줄여 비용 절감
 // ============================================
 const LyricsCache = {
-  DB_NAME: 'LyricsPlusCache',
+  DB_NAME: 'ivLyricsCache',
   DB_VERSION: 3,  // sync 스토어 추가
 
   // 캐시 만료 시간 (일 단위)
@@ -1251,96 +1251,6 @@ const Utils = {
       };
     });
   },
-
-  /**
-   * 통합된 번역 결과 처리 함수 - 중복 제거
-   * @param {Array|string} outText - 번역 결과 (배열 또는 문자열)
-   * @param {Array} lyrics - 원본 가사 배열
-   * @returns {Array|null} - 처리된 가사 배열 또는 null
-   */
-  processTranslationResult(outText, lyrics) {
-    if (!outText) return null;
-
-    // Handle both array and string formats
-    let lines;
-    if (Array.isArray(outText)) {
-      lines = outText;
-    } else if (typeof outText === "string") {
-      lines = outText.split("\n");
-    } else {
-      return null;
-    }
-
-    // Trim each line but preserve empty lines
-    lines = lines.map(line => line ? line.trim() : "");
-
-    // Create mapping arrays for proper alignment
-    const originalNonSectionLines = [];
-    const originalNonSectionIndices = [];
-
-    // Collect non-section lines from original lyrics (excluding empty lines)
-    lyrics.forEach((line, i) => {
-      const text = line?.text || "";
-      if (!this.isSectionHeader(text) && text.trim() !== "") {
-        originalNonSectionLines.push(text);
-        originalNonSectionIndices.push(i);
-      }
-    });
-
-    // Filter out section headers and empty lines from translation results
-    const cleanTranslationLines = lines.filter(
-      (line) =>
-        line && line.trim() !== "" && !this.isSectionHeader(line.trim())
-    );
-
-    // Smart mapping that accounts for section headers and empty lines
-    const mapped = lyrics.map((line, i) => {
-      const originalText = line?.text || "";
-
-      // If this is a section header, keep original and don't show translation
-      if (this.isSectionHeader(originalText)) {
-        return {
-          ...line,
-          text: null,
-          originalText: originalText,
-        };
-      }
-
-      // If this is an empty line, keep it empty
-      if (originalText.trim() === "") {
-        return {
-          ...line,
-          text: "",
-          originalText: originalText,
-        };
-      }
-
-      // Find the translation index for this non-section, non-empty line
-      const positionInNonSectionLines =
-        originalNonSectionIndices.indexOf(i);
-      
-      // Ensure we don't go out of bounds and have a valid translation
-      if (positionInNonSectionLines >= 0 && positionInNonSectionLines < cleanTranslationLines.length) {
-        const translatedText = cleanTranslationLines[positionInNonSectionLines]?.trim() || "";
-        if (translatedText) {
-          return {
-            ...line,
-            text: translatedText,
-            originalText: originalText,
-          };
-        }
-      }
-
-      // If translation line not found or empty, return original
-      return {
-        ...line,
-        text: line?.text || "",
-        originalText: originalText,
-      };
-    });
-
-    return mapped;
-  },
   /** It seems that this function is not being used, but I'll keep it just in case it's needed in the future.*/
   processTranslatedOriginalLyrics(lyrics, synced) {
     const data = [];
@@ -1794,9 +1704,9 @@ const Utils = {
   },
 
   /**
-   * Current version of the lyrics-plus app
+   * Current version of the ivLyrics app
    */
-  currentVersion: "2.4.3",
+  currentVersion: "3.0.1",
 
   /**
    * Check for updates from remote repository
@@ -1806,11 +1716,11 @@ const Utils = {
     try {
       // Try multiple CDN URLs to avoid CORS issues
       const urls = [
-        "https://raw.githubusercontent.com/ivLis-Studio/lyrics-plus/main/version.txt",
-        "https://cdn.jsdelivr.net/gh/ivLis-Studio/lyrics-plus@main/version.txt",
+        "https://raw.githubusercontent.com/ivLis-Studio/ivLyrics/main/version.txt",
+        "https://cdn.jsdelivr.net/gh/ivLis-Studio/ivLyrics@main/version.txt",
         //https://ghproxy.link/
-        "https://ghfast.top/https://raw.githubusercontent.com/ivLis-Studio/lyrics-plus/main/version.txt",
-        "https://corsproxy.io/?url=https://raw.githubusercontent.com/ivLis-Studio/lyrics-plus/main/version.txt",
+        "https://ghfast.top/https://raw.githubusercontent.com/ivLis-Studio/ivLyrics/main/version.txt",
+        "https://corsproxy.io/?url=https://raw.githubusercontent.com/ivLis-Studio/ivLyrics/main/version.txt",
       ];
 
       let latestVersion = null;
@@ -1923,20 +1833,20 @@ const Utils = {
     try {
       const updateInfo = await this.checkForUpdates();
 
-      console.log("[Lyrics Plus] Update check result:", updateInfo);
+      console.log("[ivLyrics] Update check result:", updateInfo);
 
       // Don't show notification if there was an error
       if (updateInfo.error) {
-        console.log("[Lyrics Plus] Update check error:", updateInfo.error);
+        console.log("[ivLyrics] Update check error:", updateInfo.error);
         return updateInfo;
       }
 
       if (updateInfo.hasUpdate) {
-        const updateKey = `lyrics-plus:update-dismissed:${updateInfo.latestVersion}`;
+        const updateKey = `ivLyrics:update-dismissed:${updateInfo.latestVersion}`;
         const isDismissed = StorageManager.getItem(updateKey);
 
         console.log(
-          "[Lyrics Plus] Update available:",
+          "[ivLyrics] Update available:",
           updateInfo.latestVersion,
           "Dismissed:",
           isDismissed
@@ -1944,32 +1854,32 @@ const Utils = {
 
         if (!isDismissed) {
           // Store update info for the banner component
-          window.lyricsPlus_updateInfo = {
+          window.ivLyrics_updateInfo = {
             available: true,
             currentVersion: updateInfo.currentVersion,
             latestVersion: updateInfo.latestVersion,
-            releaseUrl: `https://github.com/ivLis-Studio/lyrics-plus/releases/tag/v${updateInfo.latestVersion}`,
+            releaseUrl: `https://github.com/ivLis-Studio/ivLyrics/releases/tag/v${updateInfo.latestVersion}`,
           };
 
           console.log(
-            "[Lyrics Plus] Update banner info stored:",
-            window.lyricsPlus_updateInfo
+            "[ivLyrics] Update banner info stored:",
+            window.ivLyrics_updateInfo
           );
 
           // Trigger re-render if lyrics container exists
           if (window.lyricContainer) {
             try {
-              console.log("[Lyrics Plus] Triggering lyricContainer re-render");
+              console.log("[ivLyrics] Triggering lyricContainer re-render");
               window.lyricContainer.forceUpdate();
             } catch (e) {
-              console.error("[Lyrics Plus] Failed to trigger re-render:", e);
+              console.error("[ivLyrics] Failed to trigger re-render:", e);
             }
           } else {
-            console.warn("[Lyrics Plus] lyricContainer not found");
+            console.warn("[ivLyrics] lyricContainer not found");
           }
         }
       } else {
-        console.log("[Lyrics Plus] Already up to date");
+        console.log("[ivLyrics] Already up to date");
       }
 
       return updateInfo;
@@ -1988,9 +1898,9 @@ const Utils = {
    * Dismiss update notification
    */
   dismissUpdate(version) {
-    const updateKey = `lyrics-plus:update-dismissed:${version}`;
+    const updateKey = `ivLyrics:update-dismissed:${version}`;
     StorageManager.setItem(updateKey, "dismissed");
-    window.lyricsPlus_updateInfo = null;
+    window.ivLyrics_updateInfo = null;
 
     // Trigger re-render
     if (window.lyricContainer) {
@@ -2036,9 +1946,9 @@ const Utils = {
    */
   getInstallCommand() {
     const commands = {
-      windows: "iwr -useb https://ivlis.kr/lyrics-plus/install.ps1 | iex",
-      mac: "curl -fsSL https://ivlis.kr/lyrics-plus/install.sh | sh",
-      linux: "curl -fsSL https://ivlis.kr/lyrics-plus/install.sh | sh",
+      windows: "iwr -useb https://ivlis.kr/ivLyrics/install.ps1 | iex",
+      mac: "curl -fsSL https://ivlis.kr/ivLyrics/install.sh | sh",
+      linux: "curl -fsSL https://ivlis.kr/ivLyrics/install.sh | sh",
     };
     return commands[this.detectPlatform()];
   },
@@ -2061,7 +1971,7 @@ const Utils = {
     try {
       return await TrackSyncDB.getOffset(trackUri);
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to get track sync offset:", error);
+      console.error("[ivLyrics] Failed to get track sync offset:", error);
       return 0;
     }
   },
@@ -2071,11 +1981,11 @@ const Utils = {
     try {
       await TrackSyncDB.setOffset(trackUri, offset);
       // Dispatch custom event to notify offset change
-      window.dispatchEvent(new CustomEvent('lyrics-plus:offset-changed', {
+      window.dispatchEvent(new CustomEvent('ivLyrics:offset-changed', {
         detail: { trackUri, offset }
       }));
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to set track sync offset:", error);
+      console.error("[ivLyrics] Failed to set track sync offset:", error);
     }
   },
 
@@ -2084,7 +1994,7 @@ const Utils = {
     try {
       await TrackSyncDB.clearOffset(trackUri);
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to clear track sync offset:", error);
+      console.error("[ivLyrics] Failed to clear track sync offset:", error);
     }
   },
 
@@ -2096,7 +2006,7 @@ const Utils = {
    * 사용자 해시 가져오기 (없으면 생성)
    */
   getUserHash() {
-    let hash = StorageManager.getPersisted("lyrics-plus:user-hash");
+    let hash = StorageManager.getPersisted("ivLyrics:user-hash");
     if (!hash) {
       hash = crypto.randomUUID ? crypto.randomUUID() :
         'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
@@ -2104,7 +2014,7 @@ const Utils = {
           const v = c === 'x' ? r : (r & 0x3 | 0x8);
           return v.toString(16);
         });
-      StorageManager.setPersisted("lyrics-plus:user-hash", hash);
+      StorageManager.setPersisted("ivLyrics:user-hash", hash);
     }
     return hash;
   },
@@ -2129,7 +2039,7 @@ const Utils = {
     try {
       const cached = await LyricsCache.getSync(trackId);
       if (cached !== null) {
-        console.log(`[Lyrics Plus] Using cached community offset for ${trackId}`);
+        console.log(`[ivLyrics] Using cached community offset for ${trackId}`);
         // 캐시 히트 로깅
         if (window.ApiTracker) {
           window.ApiTracker.logCacheHit('sync', `sync:${trackId}`, {
@@ -2140,7 +2050,7 @@ const Utils = {
         return cached;
       }
     } catch (e) {
-      console.warn('[Lyrics Plus] Sync cache check failed:', e);
+      console.warn('[ivLyrics] Sync cache check failed:', e);
     }
 
     // 2. API 호출
@@ -2178,7 +2088,7 @@ const Utils = {
       if (window.ApiTracker && logId) {
         window.ApiTracker.logResponse(logId, null, 'error', error.message);
       }
-      console.error("[Lyrics Plus] Failed to get community offset:", error);
+      console.error("[ivLyrics] Failed to get community offset:", error);
       return null;
     }
   },
@@ -2215,7 +2125,7 @@ const Utils = {
         if (window.ApiTracker && logId) {
           window.ApiTracker.logResponse(logId, { submitted: true }, 'success');
         }
-        console.log(`[Lyrics Plus] Community offset submitted: ${offsetMs}ms`);
+        console.log(`[ivLyrics] Community offset submitted: ${offsetMs}ms`);
         return data;
       }
       if (window.ApiTracker && logId) {
@@ -2226,7 +2136,7 @@ const Utils = {
       if (window.ApiTracker && logId) {
         window.ApiTracker.logResponse(logId, null, 'error', error.message);
       }
-      console.error("[Lyrics Plus] Failed to submit community offset:", error);
+      console.error("[ivLyrics] Failed to submit community offset:", error);
       return null;
     }
   },
@@ -2253,12 +2163,12 @@ const Utils = {
       const data = await response.json();
 
       if (data.success) {
-        console.log(`[Lyrics Plus] Community feedback submitted: ${isPositive ? '👍' : '👎'}`);
+        console.log(`[ivLyrics] Community feedback submitted: ${isPositive ? '👍' : '👎'}`);
         return data;
       }
       return null;
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to submit community feedback:", error);
+      console.error("[ivLyrics] Failed to submit community feedback:", error);
       return null;
     }
   },
@@ -2293,7 +2203,7 @@ const Utils = {
       }
       return null;
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to get community videos:", error);
+      console.error("[ivLyrics] Failed to get community videos:", error);
       return null;
     }
   },
@@ -2327,12 +2237,12 @@ const Utils = {
       const data = await response.json();
 
       if (data.success) {
-        console.log(`[Lyrics Plus] Community video submitted: ${videoId}`);
+        console.log(`[ivLyrics] Community video submitted: ${videoId}`);
         return data;
       }
       return null;
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to submit community video:", error);
+      console.error("[ivLyrics] Failed to submit community video:", error);
       return null;
     }
   },
@@ -2357,12 +2267,12 @@ const Utils = {
       const data = await response.json();
 
       if (data.success) {
-        console.log(`[Lyrics Plus] Community vote submitted: ${voteType > 0 ? '👍' : voteType < 0 ? '👎' : '취소'}`);
+        console.log(`[ivLyrics] Community vote submitted: ${voteType > 0 ? '👍' : voteType < 0 ? '👎' : '취소'}`);
         return data;
       }
       return null;
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to vote community video:", error);
+      console.error("[ivLyrics] Failed to vote community video:", error);
       return null;
     }
   },
@@ -2391,12 +2301,12 @@ const Utils = {
       const data = await response.json();
 
       if (data.success) {
-        console.log(`[Lyrics Plus] Community video deleted: ${videoEntryId}`);
+        console.log(`[ivLyrics] Community video deleted: ${videoEntryId}`);
         return data;
       }
       return null;
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to delete community video:", error);
+      console.error("[ivLyrics] Failed to delete community video:", error);
       return null;
     }
   },
@@ -2417,7 +2327,7 @@ const Utils = {
    */
   async _openSelectedVideoDB() {
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open('LyricsPlusSelectedVideos', 1);
+      const request = indexedDB.open('ivLyricsSelectedVideos', 1);
 
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve(request.result);
@@ -2459,10 +2369,10 @@ const Utils = {
       this._cleanupOldSelectedVideos(db).catch(() => { });
 
       db.close();
-      console.log(`[Lyrics Plus] Saved selected video for ${trackUri}:`, videoInfo.youtubeVideoId);
+      console.log(`[ivLyrics] Saved selected video for ${trackUri}:`, videoInfo.youtubeVideoId);
       return true;
     } catch (error) {
-      console.error('[Lyrics Plus] Failed to save selected video:', error);
+      console.error('[ivLyrics] Failed to save selected video:', error);
       return false;
     }
   },
@@ -2507,12 +2417,12 @@ const Utils = {
       db.close();
 
       if (result) {
-        console.log(`[Lyrics Plus] Loaded selected video for ${trackUri}:`, result.youtubeVideoId);
+        console.log(`[ivLyrics] Loaded selected video for ${trackUri}:`, result.youtubeVideoId);
         return result;
       }
       return null;
     } catch (error) {
-      console.error('[Lyrics Plus] Failed to load selected video:', error);
+      console.error('[ivLyrics] Failed to load selected video:', error);
       return null;
     }
   },
@@ -2534,10 +2444,10 @@ const Utils = {
       });
 
       db.close();
-      console.log(`[Lyrics Plus] Removed selected video for ${trackUri}`);
+      console.log(`[ivLyrics] Removed selected video for ${trackUri}`);
       return true;
     } catch (error) {
-      console.error('[Lyrics Plus] Failed to remove selected video:', error);
+      console.error('[ivLyrics] Failed to remove selected video:', error);
       return false;
     }
   },
@@ -2582,7 +2492,7 @@ const Utils = {
 
       // 404 = 영상이 존재하지 않음, 401 = 비공개 영상
       if (response.status === 404 || response.status === 401) {
-        console.log("[Lyrics Plus] YouTube video not found or private:", videoId);
+        console.log("[ivLyrics] YouTube video not found or private:", videoId);
         return null;
       }
 
@@ -2593,7 +2503,7 @@ const Utils = {
       const data = await response.json();
       return data.title || null;
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to get YouTube title:", error);
+      console.error("[ivLyrics] Failed to get YouTube title:", error);
 
       // 백업: noembed.com 사용
       try {
@@ -2605,13 +2515,13 @@ const Utils = {
           const backupData = await backupResponse.json();
           // noembed은 존재하지 않는 영상에 대해 error 필드를 반환함
           if (backupData.error) {
-            console.log("[Lyrics Plus] Video not found via noembed:", videoId);
+            console.log("[ivLyrics] Video not found via noembed:", videoId);
             return null;
           }
           return backupData.title || null;
         }
       } catch (backupError) {
-        console.error("[Lyrics Plus] Backup title fetch also failed:", backupError);
+        console.error("[ivLyrics] Backup title fetch also failed:", backupError);
       }
 
       return null;
@@ -2660,7 +2570,7 @@ const Utils = {
 
       return { valid: true, title: data.title, error: null };
     } catch (error) {
-      console.error("[Lyrics Plus] YouTube validation error:", error);
+      console.error("[ivLyrics] YouTube validation error:", error);
       return { valid: false, title: null, error: 'networkError' };
     }
   },

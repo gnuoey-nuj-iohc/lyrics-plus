@@ -651,9 +651,9 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 			}
 		};
 
-		window.addEventListener('lyrics-plus:offset-changed', handleOffsetChange);
+		window.addEventListener('ivLyrics:offset-changed', handleOffsetChange);
 		return () => {
-			window.removeEventListener('lyrics-plus:offset-changed', handleOffsetChange);
+			window.removeEventListener('ivLyrics:offset-changed', handleOffsetChange);
 		};
 	}, [Spicetify.Player?.data?.item?.uri]);
 
@@ -737,7 +737,7 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 	useEffect(() => {
 		// Subtract 2 for the empty lines at the beginning
 		const actualIndex = Math.max(0, activeLineIndex - 2);
-		window.dispatchEvent(new CustomEvent('lyrics-plus:lyric-index-changed', {
+		window.dispatchEvent(new CustomEvent('ivLyrics:lyric-index-changed', {
 			detail: { index: actualIndex, total: lyrics.length }
 		}));
 	}, [activeLineIndex, lyrics.length]);
@@ -1026,7 +1026,7 @@ class SearchBar extends react.Component {
 		this.mainViewOffsetTop = document.querySelector(".Root__main-view")?.offsetTop || 0;
 
 		this.toggleCallback = () => {
-			if (!(Spicetify.Platform.History.location.pathname === "/lyrics-plus" && this.container)) return;
+			if (!(Spicetify.Platform.History.location.pathname === "/ivLyrics" && this.container)) return;
 
 			if (this.state.hidden) {
 				this.setState({ hidden: false });
@@ -1230,9 +1230,9 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright,
 			}
 		};
 
-		window.addEventListener('lyrics-plus:offset-changed', handleOffsetChange);
+		window.addEventListener('ivLyrics:offset-changed', handleOffsetChange);
 		return () => {
-			window.removeEventListener('lyrics-plus:offset-changed', handleOffsetChange);
+			window.removeEventListener('ivLyrics:offset-changed', handleOffsetChange);
 		};
 	}, [Spicetify.Player?.data?.item?.uri]);
 

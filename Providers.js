@@ -122,7 +122,7 @@ const Providers = {
 
     try {
       const savedLyrics = JSON.parse(
-        StorageManager.getItem("lyrics-plus:local-lyrics")
+        StorageManager.getItem("ivLyrics:local-lyrics")
       );
       const lyrics = savedLyrics[info.uri];
       if (!lyrics) {

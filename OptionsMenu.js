@@ -156,15 +156,15 @@ const SettingRowDescription = ({ icon, text }) => {
     { className: "setting-row-with-icon" },
     // React 310 방지: icon이 문자열이고 비어있지 않을 때만 렌더링
     icon &&
-      typeof icon === "string" &&
-      icon &&
-      react.createElement("svg", {
-        width: 16,
-        height: 16,
-        viewBox: "0 0 16 16",
-        fill: "currentColor",
-        dangerouslySetInnerHTML: { __html: icon },
-      }),
+    typeof icon === "string" &&
+    icon &&
+    react.createElement("svg", {
+      width: 16,
+      height: 16,
+      viewBox: "0 0 16 16",
+      fill: "currentColor",
+      dangerouslySetInnerHTML: { __html: icon },
+    }),
     react.createElement("span", null, text || "")
   );
 };
@@ -378,7 +378,7 @@ function openOptionsModal(title, items, onChange, eventType = null) {
 }
 
 /* Custom Modal Overlay - 일반 설정과 동일한 스타일 */
-#lyrics-plus-translation-overlay {
+#ivLyrics-translation-overlay {
 	position: fixed;
 	top: 0;
 	left: 0;
@@ -403,7 +403,7 @@ function openOptionsModal(title, items, onChange, eventType = null) {
 	}
 }
 
-#lyrics-plus-translation-modal {
+#ivLyrics-translation-modal {
 	background: rgba(28, 28, 30, 0.95);
 	backdrop-filter: blur(60px) saturate(200%);
 	-webkit-backdrop-filter: blur(60px) saturate(200%);
@@ -428,7 +428,7 @@ function openOptionsModal(title, items, onChange, eventType = null) {
 }
 
 /* 모달 헤더 */
-#lyrics-plus-translation-modal .modal-header {
+#ivLyrics-translation-modal .modal-header {
 	padding: 24px 24px 16px;
 	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 	display: flex;
@@ -436,7 +436,7 @@ function openOptionsModal(title, items, onChange, eventType = null) {
 	justify-content: space-between;
 }
 
-#lyrics-plus-translation-modal .modal-header h2 {
+#ivLyrics-translation-modal .modal-header h2 {
 	margin: 0;
 	font-size: 22px;
 	font-weight: 700;
@@ -444,7 +444,7 @@ function openOptionsModal(title, items, onChange, eventType = null) {
 	letter-spacing: -0.02em;
 }
 
-#lyrics-plus-translation-modal .modal-close {
+#ivLyrics-translation-modal .modal-close {
 	background: rgba(255, 255, 255, 0.1);
 	border: none;
 	border-radius: 50%;
@@ -458,40 +458,40 @@ function openOptionsModal(title, items, onChange, eventType = null) {
 	color: #ffffff;
 }
 
-#lyrics-plus-translation-modal .modal-close:hover {
+#ivLyrics-translation-modal .modal-close:hover {
 	background: rgba(255, 255, 255, 0.15);
 	transform: scale(1.05);
 }
 
-#lyrics-plus-translation-modal .modal-close:active {
+#ivLyrics-translation-modal .modal-close:active {
 	transform: scale(0.95);
 }
 
-#lyrics-plus-translation-modal .modal-close svg {
+#ivLyrics-translation-modal .modal-close svg {
 	width: 20px;
 	height: 20px;
 }
 
 /* 모달 바디 */
-#lyrics-plus-translation-modal .modal-body {
+#ivLyrics-translation-modal .modal-body {
 	padding: 24px;
 }
 
 /* 스크롤바 스타일 */
-#lyrics-plus-translation-modal::-webkit-scrollbar {
+#ivLyrics-translation-modal::-webkit-scrollbar {
 	width: 8px;
 }
 
-#lyrics-plus-translation-modal::-webkit-scrollbar-track {
+#ivLyrics-translation-modal::-webkit-scrollbar-track {
 	background: transparent;
 }
 
-#lyrics-plus-translation-modal::-webkit-scrollbar-thumb {
+#ivLyrics-translation-modal::-webkit-scrollbar-thumb {
 	background: rgba(255, 255, 255, 0.2);
 	border-radius: 4px;
 }
 
-#lyrics-plus-translation-modal::-webkit-scrollbar-thumb:hover {
+#ivLyrics-translation-modal::-webkit-scrollbar-thumb:hover {
 	background: rgba(255, 255, 255, 0.3);
 }
 `,
@@ -504,12 +504,12 @@ function openOptionsModal(title, items, onChange, eventType = null) {
         { key: sectionIndex },
         // Section Title
         section.section &&
-          react.createElement(
-            "div",
-            { className: "section-title" },
-            react.createElement("h3", null, section.section),
-            section.subtitle && react.createElement("p", null, section.subtitle)
-          ),
+        react.createElement(
+          "div",
+          { className: "section-title" },
+          react.createElement("h3", null, section.section),
+          section.subtitle && react.createElement("p", null, section.subtitle)
+        ),
         // Section Items
         react.createElement(
           OptionList,
@@ -527,10 +527,10 @@ function openOptionsModal(title, items, onChange, eventType = null) {
 
   // Create custom modal instead of using Spicetify.PopupModal
   const overlay = document.createElement("div");
-  overlay.id = "lyrics-plus-translation-overlay";
+  overlay.id = "ivLyrics-translation-overlay";
 
   const modal = document.createElement("div");
-  modal.id = "lyrics-plus-translation-modal";
+  modal.id = "ivLyrics-translation-modal";
 
   // Modal header
   const header = document.createElement("div");
@@ -785,7 +785,7 @@ const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
             onChange: () => {
               // Close the current modal and open settings at API tab
               const overlay = document.getElementById(
-                "lyrics-plus-settings-overlay"
+                "ivLyrics-settings-overlay"
               );
               if (overlay) {
                 overlay.remove();
@@ -933,7 +933,7 @@ const SyncAdjustButton = react.memo(
           setFeedbackStatus(data.user.userFeedback ? 'positive' : 'negative');
         }
       } catch (error) {
-        console.error("[Lyrics Plus] Failed to load community data:", error);
+        console.error("[ivLyrics] Failed to load community data:", error);
       } finally {
         setIsLoadingCommunity(false);
       }
@@ -946,9 +946,9 @@ const SyncAdjustButton = react.memo(
           setOffset(event.detail.offset);
         }
       };
-      window.addEventListener('lyrics-plus:offset-changed', handleCommunityOffsetChange);
+      window.addEventListener('ivLyrics:offset-changed', handleCommunityOffsetChange);
       return () => {
-        window.removeEventListener('lyrics-plus:offset-changed', handleCommunityOffsetChange);
+        window.removeEventListener('ivLyrics:offset-changed', handleCommunityOffsetChange);
       };
     }, [trackUri]);
 
@@ -974,14 +974,14 @@ const SyncAdjustButton = react.memo(
         if (submitTimeoutRef.current) {
           clearTimeout(submitTimeoutRef.current);
         }
-        
+
         // 1초 후에 제출 (사용자가 조정을 멈추면)
         submitTimeoutRef.current = setTimeout(async () => {
           try {
             await Utils.submitCommunityOffset(trackUri, newOffset);
             loadCommunityData(); // 제출 후 커뮤니티 데이터 새로고침
           } catch (error) {
-            console.error("[Lyrics Plus] Failed to auto-submit offset:", error);
+            console.error("[ivLyrics] Failed to auto-submit offset:", error);
           }
         }, 1000);
       }
@@ -1052,7 +1052,7 @@ const SyncAdjustButton = react.memo(
           2000
         );
       } catch (error) {
-        console.error("[Lyrics Plus] Failed to submit feedback:", error);
+        console.error("[ivLyrics] Failed to submit feedback:", error);
         Spicetify.showNotification(I18n.t("syncAdjust.feedbackFailed"), true, 2000);
       }
     };
@@ -1070,12 +1070,12 @@ const SyncAdjustButton = react.memo(
       if (confidence >= 0.5) return I18n.t("syncAdjust.confidenceMedium");
       return I18n.t("syncAdjust.confidenceLow");
     };
-    
+
     // 버튼 위치 기반으로 모달 위치 계산
     const getModalStyle = () => {
       // 전체화면 모드인지 확인
       const isFullscreen = document.querySelector('.lyrics-lyricsContainer-LyricsContainer.fullscreen-active');
-      
+
       if (isFullscreen && buttonRef.current) {
         // 전체화면: 버튼 기준으로 위치 계산
         const rect = buttonRef.current.getBoundingClientRect();
@@ -1125,32 +1125,32 @@ const SyncAdjustButton = react.memo(
         )
       ),
       isOpen &&
-        (() => {
-          const modalStyle = getModalStyle();
-          return react.createElement(
-            "div",
-            {
-              className: "lyrics-sync-adjust-modal",
-              style: {
-                position: "fixed",
-                bottom: modalStyle.bottom,
-                right: modalStyle.right,
-                background: "rgba(28, 28, 30, 0.95)",
-                backdropFilter: "blur(60px) saturate(200%)",
-                WebkitBackdropFilter: "blur(60px) saturate(200%)",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-                borderRadius: "16px",
-                padding: "20px 24px",
-                zIndex: 99999,
-                minWidth: "520px",
-                boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
-                fontFamily:
-                  "Pretendard Variable, -apple-system, BlinkMacSystemFont, sans-serif",
-              },
+      (() => {
+        const modalStyle = getModalStyle();
+        return react.createElement(
+          "div",
+          {
+            className: "lyrics-sync-adjust-modal",
+            style: {
+              position: "fixed",
+              bottom: modalStyle.bottom,
+              right: modalStyle.right,
+              background: "rgba(28, 28, 30, 0.95)",
+              backdropFilter: "blur(60px) saturate(200%)",
+              WebkitBackdropFilter: "blur(60px) saturate(200%)",
+              border: "1px solid rgba(255, 255, 255, 0.08)",
+              borderRadius: "16px",
+              padding: "20px 24px",
+              zIndex: 99999,
+              minWidth: "520px",
+              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
+              fontFamily:
+                "Pretendard Variable, -apple-system, BlinkMacSystemFont, sans-serif",
             },
-            react.createElement("style", {
-              dangerouslySetInnerHTML: {
-                __html: `
+          },
+          react.createElement("style", {
+            dangerouslySetInnerHTML: {
+              __html: `
 .lyrics-sync-adjust-modal .slider-container {
 	flex: 1;
 	display: flex;
@@ -1335,409 +1335,409 @@ const SyncAdjustButton = react.memo(
 	background: rgba(0, 122, 255, 0.3);
 }
 `,
+            },
+          }),
+          // Header
+          react.createElement(
+            "div",
+            {
+              style: {
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "12px",
               },
-            }),
-            // Header
+            },
+            react.createElement(
+              "div",
+              {
+                style: {
+                  fontSize: "16px",
+                  fontWeight: "600",
+                  color: "#ffffff",
+                  letterSpacing: "-0.01em",
+                },
+              },
+              I18n.t("menu.syncAdjustTitle")
+            ),
+            react.createElement(
+              "button",
+              {
+                onClick: toggleModal,
+                style: {
+                  background: "rgba(255, 255, 255, 0.1)",
+                  border: "none",
+                  borderRadius: "50%",
+                  color: "#ffffff",
+                  cursor: "pointer",
+                  fontSize: "18px",
+                  padding: "0",
+                  width: "28px",
+                  height: "28px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "all 0.2s ease",
+                },
+                onMouseEnter: (e) => {
+                  e.target.style.background = "rgba(255, 255, 255, 0.15)";
+                  e.target.style.transform = "scale(1.05)";
+                },
+                onMouseLeave: (e) => {
+                  e.target.style.background = "rgba(255, 255, 255, 0.1)";
+                  e.target.style.transform = "scale(1)";
+                },
+              },
+              "×"
+            )
+          ),
+          // Info text
+          react.createElement(
+            "div",
+            {
+              style: {
+                fontSize: "13px",
+                color: "#8e8e93",
+                marginBottom: "16px",
+                letterSpacing: "-0.01em",
+              },
+            },
+            I18n.t("syncAdjust.info")
+          ),
+          // Slider section
+          react.createElement(
+            "div",
+            {
+              style: {
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+              },
+            },
+            // Slider
+            react.createElement(
+              "div",
+              {
+                className: "slider-container",
+              },
+              react.createElement("input", {
+                type: "range",
+                className: "sync-slider",
+                min: -10000,
+                max: 10000,
+                step: 10,
+                value: offset,
+                onInput: handleSliderChange,
+                style: {
+                  "--progress-percent": `${((offset + 10000) / 20000) * 100}%`,
+                },
+              }),
+              react.createElement(
+                "div",
+                {
+                  style: {
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: "11px",
+                    color: "#8e8e93",
+                    fontWeight: "500",
+                    padding: "0 4px",
+                  },
+                },
+                react.createElement("span", null, "-10s"),
+                react.createElement(
+                  "span",
+                  {
+                    style: {
+                      color: "#ffffff",
+                      fontWeight: "600",
+                      fontSize: "14px",
+                      letterSpacing: "-0.01em",
+                    },
+                  },
+                  `${offset}ms`
+                ),
+                react.createElement("span", null, "+10s")
+              )
+            ),
+            // Fine adjustment buttons
             react.createElement(
               "div",
               {
                 style: {
                   display: "flex",
-                  justifyContent: "space-between",
+                  flexDirection: "column",
+                  gap: "6px",
+                },
+              },
+              react.createElement(
+                "div",
+                {
+                  style: {
+                    display: "flex",
+                    gap: "6px",
+                  },
+                },
+                react.createElement(AdjustButton, { value: "-1000", onClick: () => adjustOffset(-1000) }),
+                react.createElement(AdjustButton, { value: "-100", onClick: () => adjustOffset(-100) }),
+                react.createElement(AdjustButton, { value: "-10", onClick: () => adjustOffset(-10) })
+              ),
+              react.createElement(
+                "div",
+                {
+                  style: {
+                    display: "flex",
+                    gap: "6px",
+                  },
+                },
+                react.createElement(AdjustButton, { value: "+1000", onClick: () => adjustOffset(1000) }),
+                react.createElement(AdjustButton, { value: "+100", onClick: () => adjustOffset(100) }),
+                react.createElement(AdjustButton, { value: "+10", onClick: () => adjustOffset(10) })
+              )
+            ),
+            // Reset button
+            react.createElement(
+              "button",
+              {
+                onClick: resetOffset,
+                style: {
+                  background: "rgba(255, 59, 48, 0.15)",
+                  border: "1px solid rgba(255, 59, 48, 0.3)",
+                  borderRadius: "10px",
+                  color: "#ff3b30",
+                  cursor: "pointer",
+                  padding: "10px 16px",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                  letterSpacing: "-0.01em",
+                  transition: "all 0.2s ease",
+                  whiteSpace: "nowrap",
+                },
+                onMouseEnter: (e) => {
+                  e.target.style.background = "rgba(255, 59, 48, 0.2)";
+                  e.target.style.borderColor = "rgba(255, 59, 48, 0.4)";
+                  e.target.style.transform = "translateY(-1px)";
+                },
+                onMouseLeave: (e) => {
+                  e.target.style.background = "rgba(255, 59, 48, 0.15)";
+                  e.target.style.borderColor = "rgba(255, 59, 48, 0.3)";
+                  e.target.style.transform = "translateY(0)";
+                },
+              },
+              I18n.t("syncAdjust.reset")
+            )
+          ),
+          // Community Sync Section
+          isCommunityEnabled && react.createElement(
+            "div",
+            { className: "community-section" },
+            react.createElement(
+              "div",
+              {
+                style: {
+                  display: "flex",
                   alignItems: "center",
+                  gap: "8px",
                   marginBottom: "12px",
                 },
               },
               react.createElement(
-                "div",
-                {
-                  style: {
-                    fontSize: "16px",
-                    fontWeight: "600",
-                    color: "#ffffff",
-                    letterSpacing: "-0.01em",
-                  },
-                },
-                I18n.t("menu.syncAdjustTitle")
+                "svg",
+                { width: 14, height: 14, viewBox: "0 0 16 16", fill: "#8e8e93" },
+                react.createElement("path", {
+                  d: "M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816zM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275zM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z",
+                })
               ),
               react.createElement(
-                "button",
+                "span",
                 {
-                  onClick: toggleModal,
                   style: {
-                    background: "rgba(255, 255, 255, 0.1)",
-                    border: "none",
-                    borderRadius: "50%",
+                    fontSize: "13px",
+                    fontWeight: "600",
                     color: "#ffffff",
-                    cursor: "pointer",
-                    fontSize: "18px",
-                    padding: "0",
-                    width: "28px",
-                    height: "28px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    transition: "all 0.2s ease",
-                  },
-                  onMouseEnter: (e) => {
-                    e.target.style.background = "rgba(255, 255, 255, 0.15)";
-                    e.target.style.transform = "scale(1.05)";
-                  },
-                  onMouseLeave: (e) => {
-                    e.target.style.background = "rgba(255, 255, 255, 0.1)";
-                    e.target.style.transform = "scale(1)";
                   },
                 },
-                "×"
+                I18n.t("syncAdjust.communityTitle")
               )
             ),
-            // Info text
-            react.createElement(
-              "div",
-              {
-                style: {
-                  fontSize: "13px",
-                  color: "#8e8e93",
-                  marginBottom: "16px",
-                  letterSpacing: "-0.01em",
-                },
-              },
-              I18n.t("syncAdjust.info")
-            ),
-            // Slider section
-            react.createElement(
-              "div",
-              {
-                style: {
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "12px",
-                },
-              },
-              // Slider
-              react.createElement(
+            isLoadingCommunity
+              ? react.createElement(
                 "div",
                 {
-                  className: "slider-container",
-                },
-                react.createElement("input", {
-                  type: "range",
-                  className: "sync-slider",
-                  min: -10000,
-                  max: 10000,
-                  step: 10,
-                  value: offset,
-                  onInput: handleSliderChange,
                   style: {
-                    "--progress-percent": `${((offset + 10000) / 20000) * 100}%`,
+                    color: "#8e8e93",
+                    fontSize: "12px",
+                    textAlign: "center",
+                    padding: "12px 0",
                   },
-                }),
-                react.createElement(
+                },
+                I18n.t("syncAdjust.loading")
+              )
+              : communityData
+                ? react.createElement(
+                  "div",
+                  { className: "community-info-row" },
+                  // Stats
+                  react.createElement(
+                    "div",
+                    { className: "community-stats" },
+                    // Offset
+                    react.createElement(
+                      "div",
+                      { className: "stat-item" },
+                      react.createElement(
+                        "span",
+                        { className: "stat-value" },
+                        `${communityData.medianOffsetMs ?? communityData.offsetMs ?? 0}ms`
+                      ),
+                      react.createElement(
+                        "span",
+                        { className: "stat-label" },
+                        I18n.t("syncAdjust.communityOffset")
+                      )
+                    ),
+                    // Submissions
+                    react.createElement(
+                      "div",
+                      { className: "stat-item" },
+                      react.createElement(
+                        "span",
+                        { className: "stat-value" },
+                        communityData.submissionCount ?? 0
+                      ),
+                      react.createElement(
+                        "span",
+                        { className: "stat-label" },
+                        I18n.t("syncAdjust.submissions")
+                      )
+                    ),
+                    // Confidence
+                    react.createElement(
+                      "div",
+                      { className: "stat-item" },
+                      react.createElement(
+                        "span",
+                        {
+                          className: "stat-value",
+                          style: { color: getConfidenceColor(communityData.confidence ?? 0) },
+                        },
+                        `${Math.round((communityData.confidence ?? 0) * 100)}%`
+                      ),
+                      react.createElement(
+                        "span",
+                        { className: "stat-label" },
+                        getConfidenceLevel(communityData.confidence ?? 0)
+                      )
+                    )
+                  ),
+                  // Actions
+                  react.createElement(
+                    "div",
+                    { className: "community-actions" },
+                    // Feedback buttons
+                    react.createElement(
+                      "button",
+                      {
+                        className: `feedback-btn ${feedbackStatus === 'positive' ? 'active-positive' : ''}`,
+                        onClick: () => submitFeedback(true),
+                        title: communityData?.user?.hasSubmitted
+                          ? I18n.t("syncAdjust.cannotFeedbackOwnSubmission")
+                          : I18n.t("syncAdjust.feedbackGood"),
+                        disabled: communityData?.user?.hasSubmitted,
+                      },
+                      "👍"
+                    ),
+                    react.createElement(
+                      "button",
+                      {
+                        className: `feedback-btn ${feedbackStatus === 'negative' ? 'active-negative' : ''}`,
+                        onClick: () => submitFeedback(false),
+                        title: communityData?.user?.hasSubmitted
+                          ? I18n.t("syncAdjust.cannotFeedbackOwnSubmission")
+                          : I18n.t("syncAdjust.feedbackBad"),
+                        disabled: communityData?.user?.hasSubmitted,
+                      },
+                      "👎"
+                    ),
+                    // Apply button
+                    react.createElement(
+                      "button",
+                      {
+                        className: "action-btn primary",
+                        onClick: applyCommunityOffset,
+                      },
+                      I18n.t("syncAdjust.applyCommunity")
+                    )
+                  )
+                )
+                : react.createElement(
                   "div",
                   {
                     style: {
                       display: "flex",
                       justifyContent: "space-between",
-                      fontSize: "11px",
-                      color: "#8e8e93",
-                      fontWeight: "500",
-                      padding: "0 4px",
+                      alignItems: "center",
                     },
                   },
-                  react.createElement("span", null, "-10s"),
                   react.createElement(
                     "span",
                     {
                       style: {
-                        color: "#ffffff",
-                        fontWeight: "600",
-                        fontSize: "14px",
-                        letterSpacing: "-0.01em",
+                        color: "#8e8e93",
+                        fontSize: "12px",
                       },
                     },
-                    `${offset}ms`
+                    I18n.t("syncAdjust.noData")
                   ),
-                  react.createElement("span", null, "+10s")
-                )
-              ),
-              // Fine adjustment buttons
-              react.createElement(
-                "div",
-                {
-                  style: {
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "6px",
-                  },
-                },
-                react.createElement(
-                  "div",
-                  {
-                    style: {
-                      display: "flex",
-                      gap: "6px",
+                  react.createElement(
+                    "button",
+                    {
+                      className: "action-btn primary",
+                      onClick: submitOffset,
+                      disabled: isSubmitting || offset === 0,
                     },
-                  },
-                  react.createElement(AdjustButton, { value: "-1000", onClick: () => adjustOffset(-1000) }),
-                  react.createElement(AdjustButton, { value: "-100", onClick: () => adjustOffset(-100) }),
-                  react.createElement(AdjustButton, { value: "-10", onClick: () => adjustOffset(-10) })
+                    isSubmitting ? I18n.t("syncAdjust.submitting") : I18n.t("syncAdjust.submitMine")
+                  )
                 ),
-                react.createElement(
-                  "div",
-                  {
-                    style: {
-                      display: "flex",
-                      gap: "6px",
-                    },
-                  },
-                  react.createElement(AdjustButton, { value: "+1000", onClick: () => adjustOffset(1000) }),
-                  react.createElement(AdjustButton, { value: "+100", onClick: () => adjustOffset(100) }),
-                  react.createElement(AdjustButton, { value: "+10", onClick: () => adjustOffset(10) })
-                )
-              ),
-              // Reset button
+            // Auto-submit status indicator
+            CONFIG.visual["community-sync-auto-submit"] && react.createElement(
+              "div",
+              {
+                style: {
+                  marginTop: "12px",
+                  padding: "8px 12px",
+                  background: "rgba(52, 199, 89, 0.1)",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  color: "#34c759",
+                  textAlign: "center",
+                },
+              },
+              I18n.t("syncAdjust.autoSubmitEnabled")
+            ),
+            // Submit button (always show when community data exists)
+            communityData && react.createElement(
+              "div",
+              {
+                style: {
+                  marginTop: "12px",
+                  display: "flex",
+                  justifyContent: "flex-end",
+                },
+              },
               react.createElement(
                 "button",
                 {
-                  onClick: resetOffset,
-                  style: {
-                    background: "rgba(255, 59, 48, 0.15)",
-                    border: "1px solid rgba(255, 59, 48, 0.3)",
-                    borderRadius: "10px",
-                    color: "#ff3b30",
-                    cursor: "pointer",
-                    padding: "10px 16px",
-                    fontSize: "13px",
-                    fontWeight: "600",
-                    letterSpacing: "-0.01em",
-                    transition: "all 0.2s ease",
-                    whiteSpace: "nowrap",
-                  },
-                  onMouseEnter: (e) => {
-                    e.target.style.background = "rgba(255, 59, 48, 0.2)";
-                    e.target.style.borderColor = "rgba(255, 59, 48, 0.4)";
-                    e.target.style.transform = "translateY(-1px)";
-                  },
-                  onMouseLeave: (e) => {
-                    e.target.style.background = "rgba(255, 59, 48, 0.15)";
-                    e.target.style.borderColor = "rgba(255, 59, 48, 0.3)";
-                    e.target.style.transform = "translateY(0)";
-                  },
+                  className: "action-btn",
+                  onClick: submitOffset,
+                  disabled: isSubmitting,
                 },
-                I18n.t("syncAdjust.reset")
-              )
-            ),
-            // Community Sync Section
-            isCommunityEnabled && react.createElement(
-              "div",
-              { className: "community-section" },
-              react.createElement(
-                "div",
-                {
-                  style: {
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    marginBottom: "12px",
-                  },
-                },
-                react.createElement(
-                  "svg",
-                  { width: 14, height: 14, viewBox: "0 0 16 16", fill: "#8e8e93" },
-                  react.createElement("path", {
-                    d: "M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816zM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275zM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z",
-                  })
-                ),
-                react.createElement(
-                  "span",
-                  {
-                    style: {
-                      fontSize: "13px",
-                      fontWeight: "600",
-                      color: "#ffffff",
-                    },
-                  },
-                  I18n.t("syncAdjust.communityTitle")
-                )
-              ),
-              isLoadingCommunity
-                ? react.createElement(
-                    "div",
-                    {
-                      style: {
-                        color: "#8e8e93",
-                        fontSize: "12px",
-                        textAlign: "center",
-                        padding: "12px 0",
-                      },
-                    },
-                    I18n.t("syncAdjust.loading")
-                  )
-                : communityData
-                ? react.createElement(
-                    "div",
-                    { className: "community-info-row" },
-                    // Stats
-                    react.createElement(
-                      "div",
-                      { className: "community-stats" },
-                      // Offset
-                      react.createElement(
-                        "div",
-                        { className: "stat-item" },
-                        react.createElement(
-                          "span",
-                          { className: "stat-value" },
-                          `${communityData.medianOffsetMs ?? communityData.offsetMs ?? 0}ms`
-                        ),
-                        react.createElement(
-                          "span",
-                          { className: "stat-label" },
-                          I18n.t("syncAdjust.communityOffset")
-                        )
-                      ),
-                      // Submissions
-                      react.createElement(
-                        "div",
-                        { className: "stat-item" },
-                        react.createElement(
-                          "span",
-                          { className: "stat-value" },
-                          communityData.submissionCount ?? 0
-                        ),
-                        react.createElement(
-                          "span",
-                          { className: "stat-label" },
-                          I18n.t("syncAdjust.submissions")
-                        )
-                      ),
-                      // Confidence
-                      react.createElement(
-                        "div",
-                        { className: "stat-item" },
-                        react.createElement(
-                          "span",
-                          {
-                            className: "stat-value",
-                            style: { color: getConfidenceColor(communityData.confidence ?? 0) },
-                          },
-                          `${Math.round((communityData.confidence ?? 0) * 100)}%`
-                        ),
-                        react.createElement(
-                          "span",
-                          { className: "stat-label" },
-                          getConfidenceLevel(communityData.confidence ?? 0)
-                        )
-                      )
-                    ),
-                    // Actions
-                    react.createElement(
-                      "div",
-                      { className: "community-actions" },
-                      // Feedback buttons
-                      react.createElement(
-                        "button",
-                        {
-                          className: `feedback-btn ${feedbackStatus === 'positive' ? 'active-positive' : ''}`,
-                          onClick: () => submitFeedback(true),
-                          title: communityData?.user?.hasSubmitted 
-                            ? I18n.t("syncAdjust.cannotFeedbackOwnSubmission") 
-                            : I18n.t("syncAdjust.feedbackGood"),
-                          disabled: communityData?.user?.hasSubmitted,
-                        },
-                        "👍"
-                      ),
-                      react.createElement(
-                        "button",
-                        {
-                          className: `feedback-btn ${feedbackStatus === 'negative' ? 'active-negative' : ''}`,
-                          onClick: () => submitFeedback(false),
-                          title: communityData?.user?.hasSubmitted 
-                            ? I18n.t("syncAdjust.cannotFeedbackOwnSubmission") 
-                            : I18n.t("syncAdjust.feedbackBad"),
-                          disabled: communityData?.user?.hasSubmitted,
-                        },
-                        "👎"
-                      ),
-                      // Apply button
-                      react.createElement(
-                        "button",
-                        {
-                          className: "action-btn primary",
-                          onClick: applyCommunityOffset,
-                        },
-                        I18n.t("syncAdjust.applyCommunity")
-                      )
-                    )
-                  )
-                : react.createElement(
-                    "div",
-                    {
-                      style: {
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      },
-                    },
-                    react.createElement(
-                      "span",
-                      {
-                        style: {
-                          color: "#8e8e93",
-                          fontSize: "12px",
-                        },
-                      },
-                      I18n.t("syncAdjust.noData")
-                    ),
-                    react.createElement(
-                      "button",
-                      {
-                        className: "action-btn primary",
-                        onClick: submitOffset,
-                        disabled: isSubmitting || offset === 0,
-                      },
-                      isSubmitting ? I18n.t("syncAdjust.submitting") : I18n.t("syncAdjust.submitMine")
-                    )
-                  ),
-              // Auto-submit status indicator
-              CONFIG.visual["community-sync-auto-submit"] && react.createElement(
-                "div",
-                {
-                  style: {
-                    marginTop: "12px",
-                    padding: "8px 12px",
-                    background: "rgba(52, 199, 89, 0.1)",
-                    borderRadius: "8px",
-                    fontSize: "12px",
-                    color: "#34c759",
-                    textAlign: "center",
-                  },
-                },
-                I18n.t("syncAdjust.autoSubmitEnabled")
-              ),
-              // Submit button (always show when community data exists)
-              communityData && react.createElement(
-                "div",
-                {
-                  style: {
-                    marginTop: "12px",
-                    display: "flex",
-                    justifyContent: "flex-end",
-                  },
-                },
-                react.createElement(
-                  "button",
-                  {
-                    className: "action-btn",
-                    onClick: submitOffset,
-                    disabled: isSubmitting,
-                  },
-                  isSubmitting ? I18n.t("syncAdjust.submitting") : I18n.t("syncAdjust.submitMine")
-                )
+                isSubmitting ? I18n.t("syncAdjust.submitting") : I18n.t("syncAdjust.submitMine")
               )
             )
-          );
-        })()
+          )
+        );
+      })()
     );
   }
 );
@@ -1745,12 +1745,12 @@ const SyncAdjustButton = react.memo(
 // Community Video Selector를 document.body에 직접 렌더링
 function openCommunityVideoSelector(trackUri, currentVideoId, onVideoSelect) {
   // 이미 열려있으면 무시
-  if (document.getElementById("lyrics-plus-community-video-overlay")) {
+  if (document.getElementById("ivLyrics-community-video-overlay")) {
     return;
   }
 
   const overlay = document.createElement("div");
-  overlay.id = "lyrics-plus-community-video-overlay";
+  overlay.id = "ivLyrics-community-video-overlay";
   overlay.style.cssText = `
     position: fixed;
     top: 0;
@@ -1848,8 +1848,8 @@ const CommunityVideoButton = react.memo(({ trackUri, videoInfo, onVideoSelect })
     { label: I18n.t("communityVideo.selectVideo") },
     react.createElement(
       "button",
-      { 
-        className: "lyrics-config-button", 
+      {
+        className: "lyrics-config-button",
         onClick: handleClick
       },
       react.createElement(

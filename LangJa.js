@@ -1,9 +1,9 @@
-// Japanese language file for Lyrics Plus
+// Japanese language file for ivLyrics
 window.LANG_JA = {
   "meta": {
     "language": "日本語",
     "code": "ja",
-    "author": "lyrics-plus"
+    "author": "ivLyrics"
   },
   "tabs": {
     "general": "一般",
@@ -414,6 +414,14 @@ window.LANG_JA = {
       "share": "共有リンクをコピー",
       "shareCopied": "🔗 共有リンクがコピーされました"
     },
+    "queue": {
+      "title": "キュー",
+      "recentlyPlayed": "最近再生した項目",
+      "nowPlaying": "現在再生中",
+      "upNext": "次に再生",
+      "empty": "キューは空です",
+      "noRecent": "最近の再生履歴はありません"
+    },
     "contextType": {
       "playlist": "プレイリスト",
       "album": "アルバム",
@@ -653,7 +661,7 @@ window.LANG_JA = {
       "subtitle": "再生関連の機能設定",
       "replaceButton": {
         "label": "歌詞ボタンを置換",
-        "info": "Spotifyのデフォルト歌詞ボタンをLyrics Plusに置き換え"
+        "info": "Spotifyのデフォルト歌詞ボタンをivLyricsに置き換え"
       },
       "fullscreenShortcut": {
         "label": "フルスクリーンショートカット",
@@ -889,6 +897,10 @@ window.LANG_JA = {
       "showLyricsProgress": {
         "desc": "歌詞進行を表示",
         "info": "現在の歌詞行番号と総行数を表示"
+      },
+      "showQueue": {
+        "desc": "キューパネルを表示",
+        "info": "画面右端でマウスホバー時にキューパネルを表示"
       }
     },
     "controllerStyle": {
@@ -947,7 +959,7 @@ window.LANG_JA = {
         "subtitle": "最新の更新履歴",
         "loading": "更新ノートを読み込み中..."
       },
-      "subtitle": "Lyrics Plusについて",
+      "subtitle": "ivLyricsについて",
       "appDescription": "Spicetifyの多言語歌詞拡張機能。",
       "versionPrefix": "バージョン",
       "viewOnGithub": "GitHubで表示",
@@ -1024,7 +1036,7 @@ window.LANG_JA = {
     "autoSubmitEnabled": "⚡ 自動提出が有効です"
   },
   "playbarButton": {
-    "label": "Lyrics Plus"
+    "label": "ivLyrics"
   },
   "videoBackground": {
     "loading": "動画情報を読み込み中...",

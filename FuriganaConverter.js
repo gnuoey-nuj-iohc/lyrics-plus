@@ -1,4 +1,4 @@
-// Furigana Converter Module for Lyrics Plus
+// Furigana Converter Module for ivLyrics
 // This module converts Japanese kanji to furigana using Kuromoji tokenizer
 
 const FuriganaConverter = (() => {
@@ -154,7 +154,7 @@ const FuriganaConverter = (() => {
 	 */
 	const katakanaToHiragana = (katakana) => {
 		if (!katakana) return '';
-		
+
 		return katakana.split('').map(char => {
 			const code = char.charCodeAt(0);
 			// Katakana range: 30A1-30F6

@@ -69,13 +69,13 @@ const ResizeObserverManager = {
 
 	observe(element, callback) {
 		const elementKey = this.getElementKey(element);
-		
+
 		if (!this.callbacks.has(elementKey)) {
 			this.callbacks.set(elementKey, new Set());
 		}
-		
+
 		this.callbacks.get(elementKey).add(callback);
-		
+
 		if (!this.observers.has(elementKey)) {
 			const observer = new ResizeObserver((entries) => {
 				const callbacks = this.callbacks.get(elementKey);
@@ -92,17 +92,17 @@ const ResizeObserverManager = {
 			this.observers.set(elementKey, observer);
 			observer.observe(element);
 		}
-		
+
 		return () => this.unobserve(element, callback);
 	},
 
 	unobserve(element, callback) {
 		const elementKey = this.getElementKey(element);
 		const callbacks = this.callbacks.get(elementKey);
-		
+
 		if (callbacks) {
 			callbacks.delete(callback);
-			
+
 			if (callbacks.size === 0) {
 				const observer = this.observers.get(elementKey);
 				if (observer) {
@@ -135,7 +135,7 @@ const TopBarContent = ({ links, activeLink, lockLink, switchCallback, lockCallba
 			const width = entry?.contentRect?.width || resizeHost.clientWidth;
 			setWindowSize(width);
 		};
-		
+
 		// Initial size
 		resizeHandler({ contentRect: { width: resizeHost.clientWidth } });
 
@@ -226,7 +226,7 @@ const ContainerManager = {
 
 const TabBarContext = ({ children }) => {
 	const [container, setContainer] = useState(null);
-	const [portalHost, setPortalHost] = useState(() => (window.lyricsPlusEnsureReactDOM?.() || (typeof reactDOM !== "undefined" ? reactDOM : null)));
+	const [portalHost, setPortalHost] = useState(() => (window.ivLyricsEnsureReactDOM?.() || (typeof reactDOM !== "undefined" ? reactDOM : null)));
 	const callbackRef = useRef(null);
 
 	useEffect(() => {
@@ -240,7 +240,7 @@ const TabBarContext = ({ children }) => {
 
 		const checkPortalHost = () => {
 			if (cancelled) return;
-			const resolved = window.lyricsPlusEnsureReactDOM?.() || (typeof reactDOM !== "undefined" ? reactDOM : window.Spicetify?.ReactDOM ?? window.ReactDOM ?? null);
+			const resolved = window.ivLyricsEnsureReactDOM?.() || (typeof reactDOM !== "undefined" ? reactDOM : window.Spicetify?.ReactDOM ?? window.ReactDOM ?? null);
 			if (resolved?.createPortal) {
 				setPortalHost(resolved);
 				return;
@@ -380,10 +380,10 @@ const TabBar = react.memo(({ links, activeLink, lockLink, switchCallback, lockCa
 				),
 			droplistItem.length || childrenSizes.length === 0
 				? react.createElement(TabBarMore, {
-						items: droplistItem.map((i) => options[i]).filter(Boolean),
-						switchTo: switchCallback,
-						lockIn: lockCallback,
-					})
+					items: droplistItem.map((i) => options[i]).filter(Boolean),
+					switchTo: switchCallback,
+					lockIn: lockCallback,
+				})
 				: null
 		)
 	);
