@@ -1581,6 +1581,8 @@ const CONFIG = {
       StorageManager.getPersisted("lyrics-plus:visual:gemini-api-key") || "",
     "perplexity-model":
       StorageManager.getItem("lyrics-plus:visual:perplexity-model") || "sonar",
+    "phonetic-language":
+      StorageManager.getItem("lyrics-plus:visual:phonetic-language") || "english",
     translate: StorageManager.get("lyrics-plus:visual:translate", false),
     "furigana-enabled": StorageManager.get(
       "lyrics-plus:visual:furigana-enabled",

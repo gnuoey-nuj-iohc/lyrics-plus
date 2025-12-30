@@ -793,21 +793,55 @@ class Translator {
         const isKorean = /[\uAC00-\uD7AF]/.test(text);
         const isChinese = /[\u4E00-\u9FFF]/.test(text) && !isJapanese;
         
+        // 발음 언어 설정 가져오기 (영어/한국어)
+        const phoneticLanguage = StorageManager.getItem("lyrics-plus:visual:phonetic-language") || "english";
+        const useKoreanPhonetic = phoneticLanguage === "korean";
+        
         let phoneticType = 'phonetic transcription (romanization)';
+        let phoneticDescription = '';
+        
         if (isJapanese) {
-          phoneticType = 'Romaji (Japanese romanization)';
+          if (useKoreanPhonetic) {
+            phoneticType = 'Korean pronunciation (한국어 발음)';
+            phoneticDescription = 'Convert Japanese text to Korean pronunciation (한글 발음). For example, "こんにちは" should become "곤니치와" or similar Korean pronunciation.';
+          } else {
+            phoneticType = 'Romaji (Japanese romanization)';
+            phoneticDescription = 'Convert Japanese text to Romaji (romanization). For example, "こんにちは" should become "konnichiwa".';
+          }
         } else if (isKorean) {
-          phoneticType = 'Romaja (Korean romanization)';
+          if (useKoreanPhonetic) {
+            phoneticType = 'Korean pronunciation (한국어 발음)';
+            phoneticDescription = 'Keep the Korean text as is, or provide pronunciation guide in Korean.';
+          } else {
+            phoneticType = 'Romaja (Korean romanization)';
+            phoneticDescription = 'Convert Korean text to Romaja (romanization). For example, "안녕하세요" should become "annyeonghaseyo".';
+          }
         } else if (isChinese) {
-          phoneticType = 'Pinyin (Chinese romanization)';
+          if (useKoreanPhonetic) {
+            phoneticType = 'Korean pronunciation (한국어 발음)';
+            phoneticDescription = 'Convert Chinese text to Korean pronunciation (한글 발음).';
+          } else {
+            phoneticType = 'Pinyin (Chinese romanization)';
+            phoneticDescription = 'Convert Chinese text to Pinyin (romanization).';
+          }
+        } else {
+          if (useKoreanPhonetic) {
+            phoneticType = 'Korean pronunciation (한국어 발음)';
+            phoneticDescription = 'Convert the text to Korean pronunciation (한글 발음).';
+          } else {
+            phoneticType = 'phonetic transcription (romanization)';
+            phoneticDescription = 'Convert the text to phonetic transcription (romanization).';
+          }
         }
         
-        prompt = `You are a language expert. Convert the following Japanese lyrics to ${phoneticType} (romanization).
+        prompt = `You are a language expert. Convert the following lyrics to ${phoneticType}.
+
+${phoneticDescription}
 
 CRITICAL INSTRUCTIONS:
 - DO NOT search the web or provide explanations
 - DO NOT include any additional text, explanations, or citations
-- ONLY output the romanized text
+- ONLY output the ${phoneticType}
 - Maintain the EXACT same number of lines as the original
 - Keep empty lines as empty lines
 - Preserve the original line structure
@@ -842,7 +876,9 @@ TRANSLATION GUIDELINES:
 CRITICAL INSTRUCTIONS:
 - DO NOT search the web or provide explanations
 - DO NOT include any citations, references, or additional text like [1][2][3]
-- ONLY output the translated lyrics
+- DO NOT add any introductory text like "Here is the translation:" or "Translation:"
+- ONLY output the translated lyrics, nothing else
+- Start directly with the first translated line, no preamble
 - Maintain the EXACT same number of lines as the original
 - Keep empty lines as empty lines (do not remove them)
 - Translate ALL text completely - do not leave any Japanese characters
@@ -959,35 +995,52 @@ Output ONLY the ${targetLang} translation, one line per line, with no Japanese t
           /^Key principles.*?\.\s*/i,
           /^Converting.*?requires:.*?\.\s*/i,
           /^.*?based on the search results.*?\.\s*/i,
+          /^Here.*?translation.*?:?\s*/i,
+          /^Translation.*?:?\s*/i,
+          /^The translation.*?:?\s*/i,
         ];
         explanationPatterns.forEach(pattern => {
           translatedText = translatedText.replace(pattern, '');
         });
         
-        // 번역 결과에서 원본 언어 문자 제거 (일본어, 중국어 등)
-        // 혼합 언어 번역을 방지하기 위해 원본 언어 패턴 제거
-        if (!wantSmartPhonetic) {
-          // 일본어 문자 제거 (히라가나, 가타카나, 한자)
-          translatedText = translatedText.replace(/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/g, '');
-          // 중국어 문자 제거 (한자)
-          translatedText = translatedText.replace(/[\u4E00-\u9FFF]/g, '');
-          // 앞뒤 공백 정리
-          translatedText = translatedText.trim();
-        }
-        
         // 줄 단위로 분리 (빈 줄도 유지하여 원본 가사와 줄 수 맞춤)
         let lines = translatedText.split('\n');
         
-        // 각 줄의 앞뒤 공백 제거 (빈 줄은 빈 문자열로 유지)
+        // 각 줄의 앞뒤 공백 제거 및 정리 (빈 줄은 빈 문자열로 유지)
         lines = lines.map(line => {
-          if (!wantSmartPhonetic) {
-            // 번역의 경우 원본 언어 문자 제거
-            let cleanLine = line.trim();
-            cleanLine = cleanLine.replace(/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/g, '').trim();
-            return cleanLine;
+          let cleanLine = line.trim();
+          
+          // 인용 제거 (각 줄에서도)
+          cleanLine = cleanLine.replace(/\[\d+\]/g, '').trim();
+          
+          // 설명 패턴이 줄 시작에만 있으면 제거 (줄 중간은 보존)
+          explanationPatterns.forEach(pattern => {
+            if (pattern.test(cleanLine)) {
+              const match = cleanLine.match(pattern);
+              if (match && match.index === 0) {
+                cleanLine = cleanLine.replace(pattern, '').trim();
+              }
+            }
+          });
+          
+          // 번역의 경우: 원본 언어 문자가 많이 포함된 줄만 제거 (혼합 번역 방지)
+          // 하지만 너무 공격적으로 필터링하지 않음
+          if (!wantSmartPhonetic && cleanLine && cleanLine.length > 5) {
+            // 일본어/중국어 문자가 50% 이상 포함된 줄만 제거 (30% -> 50%로 완화)
+            const japaneseChars = (cleanLine.match(/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/g) || []).length;
+            const chineseChars = (cleanLine.match(/[\u4E00-\u9FFF]/g) || []).length;
+            const totalChars = cleanLine.length;
+            if (totalChars > 0 && (japaneseChars + chineseChars) / totalChars > 0.5) {
+              // 원본 언어가 많이 포함된 줄은 제거 (혼합 번역)
+              return '';
+            }
           }
-          return line.trim();
+          
+          return cleanLine;
         });
+        
+        // 빈 줄은 그대로 유지 (원본 가사 구조 유지)
+        // 실제 번역/발음 줄은 모두 유지 (너무 공격적인 필터링 제거)
         
         // 응답 형식 변환 (기존 형식과 호환)
         const result = wantSmartPhonetic 

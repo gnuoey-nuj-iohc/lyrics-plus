@@ -4661,12 +4661,23 @@ const ConfigModal = () => {
               },
               defaultValue: CONFIG.visual["perplexity-model"] || "sonar",
             },
+            {
+              desc: I18n.t("settingsAdvanced.api.phoneticLanguage.desc"),
+              info: I18n.t("settingsAdvanced.api.phoneticLanguage.info"),
+              key: "phonetic-language",
+              type: ConfigSelection,
+              options: {
+                "english": I18n.t("settingsAdvanced.api.phoneticLanguage.options.english"),
+                "korean": I18n.t("settingsAdvanced.api.phoneticLanguage.options.korean"),
+              },
+              defaultValue: CONFIG.visual["phonetic-language"] || "english",
+            },
           ],
           onChange: (name, value) => {
             CONFIG.visual[name] = value;
             StorageManager.saveConfig(name, value);
             // Clear API key cache when Perplexity settings change
-            if (name === "perplexity-api-key" || name === "perplexity-model") {
+            if (name === "perplexity-api-key" || name === "perplexity-model" || name === "phonetic-language") {
               if (typeof Translator !== "undefined" && Translator._clearApiKeyCache) {
                 Translator._clearApiKeyCache();
               }

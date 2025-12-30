@@ -1008,6 +1008,14 @@ window.LANG_KO = {
       "perplexityModel": {
         "desc": "Perplexity 모델",
         "info": "Perplexity API에서 사용할 모델을 선택합니다. sonar는 기본 모델, sonar-pro는 더 강력한 모델입니다"
+      },
+      "phoneticLanguage": {
+        "desc": "발음 표기 언어",
+        "info": "발음 표기를 영어(로마자)로 표시할지 한국어(한글)로 표시할지 선택합니다",
+        "options": {
+          "english": "영어 (로마자)",
+          "korean": "한국어 (한글)"
+        }
       }
     },
     "update": {
