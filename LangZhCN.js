@@ -947,6 +947,14 @@ window.LANG_ZH_CN = {
         "info": "鼠标不活动后UI隐藏的时间 (1-10秒)"
       }
     },
+    "tmiStyle": {
+      "title": "TMI样式",
+      "subtitle": "点击专辑封面时显示的TMI弹窗样式设置",
+      "fontSize": {
+        "desc": "TMI字体大小",
+        "info": "调整TMI弹窗的整体字体大小 (80-150%)"
+      }
+    },
     "aboutTab": {
       "appInfo": {
         "title": "应用信息"

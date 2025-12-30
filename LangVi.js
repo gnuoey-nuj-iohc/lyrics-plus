@@ -951,6 +951,14 @@ window.LANG_VI = {
         "info": "Thời gian sau khi ngừng di chuyển chuột trước khi UI ẩn đi (1-10 giây)"
       }
     },
+    "tmiStyle": {
+      "title": "Kiểu TMI",
+      "subtitle": "Cài đặt kiểu cho modal TMI hiển thị khi nhấp vào bìa album",
+      "fontSize": {
+        "desc": "Kích thước chữ TMI",
+        "info": "Điều chỉnh kích thước chữ tổng thể của modal TMI (80-150%)"
+      }
+    },
     "aboutTab": {
       "appInfo": {
         "title": "Thông tin ứng dụng"

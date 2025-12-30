@@ -849,6 +849,9 @@ const FullscreenOverlay = (() => {
         const autoHideUI = CONFIG?.visual?.["fullscreen-auto-hide-ui"] !== false;
         const autoHideDelay = (Number(CONFIG?.visual?.["fullscreen-auto-hide-delay"]) || 3) * 1000;
 
+        // TMI Font size settings
+        const tmiScale = (Number(CONFIG?.visual?.["fullscreen-tmi-font-size"]) || 100) / 100;
+
         // Control style settings
         const controlButtonSize = Number(CONFIG?.visual?.["fullscreen-control-button-size"]) || 36;
         const controlsBackground = CONFIG?.visual?.["fullscreen-controls-background"] === true;
@@ -1011,11 +1014,13 @@ const FullscreenOverlay = (() => {
                 tmiMode ? (
                     tmiLoading ?
                         react.createElement(window.SongInfoTMI?.TMILoadingView || 'div', {
-                            onClose: closeTmiMode
+                            onClose: closeTmiMode,
+                            tmiScale: tmiScale
                         }) :
                         react.createElement(window.SongInfoTMI?.TMIFullView || 'div', {
                             info: tmiData,
                             onClose: closeTmiMode,
+                            tmiScale: tmiScale,
                             trackName: (() => {
                                 const mode = CONFIG?.visual?.["translate-metadata-mode"] || "translated";
                                 const original = title || Spicetify.Player.data?.item?.metadata?.title;

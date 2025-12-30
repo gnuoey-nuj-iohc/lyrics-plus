@@ -947,6 +947,14 @@ window.LANG_JA = {
         "info": "マウス非アクティブ後にUIが非表示になるまでの時間 (1-10秒)"
       }
     },
+    "tmiStyle": {
+      "title": "TMIスタイル",
+      "subtitle": "アルバムアートクリック時に表示されるTMIモーダルのスタイル設定",
+      "fontSize": {
+        "desc": "TMIフォントサイズ",
+        "info": "TMIモーダルの全体フォントサイズを調整 (80-150%)"
+      }
+    },
     "aboutTab": {
       "appInfo": {
         "title": "アプリ情報"

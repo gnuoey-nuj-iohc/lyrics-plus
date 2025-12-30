@@ -947,6 +947,14 @@ window.LANG_PT = {
         "info": "Tempo de inatividade do mouse antes de ocultar a UI (1-10 segundos)"
       }
     },
+    "tmiStyle": {
+      "title": "Estilo TMI",
+      "subtitle": "Configurações de estilo do modal TMI exibido ao clicar na capa do álbum",
+      "fontSize": {
+        "desc": "Tamanho da Fonte TMI",
+        "info": "Ajuste o tamanho geral da fonte do modal TMI (80-150%)"
+      }
+    },
     "aboutTab": {
       "appInfo": {
         "title": "Info do Aplicativo"

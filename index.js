@@ -1725,6 +1725,10 @@ const CONFIG = {
       "ivLyrics:visual:fullscreen-browser-fullscreen",
       false
     ),
+    // TMI font size
+    "fullscreen-tmi-font-size":
+      Number(StorageManager.getItem("ivLyrics:visual:fullscreen-tmi-font-size")) ||
+      100,
 
     delay: 0,
   },
@@ -4548,6 +4552,9 @@ class LyricsContainer extends react.Component {
       const isEnabled = !this.state.isFullscreen;
       const useBrowserFullscreen = CONFIG.visual["fullscreen-browser-fullscreen"] === true;
       if (isEnabled) {
+        // TMI 폰트 크기 CSS 변수 설정
+        const tmiScale = (CONFIG.visual["fullscreen-tmi-font-size"] || 100) / 100;
+        this.fullscreenContainer.style.setProperty("--fullscreen-tmi-font-size", tmiScale);
         document.body.append(this.fullscreenContainer);
         this.mousetrap.bind("esc", this.toggleFullscreen);
         // ESC 키 직접 리스너 추가 (Mousetrap이 캡처하지 못할 경우 대비)
@@ -4743,6 +4750,7 @@ class LyricsContainer extends react.Component {
       "--lyrics-translation-font-family":
         CONFIG.visual["translation-font-family"] || "var(--font-family)",
       "--lyrics-fullscreen-right-padding": `${CONFIG.visual["fullscreen-lyrics-right-padding"] || 40}px`,
+      "--fullscreen-tmi-font-size": (CONFIG.visual["fullscreen-tmi-font-size"] || 100) / 100,
     };
 
     this.mousetrap.reset();
@@ -4937,6 +4945,7 @@ class LyricsContainer extends react.Component {
         (100 - (CONFIG.visual["highlight-intensity"] || 70)) / 100,
       "--animation-tempo": this.state.tempo,
       "--lyrics-fullscreen-right-padding": `${CONFIG.visual["fullscreen-lyrics-right-padding"] || 40}px`,
+      "--fullscreen-tmi-font-size": (CONFIG.visual["fullscreen-tmi-font-size"] || 100) / 100,
     };
 
     let mode = this.getCurrentMode();
@@ -5124,6 +5133,11 @@ class LyricsContainer extends react.Component {
       }
       if (!hasLyrics && centerWhenNoLyrics) {
         fullscreenClasses += " fullscreen-no-lyrics";
+      }
+      // TMI 폰트 크기 CSS 변수 업데이트
+      if (this.fullscreenContainer) {
+        const tmiScale = (CONFIG.visual["fullscreen-tmi-font-size"] || 100) / 100;
+        this.fullscreenContainer.style.setProperty("--fullscreen-tmi-font-size", tmiScale);
       }
     }
 

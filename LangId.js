@@ -951,6 +951,14 @@ window.LANG_ID = {
         "info": "Waktu setelah berhenti menggerakkan mouse sebelum UI disembunyikan (1-10 detik)"
       }
     },
+    "tmiStyle": {
+      "title": "Gaya TMI",
+      "subtitle": "Pengaturan gaya untuk modal TMI yang ditampilkan saat mengklik sampul album",
+      "fontSize": {
+        "desc": "Ukuran Font TMI",
+        "info": "Sesuaikan ukuran font keseluruhan modal TMI (80-150%)"
+      }
+    },
     "aboutTab": {
       "appInfo": {
         "title": "Info Aplikasi"

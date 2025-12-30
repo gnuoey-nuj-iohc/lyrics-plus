@@ -947,6 +947,14 @@ window.LANG_FR = {
         "info": "Temps d'inactivité de la souris avant de masquer l'UI (1-10 secondes)"
       }
     },
+    "tmiStyle": {
+      "title": "Style TMI",
+      "subtitle": "Paramètres de style pour la fenêtre TMI affichée lors du clic sur la pochette de l'album",
+      "fontSize": {
+        "desc": "Taille de police TMI",
+        "info": "Ajustez la taille de police globale de la fenêtre TMI (80-150%)"
+      }
+    },
     "aboutTab": {
       "appInfo": {
         "title": "Infos de l'application"

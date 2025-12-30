@@ -5499,6 +5499,35 @@ const ConfigModal = () => {
               })
             );
           },
+        }),
+        react.createElement(SectionTitle, {
+          title: I18n.t("settingsAdvanced.tmiStyle.title"),
+          subtitle: I18n.t("settingsAdvanced.tmiStyle.subtitle"),
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: I18n.t("settingsAdvanced.tmiStyle.fontSize.desc"),
+              info: I18n.t("settingsAdvanced.tmiStyle.fontSize.info"),
+              key: "fullscreen-tmi-font-size",
+              type: ConfigSliderRange,
+              min: 80,
+              max: 150,
+              step: 5,
+              unit: "%",
+              defaultValue: CONFIG.visual["fullscreen-tmi-font-size"] || 100,
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            StorageManager.saveConfig(name, value);
+            lyricContainerUpdate?.();
+            window.dispatchEvent(
+              new CustomEvent("ivLyrics", {
+                detail: { type: "config", name, value },
+              })
+            );
+          },
         })
       ),
       // 디버그 탭

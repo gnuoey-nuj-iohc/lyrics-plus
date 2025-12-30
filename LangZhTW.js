@@ -947,6 +947,14 @@ window.LANG_ZH_TW = {
         "info": "滑鼠不活動後UI隱藏的時間 (1-10秒)"
       }
     },
+    "tmiStyle": {
+      "title": "TMI樣式",
+      "subtitle": "點擊專輯封面時顯示的TMI彈窗樣式設定",
+      "fontSize": {
+        "desc": "TMI字體大小",
+        "info": "調整TMI彈窗的整體字體大小 (80-150%)"
+      }
+    },
     "aboutTab": {
       "appInfo": {
         "title": "應用程式資訊"

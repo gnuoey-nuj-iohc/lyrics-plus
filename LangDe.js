@@ -947,6 +947,14 @@ window.LANG_DE = {
         "info": "Zeit der Inaktivität der Maus, bevor die UI ausgeblendet wird (1-10 Sekunden)"
       }
     },
+    "tmiStyle": {
+      "title": "TMI-Stil",
+      "subtitle": "Stileinstellungen für das TMI-Modal beim Klicken auf das Albumcover",
+      "fontSize": {
+        "desc": "TMI-Schriftgröße",
+        "info": "Passen Sie die allgemeine Schriftgröße des TMI-Modals an (80-150%)"
+      }
+    },
     "aboutTab": {
       "appInfo": {
         "title": "App-Info"

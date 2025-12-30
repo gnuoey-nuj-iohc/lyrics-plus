@@ -82,11 +82,17 @@ const SongInfoTMI = (() => {
     }
 
     // Full TMI View Component (replaces left panel content)
-    const TMIFullView = react.memo(({ info, onClose, trackName, artistName, coverUrl, onRegenerate }) => {
+    const TMIFullView = react.memo(({ info, onClose, trackName, artistName, coverUrl, onRegenerate, tmiScale: propTmiScale }) => {
+        // prop으로 받은 tmiScale 사용, 없으면 CONFIG에서 가져옴
+        const tmiScale = propTmiScale ?? (CONFIG?.visual?.["fullscreen-tmi-font-size"] || 100) / 100;
+        
         // Handle error state
         if (info?.error) {
             const isQuotaError = info.message?.includes('429') || info.message?.includes('quota') || info.message?.includes('RESOURCE_EXHAUSTED');
-            return react.createElement("div", { className: "tmi-fullview tmi-fullview-error" },
+            return react.createElement("div", { 
+                className: "tmi-fullview tmi-fullview-error",
+                style: { "--tmi-scale": tmiScale }
+            },
                 react.createElement("div", { className: "tmi-fullview-header" },
                     coverUrl && react.createElement("img", {
                         src: coverUrl,
@@ -127,7 +133,10 @@ const SongInfoTMI = (() => {
         const triviaList = info?.track?.trivia || [];
         const description = info?.track?.description || '';
 
-        return react.createElement("div", { className: "tmi-fullview" },
+        return react.createElement("div", { 
+            className: "tmi-fullview",
+            style: { "--tmi-scale": tmiScale }
+        },
             // Header
             react.createElement("div", { className: "tmi-fullview-header" },
                 coverUrl && react.createElement("img", {
@@ -189,8 +198,14 @@ const SongInfoTMI = (() => {
     });
 
     // Loading View
-    const TMILoadingView = react.memo(({ onClose }) => {
-        return react.createElement("div", { className: "tmi-fullview tmi-fullview-loading" },
+    const TMILoadingView = react.memo(({ onClose, tmiScale: propTmiScale }) => {
+        // prop으로 받은 tmiScale 사용, 없으면 CONFIG에서 가져옴
+        const tmiScale = propTmiScale ?? (CONFIG?.visual?.["fullscreen-tmi-font-size"] || 100) / 100;
+        
+        return react.createElement("div", { 
+            className: "tmi-fullview tmi-fullview-loading",
+            style: { "--tmi-scale": tmiScale }
+        },
             react.createElement("div", { className: "tmi-fullview-header" },
                 react.createElement("span", { className: "tmi-fullview-label" }, I18n.t("tmi.title"))
             ),

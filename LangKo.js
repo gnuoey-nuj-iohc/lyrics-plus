@@ -947,6 +947,14 @@ window.LANG_KO = {
         "info": "마우스 비활동 후 UI가 숨겨지기까지의 시간 (1-10초)"
       }
     },
+    "tmiStyle": {
+      "title": "TMI 스타일",
+      "subtitle": "앨범 아트 클릭 시 표시되는 TMI 모달의 스타일 설정",
+      "fontSize": {
+        "desc": "TMI 폰트 크기",
+        "info": "TMI 모달의 전체 폰트 크기를 조정합니다 (80-150%)"
+      }
+    },
     "aboutTab": {
       "appInfo": {
         "title": "앱 정보"

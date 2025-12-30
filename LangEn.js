@@ -947,6 +947,14 @@ window.LANG_EN = {
         "info": "Time before UI hides after mouse inactivity (1-10 seconds)"
       }
     },
+    "tmiStyle": {
+      "title": "TMI Style",
+      "subtitle": "Style settings for the TMI modal displayed when clicking album art",
+      "fontSize": {
+        "desc": "TMI Font Size",
+        "info": "Adjust the overall font size of the TMI modal (80-150%)"
+      }
+    },
     "aboutTab": {
       "appInfo": {
         "title": "App Info"
