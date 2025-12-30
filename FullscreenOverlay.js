@@ -807,6 +807,106 @@ const FullscreenOverlay = (() => {
         );
     };
 
+    // 영어를 일본어 가나로 변환하는 함수 (캐싱 포함)
+    const kanaCache = new Map();
+    const convertEnglishToKana = async (text) => {
+        if (!text || typeof text !== 'string') return null;
+        
+        const trimmedText = text.trim();
+        if (!trimmedText) return null;
+        
+        // 캐시 확인
+        if (kanaCache.has(trimmedText)) {
+            return kanaCache.get(trimmedText);
+        }
+        
+        // 영어가 아닌 경우 변환하지 않음
+        const isEnglish = /^[a-zA-Z0-9\s\-'.,!?()]+$/.test(trimmedText);
+        if (!isEnglish) {
+            kanaCache.set(trimmedText, null);
+            return null;
+        }
+        
+        // 이미 일본어 문자가 포함되어 있으면 변환하지 않음
+        if (/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(trimmedText)) {
+            kanaCache.set(trimmedText, null);
+            return null;
+        }
+        
+        try {
+            // Perplexity API를 사용하여 영어를 일본어 가나로 변환
+            const perplexityKey = StorageManager.getItem("ivLyrics:visual:perplexity-api-key");
+            if (!perplexityKey || !perplexityKey.trim()) {
+                kanaCache.set(trimmedText, null);
+                return null;
+            }
+            
+            const perplexityModel = StorageManager.getItem("ivLyrics:visual:perplexity-model") || "sonar";
+            
+            const response = await fetch("https://api.perplexity.ai/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${perplexityKey.trim()}`,
+                },
+                body: JSON.stringify({
+                    model: perplexityModel,
+                    messages: [
+                        {
+                            role: "system",
+                            content: "You are a language expert. Convert English text to Japanese katakana pronunciation. Output ONLY the katakana characters, no explanations, no citations, no additional text."
+                        },
+                        {
+                            role: "user",
+                            content: `Convert this English text to Japanese katakana: "${trimmedText}"\n\nOutput ONLY the katakana characters, nothing else:`
+                        }
+                    ],
+                    temperature: 0.2,
+                    max_tokens: 100,
+                }),
+                mode: "cors",
+            });
+            
+            if (!response.ok) {
+                console.warn('[FullscreenOverlay] API response not ok:', response.status);
+                kanaCache.set(trimmedText, null);
+                return null;
+            }
+            
+            const data = await response.json();
+            if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+                kanaCache.set(trimmedText, null);
+                return null;
+            }
+            
+            let kana = data.choices[0].message.content.trim();
+            
+            // 불필요한 텍스트 제거
+            kana = kana.replace(/\[\d+\]/g, '').trim(); // 인용 제거
+            kana = kana.replace(/^["']|["']$/g, '').trim(); // 따옴표 제거
+            kana = kana.replace(/^[^ァ-ヶー]*|[^ァ-ヶー]*$/g, '').trim(); // 가나가 아닌 앞뒤 문자 제거
+            kana = kana.split('\n')[0].trim(); // 첫 줄만 사용
+            
+            // 일본어 가나가 포함되어 있는지 확인
+            if (/[\u3040-\u309F\u30A0-\u30FF]/.test(kana) && kana.length > 0) {
+                kanaCache.set(trimmedText, kana);
+                // 캐시 크기 제한 (최대 100개)
+                if (kanaCache.size > 100) {
+                    const firstKey = kanaCache.keys().next().value;
+                    kanaCache.delete(firstKey);
+                }
+                return kana;
+            }
+            
+            kanaCache.set(trimmedText, null);
+            return null;
+        } catch (error) {
+            console.warn('[FullscreenOverlay] English to Kana conversion failed:', error);
+            kanaCache.set(trimmedText, null);
+            return null;
+        }
+    };
+
     // Main Overlay Component
     const Overlay = ({
         coverUrl,
@@ -819,6 +919,10 @@ const FullscreenOverlay = (() => {
     }) => {
         const [uiVisible, setUiVisible] = useState(true);
         const hideTimerRef = useRef(null);
+        const [kanaTitle, setKanaTitle] = useState(null);
+        const [kanaTitleLoading, setKanaTitleLoading] = useState(false);
+        const kanaTitleRef = useRef(null);
+        const conversionAbortControllerRef = useRef(null);
 
         // Get settings from CONFIG
         const showAlbum = CONFIG?.visual?.["fullscreen-show-album"] !== false;
@@ -855,6 +959,71 @@ const FullscreenOverlay = (() => {
         const albumShadow = CONFIG?.visual?.["fullscreen-album-shadow"] !== false;
         const infoGapVal = CONFIG?.visual?.["fullscreen-info-gap"];
         const infoGap = (infoGapVal !== undefined && infoGapVal !== null) ? Number(infoGapVal) : 24;
+
+        // 영어 제목을 일본어 가나로 변환
+        useEffect(() => {
+            // 이전 요청 취소
+            if (conversionAbortControllerRef.current) {
+                conversionAbortControllerRef.current.abort();
+            }
+            
+            if (!isFullscreen || !showInfo) {
+                setKanaTitle(null);
+                kanaTitleRef.current = null;
+                return;
+            }
+
+            const originalTitle = title || Spicetify.Player.data?.item?.metadata?.title;
+            if (!originalTitle) {
+                setKanaTitle(null);
+                kanaTitleRef.current = null;
+                return;
+            }
+
+            // 제목이 변경되지 않았으면 변환하지 않음
+            if (kanaTitleRef.current === originalTitle) {
+                return;
+            }
+            kanaTitleRef.current = originalTitle;
+
+            // romanized 모드일 때만 변환
+            const mode = CONFIG?.visual?.["translate-metadata-mode"] || "translated";
+            if (mode !== "romanized") {
+                setKanaTitle(null);
+                return;
+            }
+
+            // 영어가 아니거나 이미 일본어 문자가 포함되어 있으면 변환하지 않음
+            const isEnglish = /^[a-zA-Z0-9\s\-'.,!?()]+$/.test(originalTitle.trim());
+            if (!isEnglish || /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(originalTitle)) {
+                setKanaTitle(null);
+                return;
+            }
+
+            // 변환 시작
+            setKanaTitleLoading(true);
+            const abortController = new AbortController();
+            conversionAbortControllerRef.current = abortController;
+            
+            convertEnglishToKana(originalTitle)
+                .then((kana) => {
+                    if (!abortController.signal.aborted) {
+                        setKanaTitle(kana);
+                        setKanaTitleLoading(false);
+                    }
+                })
+                .catch((error) => {
+                    if (!abortController.signal.aborted) {
+                        console.warn('[FullscreenOverlay] Failed to convert English to Kana:', error);
+                        setKanaTitle(null);
+                        setKanaTitleLoading(false);
+                    }
+                });
+            
+            return () => {
+                abortController.abort();
+            };
+        }, [title, isFullscreen, showInfo]);
 
         // Auto-hide UI on mouse inactivity
         useEffect(() => {
@@ -957,11 +1126,13 @@ const FullscreenOverlay = (() => {
 
                                     case "romanized":
                                         // 발음만 표시 (없으면 원어)
+                                        // 영어 제목이면 일본어 가나로 변환된 것을 우선 표시
+                                        const displayTitle = kanaTitle || romanizedTitle || originalTitle;
                                         elements.push(react.createElement("div", {
                                             key: "title-main",
                                             className: "lyrics-fullscreen-title",
                                             style: { fontSize: `${titleSize}px` }
-                                        }, romanizedTitle || originalTitle));
+                                        }, kanaTitleLoading ? "..." : displayTitle));
                                         break;
 
                                     case "original-translated":
