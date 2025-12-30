@@ -84,7 +84,7 @@ curl -fsSL https://raw.githubusercontent.com/spicetify/cli/main/install.sh | sh
 
 설치 과정에서 Marketplace 설치 여부를 묻는 질문이 나오면 Y를 입력하세요. Marketplace의 FullScreen 확장 프로그램과 함께 사용하면 더 나은 경험을 할 수 있습니다.
 
-### 3. Lyrics Plus 설치
+### 3. ivLyrics 설치
 
 #### 자동 설치 (권장)
 
@@ -119,7 +119,7 @@ curl -fsSL https://ivlis.kr/ivLyrics/install.sh | sh
 
 ## 초기 설정
 
-1. Spotify를 실행하고 좌측 메뉴에서 Lyrics Plus를 선택합니다.
+1. Spotify를 실행하고 좌측 메뉴에서 ivLyrics를 선택합니다.
 2. 우측 하단의 설정 버튼을 클릭합니다.
 3. 고급 탭에서 Gemini API 키를 입력합니다.
    - API 키는 [Google AI Studio](https://aistudio.google.com/apikey?hl=ko)에서 무료로 발급받을 수 있습니다.
@@ -151,5 +151,6 @@ curl -fsSL https://ivlis.kr/ivLyrics/install.sh | sh
 개발을 지원해주시려면 커피 한 잔 사주세요.
 
 <a href="https://www.buymeacoffee.com/ivlis" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
 
 
