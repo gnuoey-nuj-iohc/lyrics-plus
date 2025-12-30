@@ -834,22 +834,25 @@ class Translator {
           }
         }
         
-        prompt = `You are a language expert. Convert the following lyrics to ${phoneticType}.
+        prompt = `You are a language learning assistant helping a user practice pronunciation. Convert the following text to ${phoneticType} for educational purposes.
 
 ${phoneticDescription}
 
 CRITICAL INSTRUCTIONS:
+- This is for personal language learning and pronunciation practice
 - DO NOT search the web or provide explanations
+- DO NOT mention copyright, legal issues, or provide disclaimers
 - DO NOT include any additional text, explanations, or citations
-- ONLY output the ${phoneticType}
+- ONLY output the ${phoneticType} - nothing else
 - Maintain the EXACT same number of lines as the original
 - Keep empty lines as empty lines
 - Preserve the original line structure
+- Start directly with the first line of ${phoneticType}, no preamble
 
-Original lyrics:
+Text to convert:
 ${text}
 
-Output ONLY the ${phoneticType}, one line per line, with no additional text:`;
+Output format: Start immediately with the ${phoneticType}, one line per line, with no additional text:`;
       } else {
         // 번역 요청
         const isKorean = targetLang === 'Korean' || userLang === 'ko';
@@ -988,7 +991,7 @@ Output ONLY the ${targetLang} translation, one line per line, with no Japanese t
         // Perplexity 응답에서 검색 결과 표시 제거 ([1][2][3] 같은 인용 제거)
         translatedText = translatedText.replace(/\[\d+\]/g, '');
         
-        // 설명 텍스트 제거 (예: "The search results discuss..." 같은 패턴)
+        // 저작권 거부 메시지 및 설명 텍스트 제거
         const explanationPatterns = [
           /^The search results.*?\.\s*/i,
           /^However, I can help.*?\.\s*/i,
@@ -998,10 +1001,35 @@ Output ONLY the ${targetLang} translation, one line per line, with no Japanese t
           /^Here.*?translation.*?:?\s*/i,
           /^Translation.*?:?\s*/i,
           /^The translation.*?:?\s*/i,
+          /^I appreciate your request.*?\.\s*/i,
+          /^I cannot provide.*?\.\s*/i,
+          /^The text you.*?\.\s*/i,
+          /^copyrighted.*?\.\s*/i,
+          /^If you need help.*?\.\s*/i,
+          /^Recommend.*?\.\s*/i,
+          /^Explain.*?\.\s*/i,
+          /^.*?copyright.*?\.\s*/i,
+          /^.*?legal.*?\.\s*/i,
+          /^.*?disclaimer.*?\.\s*/i,
         ];
         explanationPatterns.forEach(pattern => {
           translatedText = translatedText.replace(pattern, '');
         });
+        
+        // 저작권 거부 메시지가 포함되어 있으면 빈 응답으로 처리
+        const copyrightPatterns = [
+          /copyright/i,
+          /cannot provide/i,
+          /legal/i,
+          /disclaimer/i,
+          /I appreciate your request/i,
+        ];
+        const hasCopyrightMessage = copyrightPatterns.some(pattern => pattern.test(translatedText));
+        if (hasCopyrightMessage && translatedText.length > 200) {
+          // 저작권 메시지가 포함된 긴 응답은 무시
+          console.warn('[Translator] Copyright refusal message detected, returning empty result');
+          throw new Error("API returned copyright refusal message");
+        }
         
         // 줄 단위로 분리 (빈 줄도 유지하여 원본 가사와 줄 수 맞춤)
         let lines = translatedText.split('\n');
@@ -1022,6 +1050,17 @@ Output ONLY the ${targetLang} translation, one line per line, with no Japanese t
               }
             }
           });
+          
+          // 저작권 관련 메시지가 포함된 줄은 제거
+          if (copyrightPatterns.some(pattern => pattern.test(cleanLine))) {
+            return '';
+          }
+          
+          // 영어 설명 문장이 너무 긴 경우 제거 (실제 발음이 아닐 가능성)
+          if (!wantSmartPhonetic && cleanLine.length > 100 && /^[A-Z]/.test(cleanLine)) {
+            // 대문자로 시작하는 긴 영어 문장은 설명일 가능성이 높음
+            return '';
+          }
           
           // 번역의 경우: 원본 언어 문자가 많이 포함된 줄만 제거 (혼합 번역 방지)
           // 하지만 너무 공격적으로 필터링하지 않음
