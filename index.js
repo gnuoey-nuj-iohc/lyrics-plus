@@ -276,7 +276,7 @@ if (typeof window.kuromoji === "undefined") {
 // === ivLyrics-overlay 전송 모듈 ===
 // Sends lyrics data to the desktop overlay application
 const OverlaySender = {
-  PORT: 15000,
+  DEFAULT_PORT: 15000,
   progressInterval: null,
   lastSentUri: null,
   lastSentLyrics: null,
@@ -289,6 +289,21 @@ const OverlaySender = {
   _isConnected: false,
   _connectionCheckInterval: null,
   _lastConnectionAttempt: 0,
+
+  // 포트 설정 (localStorage에 저장)
+  get port() {
+    const savedPort = localStorage.getItem('ivLyrics:overlay-port');
+    return savedPort ? parseInt(savedPort, 10) : this.DEFAULT_PORT;
+  },
+  set port(value) {
+    const portNum = parseInt(value, 10);
+    if (portNum >= 1024 && portNum <= 65535) {
+      localStorage.setItem('ivLyrics:overlay-port', portNum.toString());
+      // 포트 변경 시 재연결 시도
+      this.isConnected = false;
+      this.checkConnection();
+    }
+  },
 
   // 설정 (localStorage에 저장)
   get enabled() {
@@ -357,7 +372,7 @@ const OverlaySender = {
     if (!this.enabled) return false;
 
     try {
-      const response = await fetch(`http://localhost:${this.PORT}/progress`, {
+      const response = await fetch(`http://localhost:${this.port}/progress`, {
         method: 'POST',
         mode: 'cors',
         headers: { 'Content-Type': 'application/json' },
@@ -392,7 +407,7 @@ const OverlaySender = {
     if (!this.enabled) return;
 
     try {
-      const response = await fetch(`http://localhost:${this.PORT}${endpoint}`, {
+      const response = await fetch(`http://localhost:${this.port}${endpoint}`, {
         method: 'POST',
         mode: 'cors',
         headers: { 'Content-Type': 'application/json' },

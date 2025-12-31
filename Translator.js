@@ -98,6 +98,7 @@ class Translator {
 
   /**
    * 메타데이터 번역 (제목/아티스트)
+   * API 키 로테이션 지원 - 429/403 에러 시 다음 키로 자동 시도
    * @param {Object} options - 옵션
    * @param {string} options.trackId - Spotify Track ID
    * @param {string} options.title - 노래 제목
@@ -125,27 +126,29 @@ class Translator {
       return null;
     }
 
-    // API 키 파싱 (callGemini와 동일한 로직)
-    let apiKey;
+    // API 키 파싱 - 배열 형태로 모든 키 추출 (callGemini와 동일한 로직)
+    let apiKeys = [];
     try {
       const trimmed = apiKeyRaw.trim();
       if (trimmed.startsWith('[')) {
         const parsed = JSON.parse(trimmed);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          apiKey = parsed[0]; // 첫 번째 키 사용
+        if (Array.isArray(parsed)) {
+          apiKeys = parsed;
         } else {
-          apiKey = trimmed;
+          apiKeys = [trimmed];
         }
       } else {
-        apiKey = trimmed;
+        apiKeys = [trimmed];
       }
     } catch (e) {
-      console.warn("[Translator] Failed to parse API key, using as-is:", e);
-      apiKey = apiKeyRaw;
+      console.warn("[Translator] Failed to parse API keys, treating as single key:", e);
+      apiKeys = [apiKeyRaw];
     }
 
-    // 파싱된 키 검증
-    if (!apiKey || apiKey.trim() === "") {
+    // 빈 키 필터링
+    apiKeys = apiKeys.filter(k => k && k.trim().length > 0);
+
+    if (apiKeys.length === 0) {
       return null;
     }
 
@@ -177,79 +180,144 @@ class Translator {
       return this._metadataInflightRequests.get(cacheKey);
     }
 
-    const requestPromise = (async () => {
+    // 단일 API 키로 요청하는 함수
+    const executeWithKey = async (apiKey, keyIndex) => {
       const url = "https://lyrics.api.ivl.is/lyrics/translate/metadata";
 
       // API 요청 로깅 시작
       let logId = null;
       if (window.ApiTracker) {
-        logId = window.ApiTracker.logRequest('metadata', url, { trackId: finalTrackId, title, artist, lang: userLang });
-      }
-
-      try {
-        const response = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify({
-            trackId: finalTrackId,
-            title,
-            artist,
-            lang: userLang,
-            apiKey,
-            ignore_cache: ignoreCache,
-          }),
+        logId = window.ApiTracker.logRequest('metadata', url, {
+          trackId: finalTrackId,
+          title,
+          artist,
+          lang: userLang,
+          keyIndex: keyIndex + 1,
+          totalKeys: apiKeys.length
         });
-
-        if (!response.ok) {
-          if (window.ApiTracker && logId) {
-            window.ApiTracker.logResponse(logId, { status: response.status }, 'error', `HTTP ${response.status}`);
-          }
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.error) {
-          if (window.ApiTracker && logId) {
-            window.ApiTracker.logResponse(logId, data, 'error', data.message || "Translation failed");
-          }
-          throw new Error(data.message || "Translation failed");
-        }
-
-        if (data.success && data.data) {
-          // 성공 로깅
-          if (window.ApiTracker && logId) {
-            window.ApiTracker.logResponse(logId, {
-              translatedTitle: data.data.translatedTitle,
-              translatedArtist: data.data.translatedArtist,
-              romanizedTitle: data.data.romanizedTitle,
-              romanizedArtist: data.data.romanizedArtist
-            }, 'success');
-          }
-          // 메모리 캐시에 저장
-          this._metadataCache.set(cacheKey, data.data);
-          // 로컬 캐시(IndexedDB)에도 저장 (백그라운드)
-          LyricsCache.setMetadata(finalTrackId, userLang, data.data).catch(() => { });
-          return data.data;
-        }
-
-        if (window.ApiTracker && logId) {
-          window.ApiTracker.logResponse(logId, data, 'error', "No data returned");
-        }
-        return null;
-      } catch (error) {
-        if (window.ApiTracker && logId) {
-          window.ApiTracker.logResponse(logId, null, 'error', error.message);
-        }
-        console.warn(`[Translator] Metadata translation failed:`, error.message);
-        return null;
-      } finally {
-        this._metadataInflightRequests.delete(cacheKey);
       }
-    })();
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          trackId: finalTrackId,
+          title,
+          artist,
+          lang: userLang,
+          apiKey,
+          ignore_cache: ignoreCache,
+        }),
+      });
+
+      // 429 (Rate Limit) 또는 403 (Forbidden) 에러 감지 - 키 로테이션 필요
+      if (response.status === 429 || response.status === 403) {
+        if (window.ApiTracker && logId) {
+          window.ApiTracker.logResponse(logId, { status: response.status }, 'error', `HTTP ${response.status} - Key rotation needed`);
+        }
+        throw new Error(`${response.status} ${response.status === 429 ? 'Rate Limit' : 'Forbidden'}`);
+      }
+
+      if (!response.ok) {
+        if (window.ApiTracker && logId) {
+          window.ApiTracker.logResponse(logId, { status: response.status }, 'error', `HTTP ${response.status}`);
+        }
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // 응답 본문에서 429/403/RESOURCE_EXHAUSTED 감지 (서버가 200으로 응답하지만 에러를 포함하는 경우)
+      if (data.error) {
+        const errorStr = typeof data.error === 'string' ? data.error :
+          (data.message || JSON.stringify(data.error));
+        const isRateLimitError = errorStr.includes('429') ||
+          errorStr.includes('RESOURCE_EXHAUSTED') ||
+          errorStr.includes('quota') ||
+          errorStr.toLowerCase().includes('rate limit');
+        const isForbiddenError = errorStr.includes('403') ||
+          errorStr.includes('Forbidden') ||
+          errorStr.includes('API key not valid');
+
+        if (isRateLimitError || isForbiddenError) {
+          if (window.ApiTracker && logId) {
+            window.ApiTracker.logResponse(logId, data, 'error', `${isRateLimitError ? '429 Rate Limit' : '403 Forbidden'} in response body`);
+          }
+          throw new Error(`${isRateLimitError ? '429 Rate Limit' : '403 Forbidden'}: ${errorStr}`);
+        }
+
+        if (window.ApiTracker && logId) {
+          window.ApiTracker.logResponse(logId, data, 'error', data.message || "Translation failed");
+        }
+        throw new Error(data.message || "Translation failed");
+      }
+
+      if (data.success && data.data) {
+        // 성공 로깅
+        if (window.ApiTracker && logId) {
+          window.ApiTracker.logResponse(logId, {
+            translatedTitle: data.data.translatedTitle,
+            translatedArtist: data.data.translatedArtist,
+            romanizedTitle: data.data.romanizedTitle,
+            romanizedArtist: data.data.romanizedArtist,
+            keyUsed: keyIndex + 1
+          }, 'success');
+        }
+        return data.data;
+      }
+
+      if (window.ApiTracker && logId) {
+        window.ApiTracker.logResponse(logId, data, 'error', "No data returned");
+      }
+      return null;
+    };
+
+    // 키 로테이션으로 요청 실행
+    const runWithRotation = async () => {
+      let lastError = null;
+
+      for (let i = 0; i < apiKeys.length; i++) {
+        const key = apiKeys[i];
+        try {
+          const result = await executeWithKey(key, i);
+          if (result) {
+            // 메모리 캐시에 저장
+            this._metadataCache.set(cacheKey, result);
+            // 로컬 캐시(IndexedDB)에도 저장 (백그라운드)
+            LyricsCache.setMetadata(finalTrackId, userLang, result).catch(() => { });
+            return result;
+          }
+        } catch (error) {
+          lastError = error;
+          // 429(Rate Limit) 또는 403(Forbidden/Invalid)인 경우 다음 키로 시도
+          const isRateLimit = error.message.includes("429") || error.message.includes("Rate Limit");
+          const isForbidden = error.message.includes("403") || error.message.includes("Forbidden") || error.message.includes("API key not valid");
+
+          if (isRateLimit || isForbidden) {
+            console.warn(`[Translator] Metadata API Key ${key.substring(0, 8)}... failed (${isRateLimit ? 'Rate Limit' : 'Invalid'}). Rotating to next key...`);
+            if (i === apiKeys.length - 1) {
+              break; // 마지막 키였으면 중단
+            }
+            continue; // 다음 키 시도
+          }
+
+          // 그 외 에러는 즉시 중단
+          console.warn(`[Translator] Metadata translation failed:`, error.message);
+          return null;
+        }
+      }
+
+      // 모든 키 실패
+      console.warn(`[Translator] All API keys exhausted for metadata translation:`, lastError?.message);
+      return null;
+    };
+
+    const requestPromise = runWithRotation().finally(() => {
+      this._metadataInflightRequests.delete(cacheKey);
+    });
 
     this._metadataInflightRequests.set(cacheKey, requestPromise);
     return requestPromise;

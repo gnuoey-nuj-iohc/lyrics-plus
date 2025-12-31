@@ -58,6 +58,12 @@ window.LANG_EN = {
       "label": "Enable Desktop Overlay",
       "desc": "Send lyrics to the desktop overlay app"
     },
+    "port": {
+      "label": "Connection Port",
+      "desc": "Port number to connect with overlay app (1024-65535)"
+    },
+    "portSaved": "Port saved",
+    "portInvalid": "Invalid port number (1024-65535)",
     "status": {
       "connected": "✓ Connected",
       "disconnected": "Not connected",

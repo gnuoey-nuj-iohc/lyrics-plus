@@ -1901,7 +1901,7 @@ const Utils = {
   /**
    * Current version of the ivLyrics app
    */
-  currentVersion: "3.0.4",
+  currentVersion: "3.0.5",
 
   /**
    * Check for updates from remote repository
@@ -2225,32 +2225,16 @@ const Utils = {
 
   /**
    * 커뮤니티 싱크 오프셋 조회
+   * 캐시를 사용하지 않고 항상 서버에서 최신 데이터를 가져옴 (실시간 커뮤니티 소통을 위해)
    */
   async getCommunityOffset(trackUri) {
     const trackId = this.extractTrackId(trackUri);
     if (!trackId) return null;
 
-    // 1. 로컬 캐시 먼저 확인
-    try {
-      const cached = await LyricsCache.getSync(trackId);
-      if (cached !== null) {
-        console.log(`[ivLyrics] Using cached community offset for ${trackId}`);
-        // 캐시 히트 로깅
-        if (window.ApiTracker) {
-          window.ApiTracker.logCacheHit('sync', `sync:${trackId}`, {
-            offsetMs: cached.offsetMs,
-            voteCount: cached.voteCount
-          });
-        }
-        return cached;
-      }
-    } catch (e) {
-      console.warn('[ivLyrics] Sync cache check failed:', e);
-    }
-
-    // 2. API 호출
+    // 항상 서버에서 최신 데이터를 가져옴 (캐시 사용 안 함)
     const userHash = this.getUserHash();
-    const syncUrl = `https://lyrics.api.ivl.is/lyrics/sync?trackId=${trackId}&userHash=${userHash}`;
+    // 브라우저 캐시 우회를 위해 타임스탬프 추가
+    const syncUrl = `https://lyrics.api.ivl.is/lyrics/sync?trackId=${trackId}&userHash=${userHash}&_t=${Date.now()}`;
 
     // API 요청 로깅
     let logId = null;
@@ -2259,7 +2243,13 @@ const Utils = {
     }
 
     try {
-      const response = await fetch(syncUrl);
+      const response = await fetch(syncUrl, {
+        cache: 'no-store',  // 브라우저 캐시 완전히 우회
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      });
       const data = await response.json();
 
       if (data.success && data.data) {
@@ -2269,15 +2259,11 @@ const Utils = {
             voteCount: data.data.voteCount
           }, 'success');
         }
-        // 로컬 캐시에 저장
-        LyricsCache.setSync(trackId, data.data).catch(() => { });
         return data.data;
       }
       if (window.ApiTracker && logId) {
         window.ApiTracker.logResponse(logId, null, 'success', 'No offset found');
       }
-      // 오프셋이 없는 경우도 캐시 (null 표시를 위한 빈 객체)
-      LyricsCache.setSync(trackId, { offsetMs: null, voteCount: 0 }).catch(() => { });
       return null;
     } catch (error) {
       if (window.ApiTracker && logId) {
@@ -2374,8 +2360,9 @@ const Utils = {
 
   /**
    * 커뮤니티 영상 목록 조회
+   * 캐시를 사용하지 않고 항상 서버에서 최신 데이터를 가져옴 (실시간 커뮤니티 소통을 위해)
    * @param {string} trackUri - 트랙 URI
-   * @param {boolean} skipCache - 캐시 우회 여부 (등록/삭제 후 새 데이터 가져올 때)
+   * @param {boolean} skipCache - (사용하지 않음, 하위 호환성 유지용)
    */
   async getCommunityVideos(trackUri, skipCache = false) {
     const trackId = this.extractTrackId(trackUri);
@@ -2384,12 +2371,16 @@ const Utils = {
     const userHash = this.getUserHash();
 
     try {
-      // skipCache가 true이면 캐시 우회를 위한 타임스탬프 추가
-      const cacheParam = skipCache ? `&_t=${Date.now()}` : '';
+      // 항상 브라우저 캐시 우회를 위해 타임스탬프 추가
       const response = await fetch(
-        `https://lyrics.api.ivl.is/lyrics/youtube/community?trackId=${trackId}&userId=${userHash}${cacheParam}`,
-        // 항상 최신 데이터를 가져오도록 no-cache 설정 (서버 캐시 문제 방지)
-        { cache: 'no-cache' }
+        `https://lyrics.api.ivl.is/lyrics/youtube/community?trackId=${trackId}&userId=${userHash}&_t=${Date.now()}`,
+        {
+          cache: 'no-store',  // 브라우저 캐시 완전히 우회
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+          }
+        }
       );
       const data = await response.json();
 

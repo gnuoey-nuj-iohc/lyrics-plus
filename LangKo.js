@@ -58,6 +58,12 @@ window.LANG_KO = {
       "label": "데스크탑 오버레이 사용",
       "desc": "가사를 데스크탑 오버레이 앱으로 전송합니다"
     },
+    "port": {
+      "label": "연결 포트",
+      "desc": "오버레이 앱과 연결할 포트 번호 (1024-65535)"
+    },
+    "portSaved": "포트가 저장되었습니다",
+    "portInvalid": "올바르지 않은 포트 번호입니다 (1024-65535)",
     "status": {
       "connected": "✓ 연결됨",
       "disconnected": "연결 안됨",

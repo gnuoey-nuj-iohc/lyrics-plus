@@ -52,6 +52,8 @@ const OverlaySettings = () => {
   const [enabled, setEnabled] = useState(window.OverlaySender?.enabled ?? false);
   const [isConnected, setIsConnected] = useState(window.OverlaySender?.isConnected ?? false);
   const [checking, setChecking] = useState(false);
+  const [port, setPort] = useState(window.OverlaySender?.port ?? 15000);
+  const [portInput, setPortInput] = useState(String(window.OverlaySender?.port ?? 15000));
 
   // 연결 상태 이벤트 리스너
   useEffect(() => {
@@ -63,6 +65,8 @@ const OverlaySettings = () => {
     // 초기 연결 상태 확인
     if (window.OverlaySender) {
       setIsConnected(window.OverlaySender.isConnected);
+      setPort(window.OverlaySender.port);
+      setPortInput(String(window.OverlaySender.port));
       // 설정창 열림 알림 (폴링 모드 활성화)
       window.OverlaySender.setSettingsOpen?.(true);
     }
@@ -80,6 +84,26 @@ const OverlaySettings = () => {
     setEnabled(newValue);
     if (window.OverlaySender) {
       window.OverlaySender.enabled = newValue;
+    }
+  };
+
+  // 포트 변경 핸들러
+  const handlePortChange = (e) => {
+    setPortInput(e.target.value);
+  };
+
+  // 포트 저장 핸들러
+  const handlePortSave = () => {
+    const newPort = parseInt(portInput, 10);
+    if (newPort >= 1024 && newPort <= 65535) {
+      setPort(newPort);
+      if (window.OverlaySender) {
+        window.OverlaySender.port = newPort;
+      }
+      Toast?.success?.(I18n.t("overlay.portSaved"));
+    } else {
+      setPortInput(String(port));
+      Toast?.error?.(I18n.t("overlay.portInvalid"));
     }
   };
 
@@ -117,67 +141,115 @@ const OverlaySettings = () => {
   };
 
   return react.createElement(
-    "div",
-    { className: "setting-row" }, // Flex container
+    react.Fragment,
+    null,
+    // Enable/Disable Row
     react.createElement(
       "div",
-      { className: "setting-row-content" },
+      { className: "setting-row" },
       react.createElement(
         "div",
-        { className: "setting-row-left" },
-        react.createElement("div", { className: "setting-name" },
-          I18n.t("overlay.enabled.label"),
-          // Status Tag (Connected / Disconnected / Checking) only when enabled
-          enabled && react.createElement("span", {
-            style: {
-              marginLeft: "10px",
-              fontSize: "10px",
-              padding: "2px 8px",
-              borderRadius: "12px",
-              backgroundColor: isConnected ? "rgba(74, 222, 128, 0.2)" : "rgba(239, 68, 68, 0.2)",
-              color: isConnected ? "#4ade80" : "#ef4444",
-              border: `1px solid ${isConnected ? "rgba(74, 222, 128, 0.3)" : "rgba(239, 68, 68, 0.3)"}`,
-              fontWeight: "600",
-              verticalAlign: "middle"
-            }
-          }, getStatusText())
-        ),
-        react.createElement("div", { className: "setting-description" },
-          I18n.t("overlay.enabled.desc")
-        )
-      ),
-      react.createElement(
-        "div",
-        { className: "setting-row-right", style: { display: "flex", alignItems: "center", gap: "10px" } },
-        // Download Button (Only if enabled AND disconnected)
-        enabled && !isConnected && react.createElement(
-          "button",
-          {
-            className: "btn",
-            onClick: handleDownload,
-            style: { fontSize: "11px", padding: "4px 8px", height: "auto" }
-          },
-          I18n.t("overlay.download")
-        ),
-        // Toggle Switch
+        { className: "setting-row-content" },
         react.createElement(
-          "button",
-          {
-            className: `switch-checkbox${enabled ? " active" : ""}`,
-            onClick: handleToggle,
-            "aria-checked": enabled,
-            role: "checkbox",
-          },
-          react.createElement("svg", {
-            width: 12,
-            height: 12,
-            viewBox: "0 0 16 16",
-            fill: "currentColor",
-            dangerouslySetInnerHTML: {
-              __html: enabled
-                ? '<path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/>'
-                : '<path fill-rule="evenodd" d="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z"/>',
+          "div",
+          { className: "setting-row-left" },
+          react.createElement("div", { className: "setting-name" },
+            I18n.t("overlay.enabled.label"),
+            // Status Tag (Connected / Disconnected / Checking) only when enabled
+            enabled && react.createElement("span", {
+              style: {
+                marginLeft: "10px",
+                fontSize: "10px",
+                padding: "2px 8px",
+                borderRadius: "12px",
+                backgroundColor: isConnected ? "rgba(74, 222, 128, 0.2)" : "rgba(239, 68, 68, 0.2)",
+                color: isConnected ? "#4ade80" : "#ef4444",
+                border: `1px solid ${isConnected ? "rgba(74, 222, 128, 0.3)" : "rgba(239, 68, 68, 0.3)"}`,
+                fontWeight: "600",
+                verticalAlign: "middle"
+              }
+            }, getStatusText())
+          ),
+          react.createElement("div", { className: "setting-description" },
+            I18n.t("overlay.enabled.desc")
+          )
+        ),
+        react.createElement(
+          "div",
+          { className: "setting-row-right", style: { display: "flex", alignItems: "center", gap: "10px" } },
+          // Download Button (Only if enabled AND disconnected)
+          enabled && !isConnected && react.createElement(
+            "button",
+            {
+              className: "btn",
+              onClick: handleDownload,
+              style: { fontSize: "11px", padding: "4px 8px", height: "auto" }
             },
+            I18n.t("overlay.download")
+          ),
+          // Toggle Switch
+          react.createElement(
+            "button",
+            {
+              className: `switch-checkbox${enabled ? " active" : ""}`,
+              onClick: handleToggle,
+              "aria-checked": enabled,
+              role: "checkbox",
+            },
+            react.createElement("svg", {
+              width: 12,
+              height: 12,
+              viewBox: "0 0 16 16",
+              fill: "currentColor",
+              dangerouslySetInnerHTML: {
+                __html: enabled
+                  ? '<path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/>'
+                  : '<path fill-rule="evenodd" d="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z"/>',
+              },
+            })
+          )
+        )
+      )
+    ),
+    // Port Setting Row (Only shown when enabled)
+    enabled && react.createElement(
+      "div",
+      { className: "setting-row" },
+      react.createElement(
+        "div",
+        { className: "setting-row-content" },
+        react.createElement(
+          "div",
+          { className: "setting-row-left" },
+          react.createElement("div", { className: "setting-name" },
+            I18n.t("overlay.port.label")
+          ),
+          react.createElement("div", { className: "setting-description" },
+            I18n.t("overlay.port.desc")
+          )
+        ),
+        react.createElement(
+          "div",
+          { className: "setting-row-right", style: { display: "flex", alignItems: "center", gap: "8px" } },
+          react.createElement("input", {
+            type: "number",
+            value: portInput,
+            onChange: handlePortChange,
+            onBlur: handlePortSave,
+            onKeyDown: (e) => { if (e.key === 'Enter') handlePortSave(); },
+            min: 1024,
+            max: 65535,
+            style: {
+              width: "80px",
+              padding: "6px 10px",
+              borderRadius: "6px",
+              border: "1px solid rgba(255,255,255,0.1)",
+              backgroundColor: "rgba(0,0,0,0.2)",
+              color: "var(--spice-text)",
+              fontSize: "13px",
+              textAlign: "center",
+              fontFamily: "monospace"
+            }
           })
         )
       )
