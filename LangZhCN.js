@@ -58,6 +58,12 @@ window.LANG_ZH_CN = {
       "label": "启用桌面悬浮窗",
       "desc": "将歌词发送到桌面悬浮窗应用"
     },
+    "port": {
+      "label": "连接端口",
+      "desc": "与悬浮窗应用连接的端口号 (1024-65535)"
+    },
+    "portSaved": "端口已保存",
+    "portInvalid": "无效的端口号 (1024-65535)",
     "status": {
       "connected": "✓ 已连接",
       "disconnected": "未连接",
@@ -326,6 +332,7 @@ window.LANG_ZH_CN = {
     "copyLyrics": "复制歌词",
     "searchLyrics": "搜索歌词",
     "editLyrics": "编辑歌词",
+    "shareImage": "分享歌词图片",
     "translationOptions": "转换选项",
     "translationOptionsSubtitle": "配置歌词的发音和翻译显示",
     "detectedLanguage": "检测到的语言",
@@ -469,7 +476,9 @@ window.LANG_ZH_CN = {
     "syncDataClearFailed": "清除同步数据失败",
     "lyricsCopied": "✓ 歌词已复制到剪贴板",
     "lyricsCopyFailed": "复制歌词到剪贴板失败",
+    "translationCopied": "翻译已复制到剪贴板",
     "translationCopyFailed": "复制翻译到剪贴板失败",
+    "secondTranslationCopied": "第二翻译已复制到剪贴板",
     "secondTranslationCopyFailed": "复制第二翻译到剪贴板失败",
     "installCommandCopied": "安装命令已复制",
     "copyFailed": "复制失败",
@@ -492,9 +501,28 @@ window.LANG_ZH_CN = {
     "translationRegenerated": "✓ 翻译已重新生成",
     "translationRegenerateFailed": "重新生成翻译失败",
     "translationCacheRemoved": "✓ 翻译缓存已清除并重新加载！",
+    "translationCacheReset": "翻译缓存 {count} 项已重置",
     "tooManyTranslationRequests": "翻译请求过多。请1分钟后重试。",
     "requestingPronunciation": "正在请求发音。大约需要30秒",
-    "requestingTranslation": "正在请求翻译。大约需要30秒"
+    "requestingTranslation": "正在请求翻译。大约需要30秒",
+    "shareImageCopied": "图片已复制到剪贴板",
+    "shareImageDownloaded": "图片已下载",
+    "shareImageShared": "分享成功",
+    "shareImageFailed": "图片生成失败",
+    "shareImageNoLyrics": "请选择要分享的歌词",
+    "noTrackPlaying": "没有正在播放的曲目",
+    "overlayConnected": "悬浮窗已连接",
+    "romajiTranslationFailed": "罗马字/发音转换失败",
+    "koreanTranslationFailed": "韩语翻译失败",
+    "pinyinLibraryUnavailable": "拼音库不可用。显示原文。请允许jsDelivr或unpkg。",
+    "conversionSkippedSimplified": "跳过转换：已是简体字",
+    "conversionCompleted": "转换完成",
+    "conversionFailed": "转换失败",
+    "fileTooLarge": "文件太大：最大大小为1MB",
+    "noValidLyricsInFile": "在文件中找不到有效的歌词",
+    "lyricsLoadedFromFile": "从文件加载了 {types} 歌词",
+    "lyricsLoadFailed": "歌词加载失败：无效的文件格式",
+    "fileReadFailed": "文件读取失败：文件可能已损坏"
   },
   "misc": {
     "and": "和",
@@ -636,6 +664,26 @@ window.LANG_ZH_CN = {
         "desc": "翻译歌词的字符间距（像素）"
       }
     },
+    "furiganaStyle": {
+      "title": "注音样式",
+      "subtitle": "显示在日文汉字上方的假名注音设置",
+      "fontSize": {
+        "label": "字体大小",
+        "desc": "注音的字体大小（像素）"
+      },
+      "fontWeight": {
+        "label": "字体粗细",
+        "desc": "注音的字体粗细"
+      },
+      "opacity": {
+        "label": "透明度",
+        "desc": "注音的不透明度 (0-100%)"
+      },
+      "spacing": {
+        "label": "间距",
+        "desc": "注音与汉字之间的间距（像素）"
+      }
+    },
     "textShadow": {
       "title": "文字阴影",
       "subtitle": "提高可读性的阴影效果",
@@ -662,6 +710,10 @@ window.LANG_ZH_CN = {
       "replaceButton": {
         "label": "替换默认歌词按钮",
         "info": "用ivLyrics替换Spotify的默认歌词按钮"
+      },
+      "replaceFullscreenButton": {
+        "label": "替换全屏按钮",
+        "info": "用ivLyrics全屏替换Spotify的默认全屏按钮"
       },
       "fullscreenShortcut": {
         "label": "全屏快捷键",
@@ -783,6 +835,14 @@ window.LANG_ZH_CN = {
         "desc": "全屏快捷键",
         "info": "设置切换全屏模式的键盘快捷键"
       },
+      "tvMode": {
+        "desc": "TV模式",
+        "info": "在左下角显示专辑封面和曲目信息，歌词使用全屏"
+      },
+      "tvModeAlbumSize": {
+        "desc": "TV模式专辑大小",
+        "info": "设置TV模式下专辑封面的大小（像素）"
+      },
       "splitView": {
         "desc": "分割布局",
         "info": "在全屏中左侧显示专辑封面，右侧显示歌词"
@@ -798,6 +858,10 @@ window.LANG_ZH_CN = {
       "showTrackInfo": {
         "desc": "显示曲目信息",
         "info": "在全屏中显示歌曲标题和艺术家"
+      },
+      "trimTitle": {
+        "desc": "精简标题",
+        "info": "从歌曲标题中移除(Remaster)、[feat. xxx]等附加信息，使显示更简洁"
       },
       "translateMetadata": {
         "desc": "翻译标题/艺术家",
@@ -925,6 +989,14 @@ window.LANG_ZH_CN = {
       "delay": {
         "desc": "自动隐藏延迟",
         "info": "鼠标不活动后UI隐藏的时间 (1-10秒)"
+      }
+    },
+    "tmiStyle": {
+      "title": "TMI样式",
+      "subtitle": "点击专辑封面时显示的TMI弹窗样式设置",
+      "fontSize": {
+        "desc": "TMI字体大小",
+        "info": "调整TMI弹窗的整体字体大小 (80-150%)"
       }
     },
     "aboutTab": {
@@ -1115,5 +1187,92 @@ window.LANG_ZH_CN = {
     "deleteError": "删除视频失败"
   },
   "close": "关闭",
-  "cancel": "取消"
+  "cancel": "取消",
+  "shareImage": {
+    "title": "分享歌词图片",
+    "subtitle": "创建并分享精美的歌词图片",
+    "selectLyrics": "选择歌词",
+    "selectLyricsHint": "点击选择要包含在图片中的歌词行（最多6行）",
+    "template": "预设",
+    "templates": {
+      "cover": "封面模糊",
+      "gradient": "渐变",
+      "minimal": "极简",
+      "glass": "毛璃璃",
+      "story": "故事"
+    },
+    "advancedSettings": "详细设置",
+    "sections": {
+      "background": "背景",
+      "cover": "专辑封面",
+      "lyrics": "歌词",
+      "layout": "布局",
+      "other": "其他"
+    },
+    "copyrightWarning": "⚠️ 版权提示\n\n此歌词图片可能包含受版权保护的内容。\n\n• 请仅供个人使用\n• 请勿用于商业目的\n• 在社交媒体上分享时请尊重原创者\n\n是否继续？",
+    "copyrightTitle": "版权提示",
+    "copyrightDesc": "此歌词图片可能包含受版权保护的内容。",
+    "copyrightPoint1": "请仅供个人使用",
+    "copyrightPoint2": "请勿用于商业目的",
+    "copyrightPoint3": "在社交媒体上分享时请尊重原创者",
+    "copyrightConfirm": "同意并继续",
+    "settings": {
+      "backgroundType": "背景样式",
+      "coverBlur": "模糊",
+      "gradient": "渐变",
+      "solid": "纯色",
+      "backgroundBlur": "背景模糊",
+      "backgroundOpacity": "背景暗度",
+      "showCover": "专辑封面",
+      "showTrackInfo": "歌曲信息",
+      "coverPosition": "封面位置",
+      "posLeft": "左侧",
+      "posCenter": "居中",
+      "coverSize": "封面大小",
+      "coverRadius": "封面圆角",
+      "coverBlur": "封面模糊",
+      "showPronunciation": "发音",
+      "showTranslation": "翻译",
+      "lyricsAlign": "歌词对齐",
+      "alignLeft": "左对齐",
+      "alignCenter": "居中",
+      "fontSize": "字体大小",
+      "blockGap": "行间距",
+      "aspectRatio": "图片比例",
+      "imageWidth": "图片宽度",
+      "padding": "边距",
+      "showWatermark": "显示水印"
+    },
+    "preview": "预览",
+    "actions": {
+      "copy": "复制到剪贴板",
+      "download": "下载",
+      "share": "分享"
+    },
+    "copied": "✓ 已复制到剪贴板",
+    "downloaded": "✓ 已下载",
+    "shared": "✓ 已分享",
+    "maxLinesReached": "最多可选择3行",
+    "noSelection": "请选择歌词"
+  },
+  tmi: {
+    getApiKeyDesc: "获取 Gemini API 密钥",
+    getApiKeyInfo: "用于获取 TMI。可从 Google AI Studio 免费获取。",
+    viewInfo: "点击查看歌曲详细信息",
+    requireKey: "需要在设置中配置 Gemini API 密钥",
+    settingTitle: "Gemini API 密钥",
+    settingDesc: "用于加载歌曲 TMI/趣闻内容。",
+    title: "TMI",
+    didYouKnow: "你知道吗？",
+    close: "关闭",
+    cancel: "取消",
+    loading: "正在查找趣闻...",
+    noData: "暂无此歌曲的 TMI。",
+    clickForTMI: "点击查看 TMI",
+    clickToClose: "点击 ✕ 或专辑区域返回",
+    regenerate: "重新生成 TMI",
+    errorFetch: "获取 TMI 时发生错误。",
+    errorQuota: "API 配额已超出。",
+    errorQuotaHint: "请稍后重试或在设置中输入其他 API 密钥。"
+  }
 };

@@ -58,6 +58,12 @@ window.LANG_DE = {
       "label": "Desktop-Overlay aktivieren",
       "desc": "Songtexte an die Desktop-Overlay-App senden"
     },
+    "port": {
+      "label": "Verbindungsport",
+      "desc": "Portnummer für die Verbindung zur Overlay-App (1024-65535)"
+    },
+    "portSaved": "Port wurde gespeichert",
+    "portInvalid": "Ungültige Portnummer (1024-65535)",
     "status": {
       "connected": "✓ Verbunden",
       "disconnected": "Nicht verbunden",
@@ -326,6 +332,7 @@ window.LANG_DE = {
     "copyLyrics": "Songtext kopieren",
     "searchLyrics": "Songtext suchen",
     "editLyrics": "Songtext bearbeiten",
+    "shareImage": "Songtext-Bild teilen",
     "translationOptions": "Konvertierungsoptionen",
     "translationOptionsSubtitle": "Anzeige von Aussprache und Übersetzung konfigurieren",
     "detectedLanguage": "Erkannte Sprache",
@@ -469,7 +476,9 @@ window.LANG_DE = {
     "syncDataClearFailed": "Löschen der Synchronisationsdaten fehlgeschlagen",
     "lyricsCopied": "✓ Songtext in die Zwischenablage kopiert",
     "lyricsCopyFailed": "Kopieren des Songtextes fehlgeschlagen",
+    "translationCopied": "Übersetzung in die Zwischenablage kopiert",
     "translationCopyFailed": "Kopieren der Übersetzung fehlgeschlagen",
+    "secondTranslationCopied": "Zweite Übersetzung in die Zwischenablage kopiert",
     "secondTranslationCopyFailed": "Kopieren der zweiten Übersetzung fehlgeschlagen",
     "installCommandCopied": "Installationsbefehl kopiert",
     "copyFailed": "Kopieren fehlgeschlagen",
@@ -492,9 +501,28 @@ window.LANG_DE = {
     "translationRegenerated": "✓ Übersetzung neu generiert",
     "translationRegenerateFailed": "Neugenerierung der Übersetzung fehlgeschlagen",
     "translationCacheRemoved": "✓ Übersetzungscache entfernt und neu geladen!",
+    "translationCacheReset": "Übersetzungscache {count} Einträge wurden zurückgesetzt",
     "tooManyTranslationRequests": "Zu viele Übersetzungsanfragen. Bitte versuchen Sie es in 1 Minute erneut.",
     "requestingPronunciation": "Fordere Aussprache an. Dies dauert etwa 30 Sekunden",
-    "requestingTranslation": "Fordere Übersetzung an. Dies dauert etwa 30 Sekunden"
+    "requestingTranslation": "Fordere Übersetzung an. Dies dauert etwa 30 Sekunden",
+    "shareImageCopied": "Bild in die Zwischenablage kopiert",
+    "shareImageDownloaded": "Bild heruntergeladen",
+    "shareImageShared": "Erfolgreich geteilt",
+    "shareImageFailed": "Bildgenerierung fehlgeschlagen",
+    "shareImageNoLyrics": "Bitte wählen Sie Songtexte zum Teilen",
+    "noTrackPlaying": "Kein Track wird abgespielt",
+    "overlayConnected": "Overlay verbunden",
+    "romajiTranslationFailed": "Romaji/Aussprache-Konvertierung fehlgeschlagen",
+    "koreanTranslationFailed": "Koreanische Übersetzung fehlgeschlagen",
+    "pinyinLibraryUnavailable": "Pinyin-Bibliothek nicht verfügbar. Original wird angezeigt. Bitte jsDelivr oder unpkg erlauben.",
+    "conversionSkippedSimplified": "Konvertierung übersprungen: Bereits vereinfacht",
+    "conversionCompleted": "Konvertierung abgeschlossen",
+    "conversionFailed": "Konvertierung fehlgeschlagen",
+    "fileTooLarge": "Datei zu groß: Maximale Größe ist 1MB",
+    "noValidLyricsInFile": "Keine gültigen Songtexte in der Datei gefunden",
+    "lyricsLoadedFromFile": "{types} Songtexte aus Datei geladen",
+    "lyricsLoadFailed": "Songtext-Laden fehlgeschlagen: Ungültiges Dateiformat",
+    "fileReadFailed": "Datei konnte nicht gelesen werden: Datei möglicherweise beschädigt"
   },
   "misc": {
     "and": "und",
@@ -636,6 +664,26 @@ window.LANG_DE = {
         "desc": "Abstand zwischen den Buchstaben in der Übersetzung (Pixel)"
       }
     },
+    "furiganaStyle": {
+      "title": "Furigana-Stil",
+      "subtitle": "Einstellungen für die Lesung (Über-Kanji-Zeichen) bei japanischen Texten",
+      "fontSize": {
+        "label": "Schriftgröße",
+        "desc": "Schriftgröße für Furigana (Pixel)"
+      },
+      "fontWeight": {
+        "label": "Schriftstärke",
+        "desc": "Schriftstärke für Furigana"
+      },
+      "opacity": {
+        "label": "Transparenz",
+        "desc": "Deckkraft der Furigana (0-100%)"
+      },
+      "spacing": {
+        "label": "Abstand",
+        "desc": "Abstand zwischen Furigana und Kanji (Pixel)"
+      }
+    },
     "textShadow": {
       "title": "Textschatten",
       "subtitle": "Schatteneffekt zur Verbesserung der Lesbarkeit",
@@ -662,6 +710,10 @@ window.LANG_DE = {
       "replaceButton": {
         "label": "Songtext-Button ersetzen",
         "info": "Ersetzt den Standard-Spotify-Songtext-Button durch ivLyrics"
+      },
+      "replaceFullscreenButton": {
+        "label": "Vollbild-Button ersetzen",
+        "info": "Ersetzt den Standard-Spotify-Vollbild-Button durch ivLyrics-Vollbild"
       },
       "fullscreenShortcut": {
         "label": "Vollbild-Tastenkürzel",
@@ -783,6 +835,14 @@ window.LANG_DE = {
         "desc": "Vollbild-Tastenkürzel",
         "info": "Legt das Tastenkürzel zum Umschalten des Vollbildmodus fest"
       },
+      "tvMode": {
+        "desc": "TV-Modus",
+        "info": "Zeigt Albumcover und Titelinformationen unten links an, Liedtexte nutzen den gesamten Bildschirm"
+      },
+      "tvModeAlbumSize": {
+        "desc": "TV-Modus Albumgröße",
+        "info": "Legt die Größe des Albumcovers im TV-Modus fest (Pixel)"
+      },
       "splitView": {
         "desc": "Geteilte Ansicht",
         "info": "Zeigt das Albumcover links und den Songtext rechts im Vollbildmodus an"
@@ -798,6 +858,10 @@ window.LANG_DE = {
       "showTrackInfo": {
         "desc": "Track-Info anzeigen",
         "info": "Zeigt Songtitel und Künstler im Vollbildmodus an"
+      },
+      "trimTitle": {
+        "desc": "Titel kürzen",
+        "info": "Entfernt Zusatzinfos wie (Remaster), [feat. xxx] aus Songtiteln für eine übersichtlichere Anzeige"
       },
       "translateMetadata": {
         "desc": "Titel/Künstler übersetzen",
@@ -925,6 +989,14 @@ window.LANG_DE = {
       "delay": {
         "desc": "Verzögerung beim Ausblenden",
         "info": "Zeit der Inaktivität der Maus, bevor die UI ausgeblendet wird (1-10 Sekunden)"
+      }
+    },
+    "tmiStyle": {
+      "title": "TMI-Stil",
+      "subtitle": "Stileinstellungen für das TMI-Modal beim Klicken auf das Albumcover",
+      "fontSize": {
+        "desc": "TMI-Schriftgröße",
+        "info": "Passen Sie die allgemeine Schriftgröße des TMI-Modals an (80-150%)"
       }
     },
     "aboutTab": {
@@ -1115,6 +1187,93 @@ window.LANG_DE = {
     "deleteError": "Video konnte nicht gelöscht werden"
   },
   "close": "Schließen",
-  "cancel": "Abbrechen"
+  "cancel": "Abbrechen",
+  "shareImage": {
+    "title": "Songtext-Bild teilen",
+    "subtitle": "Erstellen und teilen Sie schöne Songtext-Bilder",
+    "selectLyrics": "Songtext auswählen",
+    "selectLyricsHint": "Klicken Sie auf Textzeilen, die im Bild enthalten sein sollen (max. 6 Zeilen)",
+    "template": "Vorlage",
+    "templates": {
+      "cover": "Cover-Blur",
+      "gradient": "Verlauf",
+      "minimal": "Minimal",
+      "glass": "Glas",
+      "story": "Story"
+    },
+    "advancedSettings": "Erweiterte Einstellungen",
+    "sections": {
+      "background": "Hintergrund",
+      "cover": "Albumcover",
+      "lyrics": "Songtext",
+      "layout": "Layout",
+      "other": "Sonstiges"
+    },
+    "copyrightWarning": "⚠️ Urheberrechtshinweis\n\nDieses Songtextbild kann urheberrechtlich geschützte Inhalte enthalten.\n\n• Nur für den persönlichen Gebrauch verwenden\n• Nicht für kommerzielle Zwecke verwenden\n• Respektieren Sie den ursprünglichen Schöpfer beim Teilen in sozialen Medien\n\nMöchten Sie fortfahren?",
+    "copyrightTitle": "Urheberrechtshinweis",
+    "copyrightDesc": "Dieses Songtextbild kann urheberrechtlich geschützte Inhalte enthalten.",
+    "copyrightPoint1": "Nur für den persönlichen Gebrauch verwenden",
+    "copyrightPoint2": "Nicht für kommerzielle Zwecke verwenden",
+    "copyrightPoint3": "Respektieren Sie den ursprünglichen Schöpfer beim Teilen in sozialen Medien",
+    "copyrightConfirm": "Zustimmen & Fortfahren",
+    "settings": {
+      "backgroundType": "Hintergrundstil",
+      "coverBlur": "Unschärfe",
+      "gradient": "Verlauf",
+      "solid": "Einfarbig",
+      "backgroundBlur": "Hintergrund-Unschärfe",
+      "backgroundOpacity": "Hintergrund-Dunkelheit",
+      "showCover": "Albumcover",
+      "showTrackInfo": "Titelinformationen",
+      "coverPosition": "Cover-Position",
+      "posLeft": "Links",
+      "posCenter": "Mitte",
+      "coverSize": "Cover-Größe",
+      "coverRadius": "Cover-Rundung",
+      "coverBlur": "Cover-Unschärfe",
+      "showPronunciation": "Aussprache",
+      "showTranslation": "Übersetzung",
+      "lyricsAlign": "Textausrichtung",
+      "alignLeft": "Links",
+      "alignCenter": "Mitte",
+      "fontSize": "Schriftgröße",
+      "blockGap": "Zeilenabstand",
+      "aspectRatio": "Seitenverhältnis",
+      "imageWidth": "Bildbreite",
+      "padding": "Abstand",
+      "showWatermark": "Wasserzeichen anzeigen"
+    },
+    "preview": "Vorschau",
+    "actions": {
+      "copy": "In Zwischenablage kopieren",
+      "download": "Herunterladen",
+      "share": "Teilen"
+    },
+    "copied": "✓ In Zwischenablage kopiert",
+    "downloaded": "✓ Heruntergeladen",
+    "shared": "✓ Geteilt",
+    "maxLinesReached": "Maximal 3 Zeilen können ausgewählt werden",
+    "noSelection": "Bitte wählen Sie Textzeilen aus"
+  },
+  tmi: {
+    getApiKeyDesc: "Gemini API-Key erhalten",
+    getApiKeyInfo: "Wird verwendet, um TMI abzurufen. Kostenlos über Google AI Studio erhältlich.",
+    viewInfo: "Klicken, um Songdetails anzuzeigen",
+    requireKey: "Gemini API-Key in den Einstellungen erforderlich",
+    settingTitle: "Gemini API-Key",
+    settingDesc: "Erforderlich zum Laden von Song TMI/Trivia-Inhalten.",
+    title: "TMI",
+    didYouKnow: "Wussten Sie schon?",
+    close: "Schließen",
+    cancel: "Abbrechen",
+    loading: "Suche nach interessanten Fakten...",
+    noData: "Noch keine TMI für diesen Titel verfügbar.",
+    clickForTMI: "Klicken für TMI",
+    clickToClose: "Klicken Sie auf ✕ oder den Albumbereich, um zurückzukehren",
+    regenerate: "TMI neu generieren",
+    errorFetch: "Beim Abrufen der TMI ist ein Fehler aufgetreten.",
+    errorQuota: "API-Kontingent überschritten.",
+    errorQuotaHint: "Bitte versuchen Sie es später erneut oder geben Sie einen anderen API-Schlüssel in den Einstellungen ein."
+  }
 };
 

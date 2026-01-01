@@ -1733,10 +1733,17 @@ ruby .lyrics-karaoke-char.sung {
   align-items: center;
   justify-content: center;
   height: 100%;
+  /* Reserve space for ticker */
   padding: 40px;
   box-sizing: border-box;
   z-index: 10;
   transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lyrics-fullscreen-left-panel.tmi-mode {
+  padding: 0;
+  overflow: hidden;
+  justify-content: flex-start;
 }
 
 .lyrics-fullscreen-left-content {
@@ -1788,6 +1795,7 @@ ruby .lyrics-karaoke-char.sung {
 .lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyricsPage {
   grid-area: auto;
   height: 100vh;
+  /* Reserve space for ticker */
   width: 100%;
   padding: 0 var(--lyrics-fullscreen-right-padding, 40px) 0 40px;
   box-sizing: border-box;
@@ -1802,6 +1810,7 @@ ruby .lyrics-karaoke-char.sung {
 .lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-UnsyncedLyricsPage {
   grid-area: auto;
   height: 100vh;
+  /* Reserve space for ticker */
   width: 100%;
   padding: 60px var(--lyrics-fullscreen-right-padding, 40px) 60px 40px;
   box-sizing: border-box;
@@ -1858,6 +1867,8 @@ ruby .lyrics-karaoke-char.sung {
 .lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyrics .lyrics-lyricsContainer-LyricsLine {
   transform-origin: var(--lyrics-align-text) center;
 }
+
+
 
 /* Fullscreen scrolling mode fixes */
 .lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyricsPage.scrolling-active {
@@ -2495,277 +2506,221 @@ ruby .lyrics-karaoke-char.sung {
 }
 
 /* ==========================================
-   Portrait Mode (세로 모니터 모드)
-   When viewport height > width
+   PERFECTED PORTRAIT MODE (세로 모드)
+   - Layout: Top 42% (Player) / Bottom 58% (Lyrics)
+   - Philosophy: Anchor player to bottom of top section, lyrics to top of bottom section.
    ========================================== */
 @media (orientation: portrait) {
 
-  /* Change grid to vertical layout - 50:50 split */
+  /* 1. Main Container Grid Reset - Tighter Split for closeness */
   .lyrics-lyricsContainer-LyricsContainer.fullscreen-active {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 100% !important;
+    grid-template-rows: 40vh 1fr !important;
+    gap: 0 !important;
   }
 
-  /* Portrait mode: Reversed layout - Album on bottom, Lyrics on top */
+  /* Handle Layout Reversal (if enabled in settings) */
   .lyrics-lyricsContainer-LyricsContainer.fullscreen-active.layout-reversed {
-    direction: ltr;
+    grid-template-rows: 60vh 40vh !important;
+    /* Changed from 1fr 42vh */
   }
 
   .lyrics-lyricsContainer-LyricsContainer.fullscreen-active.layout-reversed .lyrics-fullscreen-left-panel {
-    order: 2;
+    grid-row: 2;
   }
 
-  .lyrics-lyricsContainer-LyricsContainer.fullscreen-active.layout-reversed .lyrics-lyricsContainer-SyncedLyricsPage,
-  .lyrics-lyricsContainer-LyricsContainer.fullscreen-active.layout-reversed .lyrics-lyricsContainer-UnsyncedLyricsPage {
-    order: 1;
+  .lyrics-lyricsContainer-LyricsContainer.fullscreen-active.layout-reversed .lyrics-lyricsContainer-SyncedLyricsPage {
+    grid-row: 1;
   }
 
-  /* Top Panel (Album Art & Info) - Takes 50% height */
+  /* Scroll logic: Normal flow */
+  .lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyrics {
+    transform: none !important;
+    margin-top: 0 !important;
+    mask-image: none !important;
+    -webkit-mask-image: none !important;
+  }
+
+  /* 2. Top Panel (Player Interface) */
   .lyrics-fullscreen-left-panel {
+    grid-row: 1;
+    grid-column: 1;
+    width: 100%;
     height: 100%;
-    padding: 24px;
-    justify-content: center;
-    overflow: hidden;
+
+    /* Flex Layout: Anchor content to BOTTOM */
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+
+    /* Padding: Compact bottom padding to get close to lyrics */
+    padding: 40px 24px 16px 24px !important;
+    box-sizing: border-box;
+
+    /* Visuals */
+    overflow: visible !important;
     position: relative;
-    z-index: 10;
+    z-index: 50;
+    /* High z-index to cover scrolling lyrics */
   }
 
+  /* Inner Content Wrapper */
   .lyrics-fullscreen-left-content {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 16px;
-    max-width: 100%;
-    height: 100%;
-    justify-content: center;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    width: 100%;
+    gap: 24px !important;
+    /* Elegant consistent spacing */
   }
 
-  /* Album art sized to fit in portrait mode */
+  /* 2.1 Album Art */
   .lyrics-fullscreen-album-art {
-    width: min(35vh, 280px);
-    height: min(35vh, 280px);
-    min-width: unset;
-    margin-bottom: 0;
-    border-radius: 10px;
+    width: auto !important;
+    height: auto !important;
+    max-width: 28vh !important;
+    /* Scale relative to screen height */
+    max-height: 28vh !important;
+    aspect-ratio: 1/1;
+
+    margin: 0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45) !important;
     flex-shrink: 0;
   }
 
+  /* 2.2 Track Info */
   .lyrics-fullscreen-track-info {
-    flex: 0 0 auto;
-    gap: 8px;
-    text-align: center;
-    overflow: hidden;
     width: 100%;
+    text-align: center;
+    flex: 0 0 auto;
   }
 
   .lyrics-fullscreen-title {
-    font-size: 24px;
+    font-size: clamp(24px, 4vw, 36px) !important;
+    font-weight: 800;
+    margin-bottom: 6px;
     line-height: 1.2;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .lyrics-fullscreen-artist {
-    font-size: 16px;
+    font-size: clamp(16px, 3vw, 20px) !important;
+    opacity: 0.9;
   }
 
-  /* Controls below track info in portrait mode */
+  /* 2.3 Controls */
   .fullscreen-left-controls {
-    width: 100%;
-    padding: 16px 0 0;
+    position: static !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: none !important;
+    display: flex !important;
+    justify-content: center !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 
-  .fullscreen-controls-wrapper {
-    gap: 12px;
+  /* Hide controls cleanly if requested */
+  .lyrics-fullscreen-left-panel.controls-hidden .fullscreen-left-controls {
+    display: none !important;
   }
 
-  .fullscreen-control-row {
-    gap: 12px;
-  }
+  /* REMOVED: The block that collapsed gaps and centered content. 
+     Now it maintains the standard flex-end alignment and 24px gap defined in .lyrics-fullscreen-left-content */
 
-  .fullscreen-control-main-row {
-    gap: 14px;
-  }
+  /* 3. Bottom Panel (Lyrics) */
+  .lyrics-lyricsContainer-SyncedLyricsPage,
+  .lyrics-lyricsContainer-UnsyncedLyricsPage {
+    grid-row: 2;
+    grid-column: 1;
+    width: 100% !important;
+    height: 100% !important;
 
-  /* Progress bar full width in portrait */
-  .fullscreen-progress-wrapper {
-    width: 100%;
-    max-width: 100%;
-  }
+    /* Spacing */
+    padding: 12px 8vw 40px 8vw !important;
+    box-sizing: border-box;
 
-  .fullscreen-progress-bar {
-    flex: 1;
-  }
+    /* Layout */
+    display: block;
+    text-align: center;
 
-  /* Bottom Panel (Lyrics) - Takes remaining space, positioned correctly */
-  .lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyricsPage,
-  .lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-UnsyncedLyricsPage {
-    height: 100%;
-    padding: 0 24px;
-    position: relative;
+    /* Reset transforms/masks */
+    transform: none !important;
+    mask-image: none !important;
+    -webkit-mask-image: none !important;
+    margin-top: 0 !important;
+
     z-index: 10;
   }
 
-  /* Scrolling mode in portrait */
-  .lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyricsPage.scrolling-active {
-    padding: 0 24px;
+  /* Ensure Synced Lyrics Container is clean */
+  .lyrics-lyricsContainer-SyncedLyrics {
+    transform: none !important;
+    margin-top: 0 !important;
   }
 
-  /* Corners repositioned for portrait */
-  .fullscreen-bottom-left {
-    bottom: 16px;
-    left: 16px;
+  /* Scrolling active state */
+  .lyrics-lyricsContainer-SyncedLyricsPage.scrolling-active {
+    padding: 16px 8vw 40px 8vw !important;
   }
 
+  /* 4. Peripheral UI Elements */
+  /* Corners */
   .fullscreen-top-right {
-    top: 16px;
-    right: 16px;
+    top: 24px;
+    right: 24px;
+  }
+
+  .fullscreen-bottom-left {
+    bottom: 24px;
+    left: 24px;
   }
 
   .fullscreen-clock {
-    font-size: 32px;
+    font-size: clamp(32px, 5vw, 48px);
   }
 
-  .fullscreen-context-info {
-    max-width: 280px;
-    padding: 10px 12px;
+  .lyrics-config-button-container {
+    bottom: 24px;
+    right: 24px;
   }
 
-  .fullscreen-context-image {
-    width: 40px;
-    height: 40px;
+  .fullscreen-lyrics-progress {
+    bottom: 70px;
+    /* Above config button */
+    left: 24px;
   }
 
-  .fullscreen-context-name {
-    font-size: 13px;
-  }
-
-  /* Next track preview repositioned */
-  .fullscreen-next-track {
-    padding: 12px;
-    max-width: 280px;
-  }
-
-  .fullscreen-next-track-image {
-    width: 40px;
-    height: 40px;
-  }
-
-  .fullscreen-next-track-title {
-    font-size: 13px;
-  }
-
-  .fullscreen-next-track-artist {
-    font-size: 11px;
-  }
-
-  /* Config buttons repositioned for portrait */
-  .lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-config-button-container {
-    bottom: 16px;
-    right: 16px;
-  }
-
-  /* No lyrics state in portrait */
+  /* 5. Special Case: No Lyrics */
   .lyrics-lyricsContainer-LyricsContainer.fullscreen-no-lyrics {
-    grid-template-rows: 1fr;
+    grid-template-rows: 1fr !important;
   }
 
   .lyrics-lyricsContainer-LyricsContainer.fullscreen-no-lyrics .lyrics-fullscreen-left-panel {
-    height: 100%;
-    flex-direction: column;
-    justify-content: center;
-    padding: 40px;
-  }
-
-  .lyrics-lyricsContainer-LyricsContainer.fullscreen-no-lyrics .lyrics-fullscreen-left-content {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .lyrics-lyricsContainer-LyricsContainer.fullscreen-no-lyrics .lyrics-fullscreen-album-art {
-    width: min(60vw, 400px);
-    height: min(60vw, 400px);
-    margin-bottom: 32px;
-  }
-
-  .lyrics-lyricsContainer-LyricsContainer.fullscreen-no-lyrics .lyrics-fullscreen-track-info {
-    text-align: center;
-  }
-
-  .lyrics-lyricsContainer-LyricsContainer.fullscreen-no-lyrics .lyrics-fullscreen-title {
-    font-size: 36px;
-    -webkit-line-clamp: unset;
-  }
-
-  .lyrics-lyricsContainer-LyricsContainer.fullscreen-no-lyrics .lyrics-fullscreen-artist {
-    font-size: 22px;
-  }
-
-  /* Lyrics progress repositioned for portrait */
-  .fullscreen-lyrics-progress {
-    bottom: 60px;
-    left: 16px;
-  }
-
-  /* Single column mode in portrait stays the same */
-  .lyrics-lyricsContainer-LyricsContainer.fullscreen-single-column .lyrics-lyricsContainer-SyncedLyricsPage,
-  .lyrics-lyricsContainer-LyricsContainer.fullscreen-single-column .lyrics-lyricsContainer-UnsyncedLyricsPage {
-    padding: 0 24px;
+    justify-content: center !important;
+    padding-bottom: 40px !important;
   }
 }
 
-/* Larger portrait screens (tablets in portrait) */
-@media (orientation: portrait) and (min-height: 900px) {
-  .lyrics-fullscreen-album-art {
-    width: 180px;
-    height: 180px;
-    min-width: 180px;
-  }
+/* Tablet / Large Portrait Optimizations */
+@media (orientation: portrait) and (min-width: 768px) {
 
-  .lyrics-fullscreen-title {
-    font-size: 32px;
-  }
-
-  .lyrics-fullscreen-artist {
-    font-size: 20px;
-  }
-
-  .fullscreen-clock {
-    font-size: 40px;
-  }
-}
-
-/* Very tall portrait screens */
-@media (orientation: portrait) and (min-height: 1200px) {
-  .lyrics-fullscreen-left-panel {
-    padding: 32px 32px 24px;
+  .lyrics-lyricsContainer-SyncedLyricsPage,
+  .lyrics-lyricsContainer-UnsyncedLyricsPage {
+    padding-left: 12vw !important;
+    padding-right: 12vw !important;
   }
 
   .lyrics-fullscreen-album-art {
-    width: 220px;
-    height: 220px;
-    min-width: 220px;
-  }
-
-  .lyrics-fullscreen-title {
-    font-size: 36px;
-    -webkit-line-clamp: 3;
-  }
-
-  .lyrics-fullscreen-artist {
-    font-size: 22px;
-  }
-
-  .lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyricsPage,
-  .lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-UnsyncedLyricsPage {
-    padding: 0 40px;
-  }
-
-  .lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyricsPage.scrolling-active {
-    padding: 0 40px;
+    max-width: 32vh !important;
+    max-height: 32vh !important;
   }
 }
 
@@ -3698,4 +3653,1087 @@ ruby .lyrics-karaoke-char.sung {
   content: '🎵';
   font-size: 32px;
   opacity: 0.5;
+}
+
+/* ========================================
+   TMI Full View (Fullscreen Left Panel)
+   ======================================== */
+
+/* Album art clickable hint */
+/* Album art clickable container */
+.clickable-album-container {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.clickable-album-container:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 0 3px rgba(30, 215, 96, 0.4), 0 8px 40px rgba(0, 0, 0, 0.5);
+}
+
+.album-tmi-hint {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.clickable-album-container:hover .album-tmi-hint {
+  opacity: 1;
+}
+
+.album-tmi-hint-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+}
+
+.clickable-album-container:hover .album-tmi-hint-content {
+  transform: translateY(0);
+}
+
+.album-tmi-icon {
+  font-size: 32px;
+}
+
+.album-tmi-text {
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* TMI Full View Container */
+.tmi-fullview {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 40px;
+  box-sizing: border-box;
+  animation: tmiViewIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  --tmi-scale: var(--fullscreen-tmi-font-size, 1);
+}
+
+@keyframes tmiViewIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Header */
+.tmi-fullview-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.tmi-fullview-cover {
+  width: calc(100px * var(--tmi-scale, 1));
+  height: calc(100px * var(--tmi-scale, 1));
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  object-fit: cover;
+}
+
+.tmi-fullview-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+}
+
+.tmi-fullview-label {
+  display: inline-block;
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: calc(11px * var(--tmi-scale, 1));
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #1ed760;
+  background: rgba(30, 215, 96, 0.15);
+  padding: calc(6px * var(--tmi-scale, 1)) calc(12px * var(--tmi-scale, 1));
+  border-radius: 4px;
+  margin-bottom: calc(8px * var(--tmi-scale, 1));
+}
+
+.tmi-fullview-track {
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: calc(24px * var(--tmi-scale, 1));
+  font-weight: 700;
+  color: white;
+  margin: 0 0 calc(4px * var(--tmi-scale, 1)) 0;
+  line-height: 1.2;
+}
+
+.tmi-fullview-artist {
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: calc(16px * var(--tmi-scale, 1));
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+/* Content */
+.tmi-fullview-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 8px;
+}
+
+.tmi-fullview-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.tmi-fullview-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tmi-fullview-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
+.tmi-fullview-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.tmi-fullview-description {
+  margin-bottom: 28px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border-left: 3px solid rgba(30, 215, 96, 0.5);
+}
+
+.tmi-fullview-description p {
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: calc(15px * var(--tmi-scale, 1));
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+}
+
+/* Trivia List */
+.tmi-fullview-trivia-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tmi-fullview-trivia-label {
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: calc(11px * var(--tmi-scale, 1));
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: calc(8px * var(--tmi-scale, 1));
+}
+
+.tmi-fullview-trivia-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+.tmi-fullview-trivia-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.tmi-trivia-bullet {
+  color: #1ed760;
+  font-size: calc(12px * var(--tmi-scale, 1));
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.tmi-trivia-text {
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: calc(14px * var(--tmi-scale, 1));
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Footer with Close Button */
+.tmi-fullview-footer {
+  margin-top: 24px;
+  padding-top: 20px;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tmi-fullview-close-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  color: rgba(255, 255, 255, 0.8);
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tmi-fullview-close-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.tmi-fullview-close-btn span:first-child {
+  font-size: 12px;
+}
+
+/* Empty State */
+.tmi-fullview-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 150px;
+}
+
+.tmi-fullview-empty p {
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* Loading State */
+.tmi-fullview-loading .tmi-loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 20px;
+}
+
+.tmi-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #1ed760;
+  border-radius: 50%;
+  animation: tmiSpin 0.8s linear infinite;
+}
+
+@keyframes tmiSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.tmi-loading-content p {
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ========================================
+   Song Info Sidebar
+   ======================================== */
+
+.song-info-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 10000;
+  animation: sidebarOverlayIn 0.25s ease;
+}
+
+@keyframes sidebarOverlayIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.song-info-modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 380px;
+  max-width: 90vw;
+  background: linear-gradient(180deg,
+      rgba(28, 28, 28, 0.98) 0%,
+      rgba(18, 18, 18, 0.98) 100%);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+  animation: sidebarSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+@keyframes sidebarSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.song-info-modal-close {
+  position: sticky;
+  top: 16px;
+  margin-left: auto;
+  margin-right: 16px;
+  margin-bottom: -48px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.song-info-modal-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+}
+
+.song-info-modal-header {
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.song-info-modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 6px 0;
+  line-height: 1.3;
+  padding-right: 48px;
+}
+
+.song-info-modal-artist {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0;
+  font-weight: 500;
+}
+
+.song-info-modal-description {
+  padding: 20px 24px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.song-info-modal-trivia {
+  padding: 20px 24px 32px;
+}
+
+.song-info-modal-trivia h3 {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #1ed760;
+  margin: 0 0 16px 0;
+}
+
+.song-info-modal-trivia ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.song-info-modal-trivia li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.song-info-modal-trivia li::before {
+  content: '✦';
+  position: absolute;
+  left: 0;
+  color: #1ed760;
+  font-size: 9px;
+  top: 4px;
+}
+
+/* ========================================
+   TMI Full View Styles (Fixed)
+   ======================================== */
+
+.tmi-fullview {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  /* Allow shrinking */
+  width: 100%;
+  overflow: hidden;
+  /* Prevent outer scroll */
+  color: var(--spice-text);
+  padding: 40px;
+  /* Consistent padding */
+  box-sizing: border-box;
+  animation: tmiViewIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes tmiViewIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.tmi-fullview-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 24px;
+  margin-top: 20px;
+}
+
+.tmi-fullview-cover {
+  width: calc(100px * var(--tmi-scale, 1));
+  height: calc(100px * var(--tmi-scale, 1));
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  object-fit: cover;
+}
+
+.tmi-fullview-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+}
+
+.tmi-header-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.tmi-fullview-label {
+  display: inline-block;
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: calc(11px * var(--tmi-scale, 1));
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #1ed760;
+  background: rgba(30, 215, 96, 0.15);
+  padding: calc(6px * var(--tmi-scale, 1)) calc(12px * var(--tmi-scale, 1));
+  border-radius: 4px;
+}
+
+.tmi-regenerate-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  font-size: 18px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.tmi-regenerate-btn:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+  transform: rotate(180deg);
+}
+
+.tmi-fullview-track {
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: calc(24px * var(--tmi-scale, 1));
+  font-weight: 700;
+  color: white;
+  margin: 0 0 calc(4px * var(--tmi-scale, 1)) 0;
+  line-height: 1.2;
+}
+
+.tmi-fullview-artist {
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: calc(16px * var(--tmi-scale, 1));
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.tmi-fullview-content {
+  flex: 1;
+  overflow-y: auto;
+  /* Enable inner scroll */
+  overflow-x: hidden;
+  padding-right: 12px;
+  margin-right: -12px;
+  /* Compensate padding for scrollbar */
+  padding-bottom: 10px;
+
+  /* Scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.tmi-fullview-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tmi-fullview-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tmi-fullview-content::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  transition: background-color 0.2s;
+}
+
+.tmi-fullview-content::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+.tmi-fullview-description {
+  margin-bottom: 24px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border-left: 3px solid rgba(30, 215, 96, 0.5);
+}
+
+.tmi-fullview-description p {
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: calc(15px * var(--tmi-scale, 1));
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+}
+
+.tmi-fullview-trivia-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tmi-fullview-trivia-label {
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: calc(11px * var(--tmi-scale, 1));
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: calc(4px * var(--tmi-scale, 1));
+}
+
+.tmi-fullview-trivia-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+.tmi-fullview-trivia-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.tmi-trivia-bullet {
+  color: #1ed760;
+  font-size: calc(12px * var(--tmi-scale, 1));
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.tmi-trivia-text {
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: calc(14px * var(--tmi-scale, 1));
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.tmi-fullview-footer {
+  flex-shrink: 0;
+  padding-top: 20px;
+  padding-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.tmi-btn-regenerate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  background: rgba(229, 9, 20, 0.15);
+  border: 1px solid rgba(229, 9, 20, 0.3);
+  border-radius: 50%;
+  color: #e50914;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tmi-btn-regenerate:hover {
+  background: #e50914;
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(229, 9, 20, 0.4);
+}
+
+.tmi-btn-regenerate:hover span {
+  transform: rotate(180deg);
+  transition: transform 0.4s ease;
+}
+
+.tmi-btn-regenerate:active {
+  transform: scale(0.95);
+}
+
+.tmi-btn-close {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 24px;
+  height: 42px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 21px;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tmi-btn-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+/* Loading Spinner for Regenerate/Loading */
+.tmi-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #1ed760;
+  border-radius: 50%;
+  animation: tmiSpin 0.8s linear infinite;
+}
+
+@keyframes tmiSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.tmi-loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 20px;
+}
+
+/* ==================== Share Image Modal ==================== */
+@keyframes shareImageFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+#ivLyrics-share-image-overlay {
+  animation: shareImageFadeIn 0.2s ease-out;
+}
+
+.share-image-modal {
+  color: #fff;
+  font-family: var(--font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+}
+
+.share-image-modal h2 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.share-image-modal button {
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.share-image-modal button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.share-image-modal button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Scrollbar styling for lyrics selection */
+.share-image-modal ::-webkit-scrollbar {
+  width: 8px;
+}
+
+.share-image-modal ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.share-image-modal ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.share-image-modal ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================
+   Custom Toast Notification System
+   ============================================ */
+.ivlyrics-toast-container {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  max-width: 400px;
+}
+
+.ivlyrics-toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: rgba(30, 30, 30, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2);
+  color: #fff;
+  font-family: var(--font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  cursor: pointer;
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateX(100%) scale(0.9);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 100%;
+}
+
+.ivlyrics-toast-show {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.ivlyrics-toast-hide {
+  opacity: 0;
+  transform: translateX(100%) scale(0.9);
+}
+
+.ivlyrics-toast:hover {
+  background: rgba(40, 40, 40, 0.98);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateX(0) scale(1.02);
+}
+
+.ivlyrics-toast-success {
+  border-left: 3px solid #10b981;
+}
+
+.ivlyrics-toast-success .ivlyrics-toast-icon {
+  color: #10b981;
+}
+
+.ivlyrics-toast-error {
+  border-left: 3px solid #ef4444;
+}
+
+.ivlyrics-toast-error .ivlyrics-toast-icon {
+  color: #ef4444;
+}
+
+.ivlyrics-toast-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ivlyrics-toast-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.ivlyrics-toast-message {
+  flex: 1;
+  min-width: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.ivlyrics-toast-close {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.ivlyrics-toast-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.ivlyrics-toast-close svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Toast animation for stacking */
+.ivlyrics-toast-container .ivlyrics-toast:nth-child(n+4) {
+  opacity: 0.5;
+  transform: translateX(0) scale(0.95);
+}
+
+.ivlyrics-toast-container .ivlyrics-toast:nth-child(n+5) {
+  display: none;
+}
+
+/* =============================================
+   TV Mode - Fullscreen Layout
+   ============================================= */
+
+/* TV Mode Song Info - Bottom Left */
+.fullscreen-tv-song-info {
+  position: fixed;
+  bottom: 48px;
+  left: 48px;
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+}
+
+.fullscreen-tv-song-info.hidden {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+/* TV Mode Album Art */
+.fullscreen-tv-album {
+  flex-shrink: 0;
+  object-fit: cover;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5),
+    0 4px 16px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease;
+}
+
+/* TV Mode Track Info */
+.fullscreen-tv-track-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 4px;
+  padding-bottom: 8px;
+  max-width: 50vw;
+}
+
+/* TV Mode Title */
+.fullscreen-tv-title {
+  font-weight: 700;
+  color: var(--spice-text, #fff);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6),
+    0 4px 16px rgba(0, 0, 0, 0.4);
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  font-family: "Pretendard Variable", Pretendard, -apple-system,
+    BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI",
+    "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+}
+
+/* TV Mode Artist */
+.fullscreen-tv-artist {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  line-height: 1.3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Pretendard Variable", Pretendard, -apple-system,
+    BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI",
+    "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+}
+
+/* TV Mode Album Name */
+.fullscreen-tv-album-name {
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.6);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Pretendard Variable", Pretendard, -apple-system,
+    BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI",
+    "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+}
+
+/* TV Mode - Hide left panel when active */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active.tv-mode-active .lyrics-fullscreen-left-panel {
+  display: none !important;
+}
+
+/* TV Mode - Lyrics take full width */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active.tv-mode-active {
+  grid-template-columns: 1fr !important;
+}
+
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active.tv-mode-active .lyrics-lyricsContainer-SyncedLyricsPage,
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active.tv-mode-active .lyrics-lyricsContainer-UnsyncedLyricsPage {
+  grid-column: 1 !important;
+  padding-bottom: 200px;
+}
+
+/* TV Mode - Responsive adjustments */
+@media (max-width: 1200px) {
+  .fullscreen-tv-song-info {
+    bottom: 36px;
+    left: 36px;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .fullscreen-tv-song-info {
+    bottom: 24px;
+    left: 24px;
+    gap: 12px;
+  }
+
+  .fullscreen-tv-track-info {
+    max-width: 60vw;
+  }
+}
+
+/* TV Mode - Portrait orientation override */
+@media (orientation: portrait) {
+  /* TV Mode: Keep single column layout, lyrics take full height */
+  .lyrics-lyricsContainer-LyricsContainer.fullscreen-active.tv-mode-active {
+    grid-template-columns: 100% !important;
+    grid-template-rows: 1fr !important;
+    gap: 0 !important;
+  }
+
+  /* TV Mode: Lyrics container takes full space */
+  .lyrics-lyricsContainer-LyricsContainer.fullscreen-active.tv-mode-active .lyrics-lyricsContainer-SyncedLyricsPage,
+  .lyrics-lyricsContainer-LyricsContainer.fullscreen-active.tv-mode-active .lyrics-lyricsContainer-UnsyncedLyricsPage {
+    grid-row: 1 !important;
+    grid-column: 1 !important;
+    height: 100% !important;
+    padding-bottom: 220px;
+  }
+
+  /* TV Mode: Song info at bottom-left in portrait */
+  .lyrics-lyricsContainer-LyricsContainer.fullscreen-active.tv-mode-active .fullscreen-tv-song-info {
+    bottom: 24px;
+    left: 24px;
+  }
 }

@@ -2,7 +2,7 @@
 /// <reference types="react" />
 /// <reference path="../../globals.d.ts" />
 
-// Furigana Converter Module for Lyrics Plus
+// Furigana Converter Module for ivLyrics
 const FuriganaConverter = (() => {
   let kuromojiInstance = null;
   let isInitializing = false;
@@ -117,7 +117,7 @@ const FuriganaConverter = (() => {
 
     if (!kuromojiInstance) {
       if (DEBUG_MODE && !hasLoggedKuromojiWarning) {
-        console.warn("[Lyrics Plus] Kuromoji is not initialized yet.");
+        console.warn("[ivLyrics] Kuromoji is not initialized yet.");
         hasLoggedKuromojiWarning = true;
       }
       return text;
@@ -213,7 +213,7 @@ const FuriganaConverter = (() => {
       return result;
     } catch (error) {
       if (DEBUG_MODE) {
-        console.error("[Lyrics Plus] Furigana conversion failed:", error);
+        console.error("[ivLyrics] Furigana conversion failed:", error);
       }
       return text;
     }
@@ -273,10 +273,10 @@ if (typeof window.kuromoji === "undefined") {
   }
 }
 
-// === lyrics-plus-overlay 전송 모듈 ===
+// === ivLyrics-overlay 전송 모듈 ===
 // Sends lyrics data to the desktop overlay application
 const OverlaySender = {
-  PORT: 15000,
+  DEFAULT_PORT: 15000,
   progressInterval: null,
   lastSentUri: null,
   lastSentLyrics: null,
@@ -290,12 +290,27 @@ const OverlaySender = {
   _connectionCheckInterval: null,
   _lastConnectionAttempt: 0,
 
+  // 포트 설정 (localStorage에 저장)
+  get port() {
+    const savedPort = localStorage.getItem('ivLyrics:overlay-port');
+    return savedPort ? parseInt(savedPort, 10) : this.DEFAULT_PORT;
+  },
+  set port(value) {
+    const portNum = parseInt(value, 10);
+    if (portNum >= 1024 && portNum <= 65535) {
+      localStorage.setItem('ivLyrics:overlay-port', portNum.toString());
+      // 포트 변경 시 재연결 시도
+      this.isConnected = false;
+      this.checkConnection();
+    }
+  },
+
   // 설정 (localStorage에 저장)
   get enabled() {
-    return localStorage.getItem('lyrics-plus:overlay-enabled') !== 'false';
+    return localStorage.getItem('ivLyrics:overlay-enabled') !== 'false';
   },
   set enabled(value) {
-    localStorage.setItem('lyrics-plus:overlay-enabled', value ? 'true' : 'false');
+    localStorage.setItem('ivLyrics:overlay-enabled', value ? 'true' : 'false');
     if (value) {
       this.startProgressSync();
       this.checkConnection();
@@ -335,14 +350,14 @@ const OverlaySender = {
     this._isConnected = value;
 
     // 연결 상태 변경 이벤트 발송
-    window.dispatchEvent(new CustomEvent('lyrics-plus:overlay-connection', {
+    window.dispatchEvent(new CustomEvent('ivLyrics:overlay-connection', {
       detail: { connected: value }
     }));
 
     // 연결됨 상태로 변경될 때
     if (value && !wasConnected) {
       console.log('[OverlaySender] 오버레이 연결됨 ✓');
-      Spicetify.showNotification?.('오버레이 연결됨', false);
+      Toast?.success?.(I18n.t("notifications.overlayConnected"));
       // 가사 재전송
       setTimeout(() => this.resendWithNewOffset(), 100);
     }
@@ -357,7 +372,7 @@ const OverlaySender = {
     if (!this.enabled) return false;
 
     try {
-      const response = await fetch(`http://localhost:${this.PORT}/progress`, {
+      const response = await fetch(`http://localhost:${this.port}/progress`, {
         method: 'POST',
         mode: 'cors',
         headers: { 'Content-Type': 'application/json' },
@@ -375,7 +390,7 @@ const OverlaySender = {
   // 오버레이 앱 열기 (딥링크)
   openOverlayApp() {
     try {
-      window.open('lyrics-plus://overlay', '_blank');
+      window.open('ivLyrics://overlay', '_blank');
       // 연결 확인 지연
       setTimeout(() => this.checkConnection(), 2000);
     } catch (e) {
@@ -385,14 +400,14 @@ const OverlaySender = {
 
   // 오버레이 앱 다운로드 페이지
   getDownloadUrl() {
-    return 'https://github.com/ivLis-Studio/lyrics-plus-overlay/releases/latest';
+    return 'https://github.com/ivLis-Studio/ivLyrics-overlay/releases/latest';
   },
 
   async sendToEndpoint(endpoint, data) {
     if (!this.enabled) return;
 
     try {
-      const response = await fetch(`http://localhost:${this.PORT}${endpoint}`, {
+      const response = await fetch(`http://localhost:${this.port}${endpoint}`, {
         method: 'POST',
         mode: 'cors',
         headers: { 'Content-Type': 'application/json' },
@@ -645,11 +660,11 @@ const OverlaySender = {
     });
 
     // 커스텀 이벤트 리스너
-    window.addEventListener('lyrics-plus:delay-changed', () => {
+    window.addEventListener('ivLyrics:delay-changed', () => {
       this.resendWithNewOffset();
     });
 
-    window.addEventListener('lyrics-plus:offset-changed', () => {
+    window.addEventListener('ivLyrics:offset-changed', () => {
       this.resendWithNewOffset();
     });
 
@@ -709,17 +724,17 @@ const UpdateBanner = ({ updateInfo, onDismiss }) => {
     const success = await Utils.copyToClipboard(installCommand);
     if (success) {
       setCopied(true);
-      Spicetify.showNotification(I18n.t("notifications.installCommandCopied"));
+      Toast.success(I18n.t("notifications.installCommandCopied"));
       setTimeout(() => setCopied(false), 2500);
     } else {
-      Spicetify.showNotification(I18n.t("notifications.copyFailed"), true);
+      Toast.error(I18n.t("notifications.copyFailed"));
     }
   };
 
   return react.createElement(
     "div",
     {
-      className: "lyrics-plus-update-banner",
+      className: "ivLyrics-update-banner",
       style: {
         background: "rgba(255, 255, 255, 0.05)",
         border: "1px solid rgba(255, 255, 255, 0.1)",
@@ -949,7 +964,7 @@ function ensureReactDOM() {
   return reactDOM;
 }
 
-window.lyricsPlusEnsureReactDOM = ensureReactDOM;
+window.ivLyricsEnsureReactDOM = ensureReactDOM;
 // Define a function called "render" to specify app entry point
 // This function will be used to mount app to main view.
 function render() {
@@ -957,10 +972,10 @@ function render() {
 }
 
 // Optimized utility functions with better error handling and performance
-const APP_NAME = "lyrics-plus";
+const APP_NAME = "ivLyrics";
 
 // IndexedDB for track sync offsets
-const DB_NAME = "lyrics-plus-db";
+const DB_NAME = "ivLyrics-db";
 const DB_VERSION = 1;
 const STORE_NAME = "track-sync-offsets";
 
@@ -976,13 +991,13 @@ const initDB = () => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
     request.onerror = () => {
-      console.error("[Lyrics Plus] IndexedDB error:", request.error);
+      console.error("[ivLyrics] IndexedDB error:", request.error);
       reject(request.error);
     };
 
     request.onsuccess = () => {
       dbInstance = request.result;
-      console.log("[Lyrics Plus] IndexedDB initialized");
+      console.log("[ivLyrics] IndexedDB initialized");
       resolve(dbInstance);
     };
 
@@ -990,7 +1005,7 @@ const initDB = () => {
       const db = event.target.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME);
-        console.log("[Lyrics Plus] IndexedDB object store created");
+        console.log("[ivLyrics] IndexedDB object store created");
       }
     };
   });
@@ -1009,7 +1024,7 @@ const TrackSyncDB = {
         request.onerror = () => reject(request.error);
       });
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to get offset:", error);
+      console.error("[ivLyrics] Failed to get offset:", error);
       return 0;
     }
   },
@@ -1026,7 +1041,7 @@ const TrackSyncDB = {
         request.onerror = () => reject(request.error);
       });
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to set offset:", error);
+      console.error("[ivLyrics] Failed to set offset:", error);
     }
   },
 
@@ -1042,7 +1057,7 @@ const TrackSyncDB = {
         request.onerror = () => reject(request.error);
       });
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to clear offset:", error);
+      console.error("[ivLyrics] Failed to clear offset:", error);
     }
   },
 
@@ -1073,7 +1088,7 @@ const TrackSyncDB = {
         request.onerror = () => reject(request.error);
       });
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to get all offsets:", error);
+      console.error("[ivLyrics] Failed to get all offsets:", error);
       return {};
     }
   },
@@ -1099,7 +1114,7 @@ const TrackSyncDB = {
         transaction.onerror = () => reject(transaction.error);
       });
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to import offsets:", error);
+      console.error("[ivLyrics] Failed to import offsets:", error);
     }
   },
 };
@@ -1107,16 +1122,16 @@ const TrackSyncDB = {
 // Migrate from localStorage to IndexedDB
 (async () => {
   try {
-    const oldOffsets = localStorage.getItem("lyrics-plus:track-sync-offsets");
+    const oldOffsets = localStorage.getItem("ivLyrics:track-sync-offsets");
     if (oldOffsets) {
-      console.log("[Lyrics Plus] Migrating track-sync-offsets to IndexedDB");
+      console.log("[ivLyrics] Migrating track-sync-offsets to IndexedDB");
       const offsetsObj = JSON.parse(oldOffsets);
       await TrackSyncDB.importOffsets(offsetsObj);
-      localStorage.removeItem("lyrics-plus:track-sync-offsets");
-      console.log("[Lyrics Plus] Migration complete");
+      localStorage.removeItem("ivLyrics:track-sync-offsets");
+      console.log("[ivLyrics] Migration complete");
     }
   } catch (error) {
-    console.error("[Lyrics Plus] Migration failed:", error);
+    console.error("[ivLyrics] Migration failed:", error);
   }
 })();
 
@@ -1203,7 +1218,7 @@ const StorageManager = {
   // Unified config save method to reduce duplication
   saveConfig(name, value) {
     saveStorageKeys(`${APP_NAME}:visual:${name}`);
-    if (name === "perplexity-api-key" || name === "perplexity-api-key-romaji" || name === "gemini-api-key") {
+    if (name === "gemini-api-key" || name === "gemini-api-key-romaji") {
       // Save sensitive keys to both storages for persistence
       this.setPersisted(`${APP_NAME}:visual:${name}`, value);
     } else if (name === "language") {
@@ -1258,7 +1273,7 @@ const StorageManager = {
 
       // Save to both storages for persistence
       this.setPersisted(CLIENT_ID_KEY, clientId);
-      console.log("[Lyrics Plus] Generated new Client ID:", clientId);
+      console.log("[ivLyrics] Generated new Client ID:", clientId);
     }
 
     return clientId;
@@ -1279,13 +1294,13 @@ const StorageManager = {
     // IndexedDB의 track-sync-offsets를 포함
     const trackSyncOffsets = await TrackSyncDB.getAllOffsets();
     if (Object.keys(trackSyncOffsets).length > 0) {
-      config["lyrics-plus:track-sync-offsets"] = JSON.stringify(trackSyncOffsets);
-      console.log("[Lyrics Plus] Exporting track-sync-offsets from IndexedDB:", trackSyncOffsets);
+      config["ivLyrics:track-sync-offsets"] = JSON.stringify(trackSyncOffsets);
+      console.log("[ivLyrics] Exporting track-sync-offsets from IndexedDB:", trackSyncOffsets);
     } else {
-      console.log("[Lyrics Plus] No track-sync-offsets found in IndexedDB");
+      console.log("[ivLyrics] No track-sync-offsets found in IndexedDB");
     }
 
-    console.log("[Lyrics Plus] Exported config keys:", Object.keys(config));
+    console.log("[ivLyrics] Exported config keys:", Object.keys(config));
 
     return config;
   },
@@ -1293,21 +1308,21 @@ const StorageManager = {
     const CLIENT_ID_KEY = `${APP_NAME}:client-id`;
 
     // track-sync-offsets를 IndexedDB로 가져오기
-    if (config["lyrics-plus:track-sync-offsets"]) {
+    if (config["ivLyrics:track-sync-offsets"]) {
       try {
-        const offsetsObj = JSON.parse(config["lyrics-plus:track-sync-offsets"]);
+        const offsetsObj = JSON.parse(config["ivLyrics:track-sync-offsets"]);
         await TrackSyncDB.importOffsets(offsetsObj);
-        console.log("[Lyrics Plus] Imported track-sync-offsets to IndexedDB");
-        delete config["lyrics-plus:track-sync-offsets"]; // localStorage에 저장하지 않음
+        console.log("[ivLyrics] Imported track-sync-offsets to IndexedDB");
+        delete config["ivLyrics:track-sync-offsets"]; // localStorage에 저장하지 않음
       } catch (error) {
-        console.error("[Lyrics Plus] Failed to import track-sync-offsets:", error);
+        console.error("[ivLyrics] Failed to import track-sync-offsets:", error);
       }
     }
 
     // Client ID가 있다면 삭제 (불러오기에서 제외)
     if (config[CLIENT_ID_KEY]) {
       delete config[CLIENT_ID_KEY];
-      console.log("[Lyrics Plus] Client ID excluded from import");
+      console.log("[ivLyrics] Client ID excluded from import");
     }
 
     // 나머지 설정을 localStorage에 저장
@@ -1325,440 +1340,442 @@ const UNSYNCED = 2;
 const CONFIG = {
   visual: {
     language:
-      StorageManager.getItem("lyrics-plus:visual:language") || "ko",
+      StorageManager.getItem("ivLyrics:visual:language") || "ko",
     "playbar-button": StorageManager.get(
-      "lyrics-plus:visual:playbar-button",
+      "ivLyrics:visual:playbar-button",
       false
     ),
-    colorful: StorageManager.get("lyrics-plus:visual:colorful", false),
+    "fullscreen-button": StorageManager.get(
+      "ivLyrics:visual:fullscreen-button",
+      false
+    ),
+    colorful: StorageManager.get("ivLyrics:visual:colorful", false),
     "gradient-background": StorageManager.get(
-      "lyrics-plus:visual:gradient-background"
+      "ivLyrics:visual:gradient-background"
     ),
     "background-brightness":
-      StorageManager.getItem("lyrics-plus:visual:background-brightness") ||
+      StorageManager.getItem("ivLyrics:visual:background-brightness") ||
       "30",
     "solid-background": StorageManager.get(
-      "lyrics-plus:visual:solid-background",
+      "ivLyrics:visual:solid-background",
       false
     ),
     "video-background": StorageManager.get(
-      "lyrics-plus:visual:video-background",
+      "ivLyrics:visual:video-background",
       false
     ),
     "video-blur":
-      StorageManager.getItem("lyrics-plus:visual:video-blur") || "5",
+      StorageManager.getItem("ivLyrics:visual:video-blur") || "5",
     "video-cover": StorageManager.get(
-      "lyrics-plus:visual:video-cover",
+      "ivLyrics:visual:video-cover",
       false
     ),
     "solid-background-color":
-      StorageManager.getItem("lyrics-plus:visual:solid-background-color") ||
+      StorageManager.getItem("ivLyrics:visual:solid-background-color") ||
       "#1e3a8a",
-    noise: StorageManager.get("lyrics-plus:visual:noise"),
+    noise: StorageManager.get("ivLyrics:visual:noise"),
     "background-color":
-      StorageManager.getItem("lyrics-plus:visual:background-color") ||
+      StorageManager.getItem("ivLyrics:visual:background-color") ||
       "var(--spice-main)",
     "active-color":
-      StorageManager.getItem("lyrics-plus:visual:active-color") ||
+      StorageManager.getItem("ivLyrics:visual:active-color") ||
       "var(--spice-text)",
     "inactive-color":
-      StorageManager.getItem("lyrics-plus:visual:inactive-color") ||
+      StorageManager.getItem("ivLyrics:visual:inactive-color") ||
       "rgba(var(--spice-rgb-subtext),0.5)",
     "highlight-color":
-      StorageManager.getItem("lyrics-plus:visual:highlight-color") ||
+      StorageManager.getItem("ivLyrics:visual:highlight-color") ||
       "var(--spice-button)",
     alignment:
-      StorageManager.getItem("lyrics-plus:visual:alignment") || "center",
+      StorageManager.getItem("ivLyrics:visual:alignment") || "center",
     "lines-before":
-      StorageManager.getItem("lyrics-plus:visual:lines-before") || "0",
+      StorageManager.getItem("ivLyrics:visual:lines-before") || "0",
     "lines-after":
-      StorageManager.getItem("lyrics-plus:visual:lines-after") || "2",
-    "font-size": StorageManager.getItem("lyrics-plus:visual:font-size") || "32",
+      StorageManager.getItem("ivLyrics:visual:lines-after") || "2",
+    "font-size": StorageManager.getItem("ivLyrics:visual:font-size") || "32",
     "font-family":
-      StorageManager.getItem("lyrics-plus:visual:font-family") ||
+      StorageManager.getItem("ivLyrics:visual:font-family") ||
       "Pretendard Variable",
     "original-font-family":
-      StorageManager.getItem("lyrics-plus:visual:original-font-family") ||
+      StorageManager.getItem("ivLyrics:visual:original-font-family") ||
       "Pretendard Variable",
     "phonetic-font-family":
-      StorageManager.getItem("lyrics-plus:visual:phonetic-font-family") ||
+      StorageManager.getItem("ivLyrics:visual:phonetic-font-family") ||
       "Pretendard Variable",
     "translation-font-family":
-      StorageManager.getItem("lyrics-plus:visual:translation-font-family") ||
+      StorageManager.getItem("ivLyrics:visual:translation-font-family") ||
       "Pretendard Variable",
     "original-font-weight":
-      StorageManager.getItem("lyrics-plus:visual:original-font-weight") ||
+      StorageManager.getItem("ivLyrics:visual:original-font-weight") ||
       "400",
     "original-font-size":
-      StorageManager.getItem("lyrics-plus:visual:original-font-size") || "32",
+      StorageManager.getItem("ivLyrics:visual:original-font-size") || "32",
     "translation-font-weight":
-      StorageManager.getItem("lyrics-plus:visual:translation-font-weight") ||
+      StorageManager.getItem("ivLyrics:visual:translation-font-weight") ||
       "300",
     "translation-font-size":
-      StorageManager.getItem("lyrics-plus:visual:translation-font-size") ||
+      StorageManager.getItem("ivLyrics:visual:translation-font-size") ||
       "24",
     "translation-spacing":
-      StorageManager.getItem("lyrics-plus:visual:translation-spacing") || "8",
+      StorageManager.getItem("ivLyrics:visual:translation-spacing") || "8",
     "phonetic-font-weight":
-      StorageManager.getItem("lyrics-plus:visual:phonetic-font-weight") ||
+      StorageManager.getItem("ivLyrics:visual:phonetic-font-weight") ||
       "400",
     "phonetic-font-size":
-      StorageManager.getItem("lyrics-plus:visual:phonetic-font-size") || "20",
+      StorageManager.getItem("ivLyrics:visual:phonetic-font-size") || "20",
     "phonetic-opacity":
-      StorageManager.getItem("lyrics-plus:visual:phonetic-opacity") || "70",
+      StorageManager.getItem("ivLyrics:visual:phonetic-opacity") || "70",
     "phonetic-spacing":
-      StorageManager.getItem("lyrics-plus:visual:phonetic-spacing") || "4",
+      StorageManager.getItem("ivLyrics:visual:phonetic-spacing") || "4",
     "phonetic-hyphen-replace":
-      StorageManager.getItem("lyrics-plus:visual:phonetic-hyphen-replace") || "keep",
+      StorageManager.getItem("ivLyrics:visual:phonetic-hyphen-replace") || "keep",
     "original-letter-spacing":
-      StorageManager.getItem("lyrics-plus:visual:original-letter-spacing") || "0",
+      StorageManager.getItem("ivLyrics:visual:original-letter-spacing") || "0",
     "phonetic-letter-spacing":
-      StorageManager.getItem("lyrics-plus:visual:phonetic-letter-spacing") || "0",
+      StorageManager.getItem("ivLyrics:visual:phonetic-letter-spacing") || "0",
     "translation-letter-spacing":
-      StorageManager.getItem("lyrics-plus:visual:translation-letter-spacing") || "0",
+      StorageManager.getItem("ivLyrics:visual:translation-letter-spacing") || "0",
     "furigana-font-weight":
-      StorageManager.getItem("lyrics-plus:visual:furigana-font-weight") ||
+      StorageManager.getItem("ivLyrics:visual:furigana-font-weight") ||
       "300",
     "furigana-font-size":
-      StorageManager.getItem("lyrics-plus:visual:furigana-font-size") || "14",
+      StorageManager.getItem("ivLyrics:visual:furigana-font-size") || "14",
     "furigana-opacity":
-      StorageManager.getItem("lyrics-plus:visual:furigana-opacity") || "80",
+      StorageManager.getItem("ivLyrics:visual:furigana-opacity") || "80",
     "furigana-spacing":
-      StorageManager.getItem("lyrics-plus:visual:furigana-spacing") || "2",
+      StorageManager.getItem("ivLyrics:visual:furigana-spacing") || "2",
     "text-shadow-enabled": StorageManager.get(
-      "lyrics-plus:visual:text-shadow-enabled",
+      "ivLyrics:visual:text-shadow-enabled",
       true
     ),
     "text-shadow-color":
-      StorageManager.getItem("lyrics-plus:visual:text-shadow-color") ||
+      StorageManager.getItem("ivLyrics:visual:text-shadow-color") ||
       "#000000",
     "text-shadow-opacity":
-      StorageManager.getItem("lyrics-plus:visual:text-shadow-opacity") || "50",
+      StorageManager.getItem("ivLyrics:visual:text-shadow-opacity") || "50",
     "text-shadow-blur":
-      StorageManager.getItem("lyrics-plus:visual:text-shadow-blur") || "2",
+      StorageManager.getItem("ivLyrics:visual:text-shadow-blur") || "2",
     "original-opacity":
-      StorageManager.getItem("lyrics-plus:visual:original-opacity") || "100",
+      StorageManager.getItem("ivLyrics:visual:original-opacity") || "100",
     "translation-opacity":
-      StorageManager.getItem("lyrics-plus:visual:translation-opacity") || "85",
+      StorageManager.getItem("ivLyrics:visual:translation-opacity") || "85",
     "translate:translated-lyrics-source":
       StorageManager.getItem(
-        "lyrics-plus:visual:translate:translated-lyrics-source"
+        "ivLyrics:visual:translate:translated-lyrics-source"
       ) || "geminiKo",
     "translate:display-mode":
-      StorageManager.getItem("lyrics-plus:visual:translate:display-mode") ||
+      StorageManager.getItem("ivLyrics:visual:translate:display-mode") ||
       "replace",
     "translate:detect-language-override":
       StorageManager.getItem(
-        "lyrics-plus:visual:translate:detect-language-override"
+        "ivLyrics:visual:translate:detect-language-override"
       ) || "off",
     "translation-mode:english":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode:english") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode:english") ||
       "none",
     "translation-mode:japanese":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode:japanese") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode:japanese") ||
       "none",
     "translation-mode:korean":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode:korean") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode:korean") ||
       "none",
     "translation-mode:chinese":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode:chinese") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode:chinese") ||
       "none",
     "translation-mode:russian":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode:russian") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode:russian") ||
       "none",
     "translation-mode:vietnamese":
       StorageManager.getItem(
-        "lyrics-plus:visual:translation-mode:vietnamese"
+        "ivLyrics:visual:translation-mode:vietnamese"
       ) || "none",
     "translation-mode:german":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode:german") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode:german") ||
       "none",
     "translation-mode:spanish":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode:spanish") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode:spanish") ||
       "none",
     "translation-mode:french":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode:french") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode:french") ||
       "none",
     "translation-mode:italian":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode:italian") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode:italian") ||
       "none",
     "translation-mode:portuguese":
       StorageManager.getItem(
-        "lyrics-plus:visual:translation-mode:portuguese"
+        "ivLyrics:visual:translation-mode:portuguese"
       ) || "none",
     "translation-mode:dutch":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode:dutch") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode:dutch") ||
       "none",
     "translation-mode:polish":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode:polish") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode:polish") ||
       "none",
     "translation-mode:turkish":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode:turkish") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode:turkish") ||
       "none",
     "translation-mode:arabic":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode:arabic") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode:arabic") ||
       "none",
     "translation-mode:hindi":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode:hindi") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode:hindi") ||
       "none",
     "translation-mode:thai":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode:thai") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode:thai") ||
       "none",
     "translation-mode:indonesian":
       StorageManager.getItem(
-        "lyrics-plus:visual:translation-mode:indonesian"
+        "ivLyrics:visual:translation-mode:indonesian"
       ) || "none",
     "translation-mode:gemini":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode:gemini") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode:gemini") ||
       "none",
     "translation-mode-2:english":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode-2:english") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode-2:english") ||
       "none",
     "translation-mode-2:japanese":
       StorageManager.getItem(
-        "lyrics-plus:visual:translation-mode-2:japanese"
+        "ivLyrics:visual:translation-mode-2:japanese"
       ) || "none",
     "translation-mode-2:korean":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode-2:korean") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode-2:korean") ||
       "none",
     "translation-mode-2:chinese":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode-2:chinese") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode-2:chinese") ||
       "none",
     "translation-mode-2:russian":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode-2:russian") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode-2:russian") ||
       "none",
     "translation-mode-2:vietnamese":
       StorageManager.getItem(
-        "lyrics-plus:visual:translation-mode-2:vietnamese"
+        "ivLyrics:visual:translation-mode-2:vietnamese"
       ) || "none",
     "translation-mode-2:german":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode-2:german") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode-2:german") ||
       "none",
     "translation-mode-2:spanish":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode-2:spanish") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode-2:spanish") ||
       "none",
     "translation-mode-2:french":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode-2:french") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode-2:french") ||
       "none",
     "translation-mode-2:italian":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode-2:italian") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode-2:italian") ||
       "none",
     "translation-mode-2:portuguese":
       StorageManager.getItem(
-        "lyrics-plus:visual:translation-mode-2:portuguese"
+        "ivLyrics:visual:translation-mode-2:portuguese"
       ) || "none",
     "translation-mode-2:dutch":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode-2:dutch") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode-2:dutch") ||
       "none",
     "translation-mode-2:polish":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode-2:polish") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode-2:polish") ||
       "none",
     "translation-mode-2:turkish":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode-2:turkish") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode-2:turkish") ||
       "none",
     "translation-mode-2:arabic":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode-2:arabic") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode-2:arabic") ||
       "none",
     "translation-mode-2:hindi":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode-2:hindi") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode-2:hindi") ||
       "none",
     "translation-mode-2:thai":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode-2:thai") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode-2:thai") ||
       "none",
     "translation-mode-2:indonesian":
       StorageManager.getItem(
-        "lyrics-plus:visual:translation-mode-2:indonesian"
+        "ivLyrics:visual:translation-mode-2:indonesian"
       ) || "none",
     "translation-mode-2:gemini":
-      StorageManager.getItem("lyrics-plus:visual:translation-mode-2:gemini") ||
+      StorageManager.getItem("ivLyrics:visual:translation-mode-2:gemini") ||
       "none",
-    "perplexity-api-key":
-      StorageManager.getPersisted("lyrics-plus:visual:perplexity-api-key") || "",
-    "perplexity-api-key-romaji":
-      StorageManager.getPersisted("lyrics-plus:visual:perplexity-api-key-romaji") ||
-      "",
     "gemini-api-key":
-      StorageManager.getPersisted("lyrics-plus:visual:gemini-api-key") || "",
-    "perplexity-model":
-      StorageManager.getItem("lyrics-plus:visual:perplexity-model") || "sonar",
-    "phonetic-language":
-      StorageManager.getItem("lyrics-plus:visual:phonetic-language") || "english",
-    translate: StorageManager.get("lyrics-plus:visual:translate", false),
+      StorageManager.getPersisted("ivLyrics:visual:gemini-api-key") || "",
+    "gemini-api-key-romaji":
+      StorageManager.getPersisted("ivLyrics:visual:gemini-api-key-romaji") ||
+      "",
+    translate: StorageManager.get("ivLyrics:visual:translate", false),
     "furigana-enabled": StorageManager.get(
-      "lyrics-plus:visual:furigana-enabled",
+      "ivLyrics:visual:furigana-enabled",
       false
     ),
     "ja-detect-threshold":
-      StorageManager.getItem("lyrics-plus:visual:ja-detect-threshold") || "40",
+      StorageManager.getItem("ivLyrics:visual:ja-detect-threshold") || "40",
     "hans-detect-threshold":
-      StorageManager.getItem("lyrics-plus:visual:hans-detect-threshold") ||
+      StorageManager.getItem("ivLyrics:visual:hans-detect-threshold") ||
       "40",
-    "fade-blur": StorageManager.get("lyrics-plus:visual:fade-blur"),
-    "highlight-mode": StorageManager.get("lyrics-plus:visual:highlight-mode", false),
+    "fade-blur": StorageManager.get("ivLyrics:visual:fade-blur"),
+    "highlight-mode": StorageManager.get("ivLyrics:visual:highlight-mode", false),
     "highlight-intensity":
-      StorageManager.getItem("lyrics-plus:visual:highlight-intensity") || "70",
+      StorageManager.getItem("ivLyrics:visual:highlight-intensity") || "70",
     "karaoke-bounce": StorageManager.get(
-      "lyrics-plus:visual:karaoke-bounce",
+      "ivLyrics:visual:karaoke-bounce",
       true
     ),
     "karaoke-mode-enabled": StorageManager.get(
-      "lyrics-plus:visual:karaoke-mode-enabled",
+      "ivLyrics:visual:karaoke-mode-enabled",
       true
     ),
     // Prefetch settings
     "prefetch-enabled": StorageManager.get(
-      "lyrics-plus:visual:prefetch-enabled",
+      "ivLyrics:visual:prefetch-enabled",
       true
     ),
     "prefetch-video-enabled": StorageManager.get(
-      "lyrics-plus:visual:prefetch-video-enabled",
+      "ivLyrics:visual:prefetch-video-enabled",
       true
     ),
     // Community sync settings
     "community-sync-enabled": StorageManager.get(
-      "lyrics-plus:visual:community-sync-enabled",
+      "ivLyrics:visual:community-sync-enabled",
       true
     ),
     "community-sync-auto-apply": StorageManager.get(
-      "lyrics-plus:visual:community-sync-auto-apply",
+      "ivLyrics:visual:community-sync-auto-apply",
       true
     ),
     "community-sync-min-confidence":
-      Number(StorageManager.getItem("lyrics-plus:visual:community-sync-min-confidence")) || 0.5,
+      Number(StorageManager.getItem("ivLyrics:visual:community-sync-min-confidence")) || 0.5,
     "community-sync-auto-submit": StorageManager.get(
-      "lyrics-plus:visual:community-sync-auto-submit",
+      "ivLyrics:visual:community-sync-auto-submit",
       false
     ),
     "fullscreen-key":
-      StorageManager.getItem("lyrics-plus:visual:fullscreen-key") || "f12",
-    "synced-compact": StorageManager.get("lyrics-plus:visual:synced-compact"),
+      StorageManager.getItem("ivLyrics:visual:fullscreen-key") || "f12",
+    "synced-compact": StorageManager.get("ivLyrics:visual:synced-compact"),
     // 메타데이터 번역 (제목/아티스트)
     "translate-metadata": StorageManager.get(
-      "lyrics-plus:visual:translate-metadata",
+      "ivLyrics:visual:translate-metadata",
       false
     ),
     "translate-metadata-mode":
-      StorageManager.getItem("lyrics-plus:visual:translate-metadata-mode") || "translated",
+      StorageManager.getItem("ivLyrics:visual:translate-metadata-mode") || "translated",
     // Fullscreen settings
     "fullscreen-two-column": StorageManager.get(
-      "lyrics-plus:visual:fullscreen-two-column",
+      "ivLyrics:visual:fullscreen-two-column",
       true
     ),
     "fullscreen-layout-reverse": StorageManager.get(
-      "lyrics-plus:visual:fullscreen-layout-reverse",
+      "ivLyrics:visual:fullscreen-layout-reverse",
       false
     ),
     "fullscreen-show-album": StorageManager.get(
-      "lyrics-plus:visual:fullscreen-show-album",
+      "ivLyrics:visual:fullscreen-show-album",
       true
     ),
     "fullscreen-show-info": StorageManager.get(
-      "lyrics-plus:visual:fullscreen-show-info",
+      "ivLyrics:visual:fullscreen-show-info",
       true
     ),
     "fullscreen-center-when-no-lyrics": StorageManager.get(
-      "lyrics-plus:visual:fullscreen-center-when-no-lyrics",
+      "ivLyrics:visual:fullscreen-center-when-no-lyrics",
       true
     ),
     "fullscreen-album-size":
-      StorageManager.getItem("lyrics-plus:visual:fullscreen-album-size") ||
+      StorageManager.getItem("ivLyrics:visual:fullscreen-album-size") ||
       "400",
     "fullscreen-album-radius":
-      StorageManager.getItem("lyrics-plus:visual:fullscreen-album-radius") ||
+      StorageManager.getItem("ivLyrics:visual:fullscreen-album-radius") ||
       "12",
     "fullscreen-title-size":
-      StorageManager.getItem("lyrics-plus:visual:fullscreen-title-size") ||
+      StorageManager.getItem("ivLyrics:visual:fullscreen-title-size") ||
       "48",
     "fullscreen-artist-size":
-      StorageManager.getItem("lyrics-plus:visual:fullscreen-artist-size") ||
+      StorageManager.getItem("ivLyrics:visual:fullscreen-artist-size") ||
       "24",
     "fullscreen-lyrics-right-padding":
-      Number(StorageManager.getItem("lyrics-plus:visual:fullscreen-lyrics-right-padding")) ||
+      Number(StorageManager.getItem("ivLyrics:visual:fullscreen-lyrics-right-padding")) ||
       0,
     // Fullscreen UI elements
     "fullscreen-show-clock": StorageManager.get(
-      "lyrics-plus:visual:fullscreen-show-clock",
+      "ivLyrics:visual:fullscreen-show-clock",
       true
     ),
     "fullscreen-clock-size":
-      Number(StorageManager.getItem("lyrics-plus:visual:fullscreen-clock-size")) ||
+      Number(StorageManager.getItem("ivLyrics:visual:fullscreen-clock-size")) ||
       48,
     "fullscreen-show-context": StorageManager.get(
-      "lyrics-plus:visual:fullscreen-show-context",
+      "ivLyrics:visual:fullscreen-show-context",
       true
     ),
     "fullscreen-show-next-track": StorageManager.get(
-      "lyrics-plus:visual:fullscreen-show-next-track",
+      "ivLyrics:visual:fullscreen-show-next-track",
       true
     ),
     "fullscreen-next-track-seconds":
-      Number(StorageManager.getItem("lyrics-plus:visual:fullscreen-next-track-seconds")) ||
+      Number(StorageManager.getItem("ivLyrics:visual:fullscreen-next-track-seconds")) ||
       15,
     "fullscreen-show-controls": StorageManager.get(
-      "lyrics-plus:visual:fullscreen-show-controls",
+      "ivLyrics:visual:fullscreen-show-controls",
       true
     ),
     "fullscreen-show-volume": StorageManager.get(
-      "lyrics-plus:visual:fullscreen-show-volume",
+      "ivLyrics:visual:fullscreen-show-volume",
       true
     ),
     "fullscreen-show-progress": StorageManager.get(
-      "lyrics-plus:visual:fullscreen-show-progress",
+      "ivLyrics:visual:fullscreen-show-progress",
       true
     ),
     "fullscreen-show-lyrics-progress": StorageManager.get(
-      "lyrics-plus:visual:fullscreen-show-lyrics-progress",
+      "ivLyrics:visual:fullscreen-show-lyrics-progress",
       false
     ),
     // Fullscreen control styles
     "fullscreen-control-button-size":
-      Number(StorageManager.getItem("lyrics-plus:visual:fullscreen-control-button-size")) ||
+      Number(StorageManager.getItem("ivLyrics:visual:fullscreen-control-button-size")) ||
       36,
     "fullscreen-controls-background": StorageManager.get(
-      "lyrics-plus:visual:fullscreen-controls-background",
+      "ivLyrics:visual:fullscreen-controls-background",
       false
     ),
     // Fullscreen auto-hide
     "fullscreen-auto-hide-ui": StorageManager.get(
-      "lyrics-plus:visual:fullscreen-auto-hide-ui",
+      "ivLyrics:visual:fullscreen-auto-hide-ui",
       true
     ),
     "fullscreen-auto-hide-delay":
-      Number(StorageManager.getItem("lyrics-plus:visual:fullscreen-auto-hide-delay")) ||
+      Number(StorageManager.getItem("ivLyrics:visual:fullscreen-auto-hide-delay")) ||
       3,
     // Browser fullscreen (monitor fill)
     "fullscreen-browser-fullscreen": StorageManager.get(
-      "lyrics-plus:visual:fullscreen-browser-fullscreen",
+      "ivLyrics:visual:fullscreen-browser-fullscreen",
       false
     ),
+    // TMI font size
+    "fullscreen-tmi-font-size":
+      Number(StorageManager.getItem("ivLyrics:visual:fullscreen-tmi-font-size")) ||
+      100,
 
     delay: 0,
   },
   providers: {
     lrclib: {
-      on: StorageManager.get("lyrics-plus:provider:lrclib:on"),
+      on: StorageManager.get("ivLyrics:provider:lrclib:on"),
       get desc() { return window.I18n ? I18n.t("providerDescriptions.lrclib") : "Lyrics from lrclib.net"; },
       modes: [SYNCED, UNSYNCED],
     },
     ivlyrics: {
-      on: StorageManager.get("lyrics-plus:provider:ivlyrics:on", true),
+      on: StorageManager.get("ivLyrics:provider:ivlyrics:on", true),
       get desc() { return window.I18n ? I18n.t("providerDescriptions.ivLyrics") : "Lyrics from ivLyrics API"; },
       modes: [KARAOKE, SYNCED, UNSYNCED],
     },
     spotify: {
-      on: StorageManager.get("lyrics-plus:provider:spotify:on"),
+      on: StorageManager.get("ivLyrics:provider:spotify:on"),
       get desc() { return window.I18n ? I18n.t("providerDescriptions.spotify") : "Lyrics from Spotify"; },
       modes: [SYNCED, UNSYNCED],
     },
     local: {
-      on: StorageManager.get("lyrics-plus:provider:local:on"),
+      on: StorageManager.get("ivLyrics:provider:local:on"),
       get desc() { return window.I18n ? I18n.t("providerDescriptions.cache") : "Cached lyrics"; },
       modes: [SYNCED, UNSYNCED],
     },
   },
-  providersOrder: StorageManager.getItem("lyrics-plus:services-order"),
+  providersOrder: StorageManager.getItem("ivLyrics:services-order"),
   get modes() { return window.I18n ? [I18n.t("modes.karaoke"), I18n.t("modes.synced"), I18n.t("modes.unsynced")] : ["Karaoke", "Synced", "Unsynced"]; },
-  locked: StorageManager.getItem("lyrics-plus:lock-mode") || "-1",
+  locked: StorageManager.getItem("ivLyrics:lock-mode") || "-1",
 };
 
 try {
@@ -1772,7 +1789,7 @@ try {
 } catch {
   CONFIG.providersOrder = ["ivlyrics", "spotify", "lrclib", "local"];
   StorageManager.setItem(
-    "lyrics-plus:services-order",
+    "ivLyrics:services-order",
     JSON.stringify(CONFIG.providersOrder)
   );
 }
@@ -2211,13 +2228,51 @@ const Prefetcher = {
       try {
         console.log(`[Prefetcher] Fetching translation for: ${trackInfo.title} (phonetic: ${needPhonetic}, translation: ${needTranslation})`);
 
-        // 병렬 처리: 발음과 번역을 동시에 요청 (성능 최적화)
-        const requests = [];
+        // CacheManager에도 저장 (getGeminiTranslation에서 사용)
+        const processTranslationResult = (outText) => {
+          if (!outText) return null;
+
+          let lines;
+          if (Array.isArray(outText)) {
+            lines = outText;
+          } else if (typeof outText === "string") {
+            lines = outText.split("\n");
+          } else {
+            return null;
+          }
+
+          const originalNonSectionIndices = [];
+          lyricsArray.forEach((line, i) => {
+            const lineText = line?.text || "";
+            if (!Utils.isSectionHeader(lineText) && lineText.trim() !== "") {
+              originalNonSectionIndices.push(i);
+            }
+          });
+
+          const cleanTranslationLines = lines.filter(
+            (line) => line && line.trim() !== "" && !Utils.isSectionHeader(line.trim())
+          );
+
+          const mapped = lyricsArray.map((line, i) => {
+            const originalText = line?.text || "";
+            if (Utils.isSectionHeader(originalText)) {
+              return { ...line, text: null, originalText };
+            }
+            if (originalText.trim() === "") {
+              return { ...line, text: "", originalText };
+            }
+            const positionInNonSectionLines = originalNonSectionIndices.indexOf(i);
+            const translatedText = cleanTranslationLines[positionInNonSectionLines]?.trim() || "";
+            return { ...line, text: translatedText || line?.text || "", originalText };
+          });
+
+          return mapped;
+        };
 
         // 발음 요청 (wantSmartPhonetic = true)
         if (needPhonetic) {
-          requests.push(
-            Translator.callTranslationAPI({
+          try {
+            const phoneticResponse = await Translator.callGemini({
               trackId,
               artist: trackInfo.artist,
               title: trackInfo.title,
@@ -2225,26 +2280,24 @@ const Prefetcher = {
               wantSmartPhonetic: true,
               provider: lyrics.provider,
               ignoreCache: false,
-            })
-              .then((phoneticResponse) => {
-                if (phoneticResponse.phonetic) {
-                  const mapped = Utils.processTranslationResult(phoneticResponse.phonetic, lyricsArray);
-                  if (mapped) {
-                    CacheManager.set(`${uri}:gemini_romaji`, mapped);
-                    console.log(`[Prefetcher] Phonetic cached for: ${trackInfo.title}`);
-                  }
-                }
-              })
-              .catch((error) => {
-                console.warn(`[Prefetcher] Phonetic prefetch failed:`, error.message);
-              })
-          );
+            });
+
+            if (phoneticResponse.phonetic) {
+              const mapped = processTranslationResult(phoneticResponse.phonetic);
+              if (mapped) {
+                CacheManager.set(`${uri}:gemini_romaji`, mapped);
+                console.log(`[Prefetcher] Phonetic cached for: ${trackInfo.title}`);
+              }
+            }
+          } catch (error) {
+            console.warn(`[Prefetcher] Phonetic prefetch failed:`, error.message);
+          }
         }
 
         // 번역 요청 (wantSmartPhonetic = false)
         if (needTranslation) {
-          requests.push(
-            Translator.callTranslationAPI({
+          try {
+            const translationResponse = await Translator.callGemini({
               trackId,
               artist: trackInfo.artist,
               title: trackInfo.title,
@@ -2252,30 +2305,25 @@ const Prefetcher = {
               wantSmartPhonetic: false,
               provider: lyrics.provider,
               ignoreCache: false,
-            })
-              .then((translationResponse) => {
-                if (translationResponse.translation) {
-                  const mapped = Utils.processTranslationResult(translationResponse.translation, lyricsArray);
-                  if (mapped) {
-                    // mode1, mode2 중 번역이 필요한 것에 캐시 저장
-                    if (displayMode1 && displayMode1 !== "none" && displayMode1 !== "gemini_romaji") {
-                      CacheManager.set(`${uri}:${displayMode1}`, mapped);
-                    }
-                    if (displayMode2 && displayMode2 !== "none" && displayMode2 !== "gemini_romaji") {
-                      CacheManager.set(`${uri}:${displayMode2}`, mapped);
-                    }
-                    console.log(`[Prefetcher] Translation cached for: ${trackInfo.title}`);
-                  }
-                }
-              })
-              .catch((error) => {
-                console.warn(`[Prefetcher] Translation prefetch failed:`, error.message);
-              })
-          );
-        }
+            });
 
-        // 모든 요청을 병렬로 실행
-        await Promise.allSettled(requests);
+            if (translationResponse.vi) {
+              const mapped = processTranslationResult(translationResponse.vi);
+              if (mapped) {
+                // mode1, mode2 중 번역이 필요한 것에 캐시 저장
+                if (displayMode1 && displayMode1 !== "none" && displayMode1 !== "gemini_romaji") {
+                  CacheManager.set(`${uri}:${displayMode1}`, mapped);
+                }
+                if (displayMode2 && displayMode2 !== "none" && displayMode2 !== "gemini_romaji") {
+                  CacheManager.set(`${uri}:${displayMode2}`, mapped);
+                }
+                console.log(`[Prefetcher] Translation cached for: ${trackInfo.title}`);
+              }
+            }
+          } catch (error) {
+            console.warn(`[Prefetcher] Translation prefetch failed:`, error.message);
+          }
+        }
 
         // 결과를 프리페치 캐시에 저장 (완료 표시용)
         this._prefetchCache.set(cacheKeyBase, {
@@ -2531,7 +2579,7 @@ class LyricsContainer extends react.Component {
         this.setState({ translatedMetadata: result });
       }
     } catch (error) {
-      console.warn('[Lyrics Plus] Metadata translation failed:', error);
+      console.warn('[ivLyrics] Metadata translation failed:', error);
     }
   }
 
@@ -2545,7 +2593,7 @@ class LyricsContainer extends react.Component {
     try {
       const savedVideo = await Utils.getSelectedVideo(trackUri);
       if (savedVideo && savedVideo.youtubeVideoId) {
-        console.log(`[Lyrics Plus] Loading saved video for track: ${savedVideo.youtubeVideoId}`);
+        console.log(`[ivLyrics] Loading saved video for track: ${savedVideo.youtubeVideoId}`);
         this.setState({
           videoInfo: {
             youtubeVideoId: savedVideo.youtubeVideoId,
@@ -2557,7 +2605,7 @@ class LyricsContainer extends react.Component {
         });
       }
     } catch (error) {
-      console.error('[Lyrics Plus] Failed to load saved video:', error);
+      console.error('[ivLyrics] Failed to load saved video:', error);
     }
   }
 
@@ -2616,7 +2664,7 @@ class LyricsContainer extends react.Component {
 
     // 현재 가사가 있는지 확인
     if (!this.state.currentLyrics || this.state.currentLyrics.length === 0) {
-      Spicetify.showNotification(I18n.t("notifications.noLyricsLoaded"), true, 2000);
+      Toast.error(I18n.t("notifications.noLyricsLoaded"));
       return;
     }
 
@@ -2638,11 +2686,7 @@ class LyricsContainer extends react.Component {
       mode1?.startsWith("gemini") || mode2?.startsWith("gemini");
 
     if (!isGeminiMode) {
-      Spicetify.showNotification(
-        I18n.t("notifications.translationRegenerateGeminiOnly"),
-        true,
-        3000
-      );
+      Toast.error(I18n.t("notifications.translationRegenerateGeminiOnly"));
       return;
     }
 
@@ -2653,14 +2697,14 @@ class LyricsContainer extends react.Component {
     // trackId 가져오기
     const trackId = Spicetify.Player.data?.item?.uri?.split(':')[2];
     if (!trackId) {
-      Spicetify.showNotification("No track playing", true, 2000);
+      Toast.error(I18n.t("notifications.noTrackPlaying"));
       return;
     }
 
     try {
       this.startTranslationLoading();
 
-      Spicetify.showNotification(I18n.t("notifications.regeneratingTranslation"), false, 2000);
+      Toast.show(I18n.t("notifications.regeneratingTranslation"), false, 2000);
 
       // 먼저 로컬 캐시에서 해당 트랙의 번역 캐시 삭제
       const userLang = I18n.getCurrentLanguage();
@@ -2701,55 +2745,108 @@ class LyricsContainer extends react.Component {
       );
       const text = nonSectionLines.join("\n");
 
-      // 병렬 처리: 발음과 번역을 동시에 요청 (성능 최적화)
-      const requests = [];
+      // 발음과 번역을 별도로 요청 (둘 다 필요한 경우)
+      let phoneticResponse = null;
+      let translationResponse = null;
 
       // 발음 요청 (gemini_romaji)
       if (needPhonetic) {
-        requests.push(
-          Translator.callTranslationAPI({
-            trackId,
-            artist: this.state.artist || lyricsState.artist,
-            title: this.state.title || lyricsState.title,
-            text,
-            wantSmartPhonetic: true,
-            provider: lyricsState.provider,
-            ignoreCache: true,
-          }).then((response) => ({ type: 'phonetic', response }))
-        );
+        phoneticResponse = await Translator.callGemini({
+          trackId,
+          artist: this.state.artist || lyricsState.artist,
+          title: this.state.title || lyricsState.title,
+          text,
+          wantSmartPhonetic: true,
+          provider: lyricsState.provider,
+          ignoreCache: true,
+        });
       }
 
       // 번역 요청 (gemini_ko)
       if (needTranslation) {
-        requests.push(
-          Translator.callTranslationAPI({
-            trackId,
-            artist: this.state.artist || lyricsState.artist,
-            title: this.state.title || lyricsState.title,
-            text,
-            wantSmartPhonetic: false,
-            provider: lyricsState.provider,
-            ignoreCache: true,
-          }).then((response) => ({ type: 'translation', response }))
-        );
+        translationResponse = await Translator.callGemini({
+          trackId,
+          artist: this.state.artist || lyricsState.artist,
+          title: this.state.title || lyricsState.title,
+          text,
+          wantSmartPhonetic: false,
+          provider: lyricsState.provider,
+          ignoreCache: true,
+        });
       }
 
-      // 모든 요청을 병렬로 실행
-      const results = await Promise.allSettled(requests);
-      
-      let phoneticResponse = null;
-      let translationResponse = null;
+      // 번역 결과를 getGeminiTranslation과 동일한 방식으로 처리하는 함수
+      const processTranslationResult = (outText, lyrics) => {
+        if (!outText) return null;
 
-      // 결과 분류
-      for (const result of results) {
-        if (result.status === 'fulfilled') {
-          if (result.value.type === 'phonetic') {
-            phoneticResponse = result.value.response;
-          } else if (result.value.type === 'translation') {
-            translationResponse = result.value.response;
-          }
+        // Handle both array and string formats
+        let lines;
+        if (Array.isArray(outText)) {
+          lines = outText;
+        } else if (typeof outText === "string") {
+          lines = outText.split("\n");
+        } else {
+          return null;
         }
-      }
+
+        // Create mapping arrays for proper alignment
+        const originalNonSectionLines = [];
+        const originalNonSectionIndices = [];
+
+        // Collect non-section lines from original lyrics (excluding empty lines)
+        lyrics.forEach((line, i) => {
+          const text = line?.text || "";
+          if (!Utils.isSectionHeader(text) && text.trim() !== "") {
+            originalNonSectionLines.push(text);
+            originalNonSectionIndices.push(i);
+          }
+        });
+
+        // Filter out section headers and empty lines from translation results
+        const cleanTranslationLines = lines.filter(
+          (line) =>
+            line && line.trim() !== "" && !Utils.isSectionHeader(line.trim())
+        );
+
+        // Use the clean translation lines for mapping
+        lines = cleanTranslationLines;
+
+        // Smart mapping that accounts for section headers and empty lines
+        const mapped = lyrics.map((line, i) => {
+          const originalText = line?.text || "";
+
+          // If this is a section header, keep original and don't show translation
+          if (Utils.isSectionHeader(originalText)) {
+            return {
+              ...line,
+              text: null,
+              originalText: originalText,
+            };
+          }
+
+          // If this is an empty line, keep it empty
+          if (originalText.trim() === "") {
+            return {
+              ...line,
+              text: "",
+              originalText: originalText,
+            };
+          }
+
+          // Find the translation index for this non-section, non-empty line
+          const positionInNonSectionLines =
+            originalNonSectionIndices.indexOf(i);
+          const translatedText = lines[positionInNonSectionLines]?.trim() || "";
+
+          return {
+            ...line,
+            text: translatedText || line?.text || "",
+            originalText: originalText,
+          };
+        });
+
+        return mapped;
+      };
 
       // mode1과 mode2 각각 처리 - 둘 다 활성화된 경우 각각의 결과를 올바르게 할당
       let translatedLyrics1 = null;
@@ -2757,16 +2854,16 @@ class LyricsContainer extends react.Component {
 
       // mode1 처리
       if (mode1 === "gemini_romaji" && phoneticResponse?.phonetic) {
-        translatedLyrics1 = Utils.processTranslationResult(phoneticResponse.phonetic, originalLyrics);
-      } else if (mode1 === "gemini_ko" && translationResponse?.translation) {
-        translatedLyrics1 = Utils.processTranslationResult(translationResponse.translation, originalLyrics);
+        translatedLyrics1 = processTranslationResult(phoneticResponse.phonetic, originalLyrics);
+      } else if (mode1 === "gemini_ko" && translationResponse?.vi) {
+        translatedLyrics1 = processTranslationResult(translationResponse.vi, originalLyrics);
       }
 
       // mode2 처리 (mode1과 독립적으로)
       if (mode2 === "gemini_romaji" && phoneticResponse?.phonetic) {
-        translatedLyrics2 = Utils.processTranslationResult(phoneticResponse.phonetic, originalLyrics);
-      } else if (mode2 === "gemini_ko" && translationResponse?.translation) {
-        translatedLyrics2 = Utils.processTranslationResult(translationResponse.translation, originalLyrics);
+        translatedLyrics2 = processTranslationResult(phoneticResponse.phonetic, originalLyrics);
+      } else if (mode2 === "gemini_ko" && translationResponse?.vi) {
+        translatedLyrics2 = processTranslationResult(translationResponse.vi, originalLyrics);
       }
 
       // _dmResults에 번역 결과 저장
@@ -2795,13 +2892,9 @@ class LyricsContainer extends react.Component {
       // lyricsSource를 다시 호출하여 기존 로직으로 화면 업데이트
       // 이렇게 하면 optimizeTranslations이 호출되어 사용자 설정에 따라 번역이 표시됨
       this.lyricsSource(this.state, currentMode);
-      Spicetify.showNotification(I18n.t("notifications.translationRegenerated"), false, 2000);
+      Toast.success(I18n.t("notifications.translationRegenerated"));
     } catch (error) {
-      Spicetify.showNotification(
-        `${I18n.t("notifications.translationRegenerateFailed")}: ${error.message}`,
-        true,
-        3000
-      );
+      Toast.error(`${I18n.t("notifications.translationRegenerateFailed")}: ${error.message}`);
     } finally {
       this.clearTranslationLoading();
     }
@@ -3181,13 +3274,9 @@ class LyricsContainer extends react.Component {
       } catch (error) {
         const modeDisplayName =
           mode === "gemini_romaji"
-            ? "Romaji, Romaja, Pinyin translation"
-            : "Korean translation";
-        Spicetify.showNotification(
-          `${modeDisplayName} failed: ${error.message || "Unknown error"}`,
-          true,
-          4000
-        );
+            ? I18n.t("notifications.romajiTranslationFailed")
+            : I18n.t("notifications.koreanTranslationFailed");
+        Toast.error(`${modeDisplayName}: ${error.message || "Unknown error"}`);
         return null; // Return null on failure
       }
     };
@@ -3210,7 +3299,7 @@ class LyricsContainer extends react.Component {
       this.setState({
         currentLyrics: finalLyrics,
       });
-      // 🔹 lyrics-plus-overlay 앱으로 원문 가사 전송 (번역 모드 미사용)
+      // 🔹 ivLyrics-overlay 앱으로 원문 가사 전송 (번역 모드 미사용)
       if (typeof OverlaySender !== 'undefined') {
         OverlaySender.sendLyrics(
           { uri, title: this.state.title, artist: this.state.artist },
@@ -3234,7 +3323,7 @@ class LyricsContainer extends react.Component {
       this.setState({
         currentLyrics: originalLyrics,
       });
-      // 🔹 lyrics-plus-overlay 앱으로 원문 가사 먼저 전송 (번역 로딩 전)
+      // 🔹 ivLyrics-overlay 앱으로 원문 가사 먼저 전송 (번역 로딩 전)
       // 단, 번역 모드가 켜져 있다면 번역이 준비될 때까지 기다림 (UI 깜빡임/레이아웃 변경 방지)
       const isTranslationEnabled = (displayMode1 && displayMode1 !== 'none') || (displayMode2 && displayMode2 !== 'none');
 
@@ -3298,7 +3387,7 @@ class LyricsContainer extends react.Component {
         currentLyrics: finalLyrics,
       });
 
-      // 🔹 lyrics-plus-overlay 앱으로 가사 전송
+      // 🔹 ivLyrics-overlay 앱으로 가사 전송
       if (typeof OverlaySender !== 'undefined') {
         OverlaySender.sendLyrics(
           { uri, title: this.state.title, artist: this.state.artist },
@@ -3596,24 +3685,29 @@ class LyricsContainer extends react.Component {
   getGeminiTranslation(lyricsState, lyrics, mode) {
     return new Promise((resolve, reject) => {
       const viKey = StorageManager.getPersisted(
-        `${APP_NAME}:visual:perplexity-api-key`
+        `${APP_NAME}:visual:gemini-api-key`
       );
       const romajiKey = StorageManager.getPersisted(
-        `${APP_NAME}:visual:perplexity-api-key-romaji`
+        `${APP_NAME}:visual:gemini-api-key-romaji`
       );
 
-      // Determine mode type
+      // Determine mode type and API key
       let wantSmartPhonetic = false;
+      let apiKey;
 
       if (mode === "gemini_romaji") {
         // Use Smart Phonetic logic for the unified Romaji, Romaja, Pinyin button
         wantSmartPhonetic = true;
+        apiKey = "no";
+      } else {
+        // Default to Korean
+        apiKey = "no";
       }
 
-      if (!Array.isArray(lyrics) || lyrics.length === 0) {
+      if (!apiKey || !Array.isArray(lyrics) || lyrics.length === 0) {
         return reject(
           new Error(
-            "Invalid lyrics format"
+            "Gemini API key missing. Please add at least one key in Settings."
           )
         );
       }
@@ -3625,7 +3719,7 @@ class LyricsContainer extends react.Component {
       if (cached) {
         // Fix cached items if they have double-encoded JSON structure
         let fixNeeded = false;
-        let targetField = wantSmartPhonetic ? 'phonetic' : 'translation';
+        let targetField = wantSmartPhonetic ? 'phonetic' : 'vi';
 
         if (cached[targetField] && Array.isArray(cached[targetField]) &&
           cached[targetField].length === 1 && typeof cached[targetField][0] === 'string' &&
@@ -3635,12 +3729,12 @@ class LyricsContainer extends react.Component {
             if (wantSmartPhonetic && Array.isArray(parsed.phonetic)) {
               cached.phonetic = parsed.phonetic;
               fixNeeded = true;
-            } else if (!wantSmartPhonetic && Array.isArray(parsed.translation)) {
-              cached.translation = parsed.translation;
+            } else if (!wantSmartPhonetic && Array.isArray(parsed.vi)) {
+              cached.vi = parsed.vi;
               fixNeeded = true;
-            } else if (parsed.translation && Array.isArray(parsed.translation)) {
+            } else if (parsed.vi && Array.isArray(parsed.vi)) {
               // Fallback
-              cached[targetField] = parsed.translation;
+              cached[targetField] = parsed.vi;
               fixNeeded = true;
             }
           } catch (e) { }
@@ -3662,7 +3756,7 @@ class LyricsContainer extends react.Component {
       const rateLimitKey = mode.replace("gemini_", "gemini-");
       if (!RateLimiter.canMakeCall(rateLimitKey, 5, 2000)) {
         const modeName =
-          mode === "gemini_romaji" ? "Romaji, Romaja, Pinyin" : "Translation";
+          mode === "gemini_romaji" ? "Romaji, Romaja, Pinyin" : "Korean";
         return reject(
           new Error(
             I18n.t("notifications.tooManyTranslationRequests")
@@ -3670,7 +3764,7 @@ class LyricsContainer extends react.Component {
         );
       }
 
-      // Filter out section headers before sending to Perplexity API for translation
+      // Filter out section headers before sending to Gemini for translation
       const allLines = lyrics.map((l) => l?.text || "").filter(Boolean);
       const nonSectionLines = allLines.filter(
         (line) => !Utils.isSectionHeader(line)
@@ -3684,8 +3778,8 @@ class LyricsContainer extends react.Component {
         this.startTranslationLoading();
       }
 
-      const inflightPromise = Translator.callTranslationAPI({
-        trackId: lyricsState.uri?.split(':')[2],
+      const inflightPromise = Translator.callGemini({
+        apiKey,
         artist: this.state.artist || lyricsState.artist,
         title: this.state.title || lyricsState.title,
         text,
@@ -3697,10 +3791,10 @@ class LyricsContainer extends react.Component {
           if (wantSmartPhonetic) {
             outText = response.phonetic;
           } else {
-            outText = response.translation;
+            outText = response.vi;
           }
 
-          if (!outText) throw new Error("Empty result from translation API.");
+          if (!outText) throw new Error("Empty result from Gemini.");
 
           // Handle nested JSON packaging (API issue workaround)
           if (Array.isArray(outText) && outText.length === 1 && typeof outText[0] === 'string') {
@@ -3709,12 +3803,12 @@ class LyricsContainer extends react.Component {
                 const parsed = JSON.parse(outText[0]);
                 if (wantSmartPhonetic && Array.isArray(parsed.phonetic)) {
                   outText = parsed.phonetic;
-                } else if (!wantSmartPhonetic && Array.isArray(parsed.translation)) {
-                  outText = parsed.translation;
-                } else if (parsed.translation && Array.isArray(parsed.translation)) {
-                  // Fallback: request was phonetic but response came as translation?
+                } else if (!wantSmartPhonetic && Array.isArray(parsed.vi)) {
+                  outText = parsed.vi;
+                } else if (parsed.vi && Array.isArray(parsed.vi)) {
+                  // Fallback: request was phonetic but response came as vi?
                   // or just general structure match
-                  outText = parsed.translation;
+                  outText = parsed.vi;
                 }
               }
             } catch (e) {
@@ -3729,7 +3823,7 @@ class LyricsContainer extends react.Component {
           } else if (typeof outText === "string") {
             lines = outText.split("\n");
           } else {
-            throw new Error("Invalid translation format received from translation API.");
+            throw new Error("Invalid translation format received from Gemini.");
           }
 
           // Create mapping arrays for proper alignment
@@ -3959,11 +4053,7 @@ class LyricsContainer extends react.Component {
             (lyric, i) => (result?.[i] ?? "") !== (lyric?.text || "")
           );
           if (!anyChanged) {
-            Spicetify.showNotification(
-              "Pinyin library unavailable. Showing original. Allow jsDelivr or unpkg.",
-              true,
-              4000
-            );
+            Toast.error(I18n.t("notifications.pinyinLibraryUnavailable"));
           }
         } else {
           const map = {
@@ -3974,11 +4064,7 @@ class LyricsContainer extends react.Component {
 
           // prevent conversion between the same language.
           if (targetConvert === "cn") {
-            Spicetify.showNotification(
-              "Conversion skipped: Already in Simplified Chinese",
-              false,
-              2000
-            );
+            Toast.show(I18n.t("notifications.conversionSkippedSimplified"));
             return lyrics;
           }
 
@@ -4010,11 +4096,7 @@ class LyricsContainer extends react.Component {
             (lyric, i) => (result?.[i] ?? "") !== (lyric?.text || "")
           );
           if (!anyChanged) {
-            Spicetify.showNotification(
-              "Pinyin library unavailable. Showing original. Allow jsDelivr or unpkg.",
-              true,
-              4000
-            );
+            Toast.error(I18n.t("notifications.pinyinLibraryUnavailable"));
           }
         } else {
           const map = {
@@ -4040,17 +4122,10 @@ class LyricsContainer extends react.Component {
       }
 
       const res = Utils.processTranslatedLyrics(result, lyrics);
-      Spicetify.showNotification(
-        "✓ Conversion completed successfully",
-        false,
-        2000
-      );
+      Toast.success(I18n.t("notifications.conversionCompleted"));
       return res;
     } catch (error) {
-      Spicetify.showNotification(
-        `Conversion failed: ${error.message || "Unknown error"}`,
-        true,
-        3000
+      Toast.error(`${I18n.t("notifications.conversionFailed")}: ${error.message || "Unknown error"}`
       );
     }
   }
@@ -4063,7 +4138,7 @@ class LyricsContainer extends react.Component {
       // 이미 로컬에 저장된 오프셋이 있으면 스킵
       const localOffset = await Utils.getTrackSyncOffset(trackUri);
       if (localOffset && localOffset !== 0) {
-        console.log(`[Lyrics Plus] Using local offset: ${localOffset}ms`);
+        console.log(`[ivLyrics] Using local offset: ${localOffset}ms`);
         return;
       }
 
@@ -4079,16 +4154,16 @@ class LyricsContainer extends react.Component {
 
         if (offsetToApply !== 0) {
           await Utils.setTrackSyncOffset(trackUri, offsetToApply);
-          console.log(`[Lyrics Plus] Applied community offset: ${offsetToApply}ms (confidence: ${communityData.confidence})`);
+          console.log(`[ivLyrics] Applied community offset: ${offsetToApply}ms (confidence: ${communityData.confidence})`);
 
           // UI 업데이트를 위해 이벤트 발생
-          window.dispatchEvent(new CustomEvent('lyrics-plus:offset-changed', {
+          window.dispatchEvent(new CustomEvent('ivLyrics:offset-changed', {
             detail: { trackUri, offset: offsetToApply }
           }));
         }
       }
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to apply community offset:", error);
+      console.error("[ivLyrics] Failed to apply community offset:", error);
     }
   }
 
@@ -4218,17 +4293,9 @@ class LyricsContainer extends react.Component {
     this.lyricsSource(this.state, currentMode);
 
     if (hasTranslations) {
-      Spicetify.showNotification(
-        `✓ Reset ${clearedCount} translation cache entries`,
-        false,
-        2000
-      );
+      Toast.success(I18n.t("notifications.translationCacheReset").replace("{count}", clearedCount));
     } else {
-      Spicetify.showNotification(
-        I18n.t("notifications.translationCacheRemoved"),
-        false,
-        2000
-      );
+      Toast.success(I18n.t("notifications.translationCacheRemoved"));
     }
   }
 
@@ -4238,11 +4305,7 @@ class LyricsContainer extends react.Component {
     const reader = new FileReader();
 
     if (file[0].size > 1024 * 1024) {
-      Spicetify.showNotification(
-        "File too large: Maximum size is 1MB",
-        true,
-        3000
-      );
+      Toast.error(I18n.t("notifications.fileTooLarge"));
       return;
     }
 
@@ -4251,15 +4314,10 @@ class LyricsContainer extends react.Component {
         const localLyrics = Utils.parseLocalLyrics(e.target.result);
         const parsedKeys = Object.keys(localLyrics)
           .filter((key) => localLyrics[key])
-          .map((key) => key[0].toUpperCase() + key.slice(1))
-          .map((key) => `<strong>${key}</strong>`);
+          .map((key) => key[0].toUpperCase() + key.slice(1));
 
         if (!parsedKeys.length) {
-          Spicetify.showNotification(
-            "No valid lyrics found in file",
-            true,
-            3000
-          );
+          Toast.error(I18n.t("notifications.noValidLyricsInFile"));
           return;
         }
 
@@ -4275,26 +4333,14 @@ class LyricsContainer extends react.Component {
         };
         this.saveLocalLyrics(this.currentTrackUri, localLyrics);
 
-        Spicetify.showNotification(
-          `✓ Successfully loaded ${parsedKeys.join(", ")} lyrics from file`,
-          false,
-          3000
-        );
+        Toast.success(I18n.t("notifications.lyricsLoadedFromFile").replace("{types}", parsedKeys.join(", ")));
       } catch (e) {
-        Spicetify.showNotification(
-          "Failed to load lyrics: Invalid file format",
-          true,
-          3000
-        );
+        Toast.error(I18n.t("notifications.lyricsLoadFailed"));
       }
     };
 
     reader.onerror = (e) => {
-      Spicetify.showNotification(
-        "Failed to read file: File may be corrupted",
-        true,
-        3000
-      );
+      Toast.error(I18n.t("notifications.fileReadFailed"));
     };
 
     reader.readAsText(file[0]);
@@ -4430,7 +4476,7 @@ class LyricsContainer extends react.Component {
           )));
 
     this.configButton = new Spicetify.Menu.Item(
-      "Lyrics Plus config",
+      "ivLyrics config",
       false,
       openConfig,
       "lyrics"
@@ -4465,6 +4511,9 @@ class LyricsContainer extends react.Component {
       const isEnabled = !this.state.isFullscreen;
       const useBrowserFullscreen = CONFIG.visual["fullscreen-browser-fullscreen"] === true;
       if (isEnabled) {
+        // TMI 폰트 크기 CSS 변수 설정
+        const tmiScale = (CONFIG.visual["fullscreen-tmi-font-size"] || 100) / 100;
+        this.fullscreenContainer.style.setProperty("--fullscreen-tmi-font-size", tmiScale);
         document.body.append(this.fullscreenContainer);
         this.mousetrap.bind("esc", this.toggleFullscreen);
         // ESC 키 직접 리스너 추가 (Mousetrap이 캡처하지 못할 경우 대비)
@@ -4479,7 +4528,7 @@ class LyricsContainer extends react.Component {
 
         // 브라우저 전체화면 변경 감지 리스너 추가
         this._fullscreenChangeHandler = () => {
-          // 브라우저 전체화면이 종료되었고, lyrics-plus 전체화면이 활성화된 상태라면
+          // 브라우저 전체화면이 종료되었고, ivLyrics 전체화면이 활성화된 상태라면
           if (!document.fullscreenElement && this.state.isFullscreen && useBrowserFullscreen) {
             this.toggleFullscreen();
           }
@@ -4508,6 +4557,8 @@ class LyricsContainer extends react.Component {
           document.removeEventListener("fullscreenchange", this._fullscreenChangeHandler);
           this._fullscreenChangeHandler = null;
         }
+        // 전체화면 종료 이벤트 발생 (GlobalShortcuts에서 이전 페이지로 이동하기 위해)
+        window.dispatchEvent(new CustomEvent("ivLyrics:fullscreen-closed"));
       }
 
       this.setState({
@@ -4526,7 +4577,7 @@ class LyricsContainer extends react.Component {
         this.forceUpdate();
       }
     };
-    window.addEventListener("lyrics-plus", this.handleConfigChange);
+    window.addEventListener("ivLyrics", this.handleConfigChange);
 
     // Listen for lyric index changes from Pages.js
     this.handleLyricIndexChange = (event) => {
@@ -4534,7 +4585,7 @@ class LyricsContainer extends react.Component {
         this.setState({ currentLyricIndex: event.detail.index });
       }
     };
-    window.addEventListener("lyrics-plus:lyric-index-changed", this.handleLyricIndexChange);
+    window.addEventListener("ivLyrics:lyric-index-changed", this.handleLyricIndexChange);
   }
 
   componentWillUnmount() {
@@ -4543,8 +4594,8 @@ class LyricsContainer extends react.Component {
     this.configButton?.deregister();
     this.mousetrap?.reset();
     window.removeEventListener("fad-request", lyricContainerUpdate);
-    window.removeEventListener("lyrics-plus", this.handleConfigChange);
-    window.removeEventListener("lyrics-plus:lyric-index-changed", this.handleLyricIndexChange);
+    window.removeEventListener("ivLyrics", this.handleConfigChange);
+    window.removeEventListener("ivLyrics:lyric-index-changed", this.handleLyricIndexChange);
 
     // Mouse idle timer cleanup
     if (this.mouseIdleTimer) {
@@ -4658,6 +4709,7 @@ class LyricsContainer extends react.Component {
       "--lyrics-translation-font-family":
         CONFIG.visual["translation-font-family"] || "var(--font-family)",
       "--lyrics-fullscreen-right-padding": `${CONFIG.visual["fullscreen-lyrics-right-padding"] || 40}px`,
+      "--fullscreen-tmi-font-size": (CONFIG.visual["fullscreen-tmi-font-size"] || 100) / 100,
     };
 
     this.mousetrap.reset();
@@ -4686,7 +4738,7 @@ class LyricsContainer extends react.Component {
 
   render() {
     // 미리보기 컴포넌트에서 사용할 수 있도록 첫 가사 시간을 전역으로 노출
-    window.lyricsPlus_firstLyricTime = this.state.currentLyrics && this.state.currentLyrics.length > 0
+    window.ivLyrics_firstLyricTime = this.state.currentLyrics && this.state.currentLyrics.length > 0
       ? this.state.currentLyrics[0].startTime
       : 0;
 
@@ -4695,7 +4747,7 @@ class LyricsContainer extends react.Component {
 
     if (!fadLyricsContainer || !document.contains(fadLyricsContainer)) {
       // Try main selector first
-      fadLyricsContainer = document.getElementById("fad-lyrics-plus-container");
+      fadLyricsContainer = document.getElementById("fad-ivLyrics-container");
 
       // If not found, try alternative selectors for FAD extension
       if (!fadLyricsContainer) {
@@ -4852,6 +4904,7 @@ class LyricsContainer extends react.Component {
         (100 - (CONFIG.visual["highlight-intensity"] || 70)) / 100,
       "--animation-tempo": this.state.tempo,
       "--lyrics-fullscreen-right-padding": `${CONFIG.visual["fullscreen-lyrics-right-padding"] || 40}px`,
+      "--fullscreen-tmi-font-size": (CONFIG.visual["fullscreen-tmi-font-size"] || 100) / 100,
     };
 
     let mode = this.getCurrentMode();
@@ -5014,11 +5067,11 @@ class LyricsContainer extends react.Component {
         : null;
 
     // Update banner component
-    const updateBanner = window.lyricsPlus_updateInfo?.available
+    const updateBanner = window.ivLyrics_updateInfo?.available
       ? react.createElement(UpdateBanner, {
-        updateInfo: window.lyricsPlus_updateInfo,
+        updateInfo: window.ivLyrics_updateInfo,
         onDismiss: () =>
-          Utils.dismissUpdate(window.lyricsPlus_updateInfo.latestVersion),
+          Utils.dismissUpdate(window.ivLyrics_updateInfo.latestVersion),
       })
       : null;
 
@@ -5039,6 +5092,15 @@ class LyricsContainer extends react.Component {
       }
       if (!hasLyrics && centerWhenNoLyrics) {
         fullscreenClasses += " fullscreen-no-lyrics";
+      }
+      // TV Mode class
+      if (CONFIG.visual["fullscreen-tv-mode"] === true) {
+        fullscreenClasses += " tv-mode-active";
+      }
+      // TMI 폰트 크기 CSS 변수 업데이트
+      if (this.fullscreenContainer) {
+        const tmiScale = (CONFIG.visual["fullscreen-tmi-font-size"] || 100) / 100;
+        this.fullscreenContainer.style.setProperty("--fullscreen-tmi-font-size", tmiScale);
       }
     }
 
@@ -5071,14 +5133,15 @@ class LyricsContainer extends react.Component {
         isFullscreen: this.state.isFullscreen,
         currentLyricIndex: this.state.currentLyricIndex || 0,
         totalLyrics: Array.isArray(this.state.currentLyrics) ? this.state.currentLyrics.length : 0,
-        translatedMetadata: this.state.translatedMetadata
+        translatedMetadata: this.state.translatedMetadata,
+        trackUri: this.state.uri
       }),
       // Tab bar for mode switching
       topBarContent,
       // Update notification banner
       updateBanner,
       (!CONFIG.visual["video-background"] || this.state.isFADMode) && react.createElement("div", {
-        id: "lyrics-plus-gradient-background",
+        id: "ivLyrics-gradient-background",
         style: backgroundStyle,
       }),
       !this.state.isFADMode && CONFIG.visual["video-background"] && window.VideoBackground && react.createElement(window.VideoBackground, {
@@ -5169,9 +5232,20 @@ class LyricsContainer extends react.Component {
             }
           },
         }),
+        react.createElement(ShareImageButton, {
+          lyrics: this.state.currentLyrics || [],
+          trackInfo: {
+            name: Spicetify.Player.data?.item?.name || Spicetify.Player.data?.item?.metadata?.title || '',
+            artist: Spicetify.Player.data?.item?.artists?.map(a => a.name).join(', ') || Spicetify.Player.data?.item?.metadata?.artist_name || '',
+            cover: Spicetify.Player.data?.item?.metadata?.image_xlarge_url ||
+              Spicetify.Player.data?.item?.metadata?.image_large_url ||
+              Spicetify.Player.data?.item?.metadata?.image_url ||
+              Spicetify.Player.data?.item?.album?.images?.[0]?.url || '',
+          },
+        }),
         react.createElement(SettingsMenu),
         // Fullscreen toggle button
-        (() => !document.getElementById("fad-lyrics-plus-container"))() && react.createElement(
+        (() => !document.getElementById("fad-ivLyrics-container"))() && react.createElement(
           Spicetify.ReactComponent.TooltipWrapper,
           {
             label: I18n.t("menu.fullscreen"),
@@ -5225,12 +5299,12 @@ class LyricsContainer extends react.Component {
     // 토글: 이미 같은 모드로 고정되어 있으면 해제
     if (this.state.lockMode === mode) {
       CONFIG.locked = -1;
-      StorageManager.setItem("lyrics-plus:lock-mode");
+      StorageManager.setItem("ivLyrics:lock-mode");
       this.setState({ lockMode: -1 });
     } else {
       // 새로운 모드로 고정
       CONFIG.locked = mode;
-      StorageManager.setItem("lyrics-plus:lock-mode", mode.toString());
+      StorageManager.setItem("ivLyrics:lock-mode", mode.toString());
       this.setState({ lockMode: mode });
     }
     this.fetchLyrics();
@@ -5285,7 +5359,7 @@ class LyricsContainer extends react.Component {
 
   // Google Fonts 로드
   fontsToLoad.forEach((font) => {
-    const linkId = `lyrics-plus-google-font-${font.replace(/ /g, "-")}`;
+    const linkId = `ivLyrics-google-font-${font.replace(/ /g, "-")}`;
     if (!document.getElementById(linkId)) {
       const link = document.createElement("link");
       link.id = linkId;
@@ -5313,25 +5387,25 @@ class LyricsContainer extends react.Component {
       const currentPath = Spicetify.Platform.History.location.pathname;
       const searchParams = new URLSearchParams(Spicetify.Platform.History.location.search);
 
-      // spotify://lyrics-plus/ 경로인지 확인
-      if (currentPath.includes('/lyrics-plus')) {
+      // spotify://ivLyrics/ 경로인지 확인
+      if (currentPath.includes('/ivLyrics')) {
         // alert 파라미터가 있으면 알림 표시
         const alertMessage = searchParams.get('alert');
         if (alertMessage) {
-          Spicetify.showNotification(decodeURIComponent(alertMessage), false, 3000);
-          console.log('[Lyrics Plus] URL Scheme alert:', alertMessage);
+          Toast.show(decodeURIComponent(alertMessage), false, 3000);
+          console.log('[ivLyrics] URL Scheme alert:', alertMessage);
         }
 
         // 다른 파라미터들도 처리 가능
         // 예: action, data 등
         const action = searchParams.get('action');
         if (action) {
-          console.log('[Lyrics Plus] URL Scheme action:', action);
+          console.log('[ivLyrics] URL Scheme action:', action);
           // 향후 action 처리 로직 추가 가능
         }
       }
     } catch (error) {
-      console.error('[Lyrics Plus] URL Scheme error:', error);
+      console.error('[ivLyrics] URL Scheme error:', error);
     }
   };
 

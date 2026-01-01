@@ -205,8 +205,8 @@ window.ApiTracker = ApiTracker;
 // API 호출 횟수를 90% 이상 줄여 비용 절감
 // ============================================
 const LyricsCache = {
-  DB_NAME: 'LyricsPlusCache',
-  DB_VERSION: 3,  // sync 스토어 추가
+  DB_NAME: 'ivLyricsCache',
+  DB_VERSION: 5,  // TMI 캐시 추가
 
   // 캐시 만료 시간 (일 단위)
   EXPIRY: {
@@ -215,7 +215,8 @@ const LyricsCache = {
     phonetic: 30,     // 발음: 30일
     metadata: 30,     // 메타데이터: 30일
     sync: 7,          // 싱크 오프셋: 7일
-    youtube: 7        // YouTube 정보: 7일
+    youtube: 7,       // YouTube 정보: 7일
+    tmi: 30           // TMI (곡 정보): 30일
   },
 
   _db: null,
@@ -244,11 +245,17 @@ const LyricsCache = {
 
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
+        const oldVersion = event.oldVersion;
 
-        // 가사 캐시 스토어
+        // 가사 캐시 스토어 (v4: cacheKey로 변경하여 provider별 캐시 지원)
+        if (oldVersion < 4 && db.objectStoreNames.contains('lyrics')) {
+          // 기존 lyrics 스토어 삭제 (trackId 기반에서 cacheKey 기반으로 변경)
+          db.deleteObjectStore('lyrics');
+        }
         if (!db.objectStoreNames.contains('lyrics')) {
-          const lyricsStore = db.createObjectStore('lyrics', { keyPath: 'trackId' });
+          const lyricsStore = db.createObjectStore('lyrics', { keyPath: 'cacheKey' });
           lyricsStore.createIndex('cachedAt', 'cachedAt', { unique: false });
+          lyricsStore.createIndex('trackId', 'trackId', { unique: false });  // trackId로 검색 가능
         }
 
         // 번역 캐시 스토어
@@ -274,6 +281,13 @@ const LyricsCache = {
           const syncStore = db.createObjectStore('sync', { keyPath: 'trackId' });
           syncStore.createIndex('cachedAt', 'cachedAt', { unique: false });
         }
+
+        // TMI (곡 정보) 캐시 스토어
+        if (!db.objectStoreNames.contains('tmi')) {
+          const tmiStore = db.createObjectStore('tmi', { keyPath: 'cacheKey' });
+          tmiStore.createIndex('cachedAt', 'cachedAt', { unique: false });
+          tmiStore.createIndex('trackId', 'trackId', { unique: false });
+        }
       };
     });
 
@@ -291,22 +305,32 @@ const LyricsCache = {
   },
 
   /**
-   * 가사 캐시 조회
+   * 가사 캐시 키 생성 (trackId:provider)
    */
-  async getLyrics(trackId) {
+  _getLyricsKey(trackId, provider) {
+    return `${trackId}:${provider || 'unknown'}`;
+  },
+
+  /**
+   * 가사 캐시 조회
+   * @param {string} trackId - 트랙 ID
+   * @param {string} provider - 가사 제공자 (ivlyrics, spotify, lrclib 등)
+   */
+  async getLyrics(trackId, provider) {
     try {
       const db = await this._openDB();
       const tx = db.transaction('lyrics', 'readonly');
       const store = tx.objectStore('lyrics');
+      const cacheKey = this._getLyricsKey(trackId, provider);
 
       const result = await new Promise((resolve, reject) => {
-        const request = store.get(trackId);
+        const request = store.get(cacheKey);
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
       });
 
       if (result && !this._isExpired(result.cachedAt, 'lyrics')) {
-        console.log(`[LyricsCache] Lyrics cache hit for ${trackId}`);
+        console.log(`[LyricsCache] Lyrics cache hit for ${cacheKey}`);
         return result.data;
       }
 
@@ -319,15 +343,21 @@ const LyricsCache = {
 
   /**
    * 가사 캐시 저장
+   * @param {string} trackId - 트랙 ID
+   * @param {string} provider - 가사 제공자 (ivlyrics, spotify, lrclib 등)
+   * @param {object} data - 가사 데이터
    */
-  async setLyrics(trackId, data) {
+  async setLyrics(trackId, provider, data) {
     try {
       const db = await this._openDB();
       const tx = db.transaction('lyrics', 'readwrite');
       const store = tx.objectStore('lyrics');
+      const cacheKey = this._getLyricsKey(trackId, provider);
 
       store.put({
+        cacheKey,
         trackId,
+        provider,
         data,
         cachedAt: Date.now()
       });
@@ -337,7 +367,7 @@ const LyricsCache = {
         tx.onerror = () => reject(tx.error);
       });
 
-      console.log(`[LyricsCache] Lyrics cached for ${trackId}`);
+      console.log(`[LyricsCache] Lyrics cached for ${cacheKey}`);
       return true;
     } catch (error) {
       console.error('[LyricsCache] setLyrics error:', error);
@@ -347,20 +377,29 @@ const LyricsCache = {
 
   /**
    * 번역 캐시 키 생성
+   * @param {string} trackId - 트랙 ID
+   * @param {string} lang - 대상 언어
+   * @param {boolean} isPhonetic - 발음 여부
+   * @param {string} provider - 가사 제공자 (선택적)
    */
-  _getTranslationKey(trackId, lang, isPhonetic) {
-    return `${trackId}:${lang}:${isPhonetic ? 'phonetic' : 'translation'}`;
+  _getTranslationKey(trackId, lang, isPhonetic, provider) {
+    const providerSuffix = provider ? `:${provider}` : '';
+    return `${trackId}:${lang}:${isPhonetic ? 'phonetic' : 'translation'}${providerSuffix}`;
   },
 
   /**
    * 번역 캐시 조회
+   * @param {string} trackId - 트랙 ID
+   * @param {string} lang - 대상 언어
+   * @param {boolean} isPhonetic - 발음 여부
+   * @param {string} provider - 가사 제공자 (선택적)
    */
-  async getTranslation(trackId, lang, isPhonetic = false) {
+  async getTranslation(trackId, lang, isPhonetic = false, provider = null) {
     try {
       const db = await this._openDB();
       const tx = db.transaction('translations', 'readonly');
       const store = tx.objectStore('translations');
-      const cacheKey = this._getTranslationKey(trackId, lang, isPhonetic);
+      const cacheKey = this._getTranslationKey(trackId, lang, isPhonetic, provider);
 
       const result = await new Promise((resolve, reject) => {
         const request = store.get(cacheKey);
@@ -383,19 +422,25 @@ const LyricsCache = {
 
   /**
    * 번역 캐시 저장
+   * @param {string} trackId - 트랙 ID
+   * @param {string} lang - 대상 언어
+   * @param {boolean} isPhonetic - 발음 여부
+   * @param {object} data - 번역 데이터
+   * @param {string} provider - 가사 제공자 (선택적)
    */
-  async setTranslation(trackId, lang, isPhonetic, data) {
+  async setTranslation(trackId, lang, isPhonetic, data, provider = null) {
     try {
       const db = await this._openDB();
       const tx = db.transaction('translations', 'readwrite');
       const store = tx.objectStore('translations');
-      const cacheKey = this._getTranslationKey(trackId, lang, isPhonetic);
+      const cacheKey = this._getTranslationKey(trackId, lang, isPhonetic, provider);
 
       store.put({
         cacheKey,
         trackId,
         lang,
         isPhonetic,
+        provider,
         data,
         cachedAt: Date.now()
       });
@@ -630,9 +675,14 @@ const LyricsCache = {
   async cleanup() {
     try {
       const db = await this._openDB();
-      const stores = ['lyrics', 'translations', 'youtube', 'metadata', 'sync'];
+      const stores = ['lyrics', 'translations', 'youtube', 'metadata', 'sync', 'tmi'];
 
       for (const storeName of stores) {
+        // 스토어가 존재하는지 확인 (DB 마이그레이션 전일 수 있음)
+        if (!db.objectStoreNames.contains(storeName)) {
+          continue;
+        }
+
         const tx = db.transaction(storeName, 'readwrite');
         const store = tx.objectStore(storeName);
 
@@ -703,10 +753,19 @@ const LyricsCache = {
       // 모든 삭제 작업을 Promise로 관리
       const deletePromises = [];
 
-      // 가사 삭제
+      // 가사 삭제 (모든 provider)
       deletePromises.push(new Promise((resolve, reject) => {
         const lyricsTx = db.transaction('lyrics', 'readwrite');
-        lyricsTx.objectStore('lyrics').delete(trackId);
+        const lyricsStore = lyricsTx.objectStore('lyrics');
+        const lyricsIndex = lyricsStore.index('trackId');
+        const lyricsRequest = lyricsIndex.openCursor(IDBKeyRange.only(trackId));
+        lyricsRequest.onsuccess = (event) => {
+          const cursor = event.target.result;
+          if (cursor) {
+            cursor.delete();
+            cursor.continue();
+          }
+        };
         lyricsTx.oncomplete = () => resolve();
         lyricsTx.onerror = () => reject(lyricsTx.error);
       }));
@@ -755,6 +814,25 @@ const LyricsCache = {
         metaTx.onerror = () => reject(metaTx.error);
       }));
 
+      // TMI 삭제 (tmi 스토어가 있는 경우)
+      if (db.objectStoreNames.contains('tmi')) {
+        deletePromises.push(new Promise((resolve, reject) => {
+          const tmiTx = db.transaction('tmi', 'readwrite');
+          const tmiStore = tmiTx.objectStore('tmi');
+          const tmiIndex = tmiStore.index('trackId');
+          const tmiRequest = tmiIndex.openCursor(IDBKeyRange.only(trackId));
+          tmiRequest.onsuccess = (event) => {
+            const cursor = event.target.result;
+            if (cursor) {
+              cursor.delete();
+              cursor.continue();
+            }
+          };
+          tmiTx.oncomplete = () => resolve();
+          tmiTx.onerror = () => reject(tmiTx.error);
+        }));
+      }
+
       // 모든 삭제 작업이 완료될 때까지 대기
       await Promise.all(deletePromises);
 
@@ -767,12 +845,88 @@ const LyricsCache = {
   },
 
   /**
+   * TMI 캐시 조회
+   * @param {string} trackId - 트랙 ID
+   * @param {string} lang - 언어 코드
+   */
+  async getTMI(trackId, lang) {
+    try {
+      const db = await this._openDB();
+
+      // tmi 스토어가 없으면 null 반환 (DB 마이그레이션 전)
+      if (!db.objectStoreNames.contains('tmi')) {
+        return null;
+      }
+
+      const tx = db.transaction('tmi', 'readonly');
+      const store = tx.objectStore('tmi');
+      const cacheKey = `${trackId}:${lang}`;
+
+      const result = await new Promise((resolve, reject) => {
+        const request = store.get(cacheKey);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+
+      if (result && !this._isExpired(result.cachedAt, 'tmi')) {
+        console.log(`[LyricsCache] TMI cache hit for ${cacheKey}`);
+        return result.data;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('[LyricsCache] getTMI error:', error);
+      return null;
+    }
+  },
+
+  /**
+   * TMI 캐시 저장
+   * @param {string} trackId - 트랙 ID
+   * @param {string} lang - 언어 코드
+   * @param {object} data - TMI 데이터
+   */
+  async setTMI(trackId, lang, data) {
+    try {
+      const db = await this._openDB();
+
+      // tmi 스토어가 없으면 스킵
+      if (!db.objectStoreNames.contains('tmi')) {
+        return false;
+      }
+
+      const tx = db.transaction('tmi', 'readwrite');
+      const store = tx.objectStore('tmi');
+      const cacheKey = `${trackId}:${lang}`;
+
+      store.put({
+        cacheKey,
+        trackId,
+        lang,
+        data,
+        cachedAt: Date.now()
+      });
+
+      await new Promise((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+
+      console.log(`[LyricsCache] TMI cached for ${cacheKey}`);
+      return true;
+    } catch (error) {
+      console.error('[LyricsCache] setTMI error:', error);
+      return false;
+    }
+  },
+
+  /**
    * 전체 캐시 삭제
    */
   async clearAll() {
     try {
       const db = await this._openDB();
-      const stores = ['lyrics', 'translations', 'youtube', 'metadata'];
+      const stores = ['lyrics', 'translations', 'youtube', 'metadata', 'tmi'];
 
       // 모든 스토어의 삭제를 병렬로 처리하고 완료 대기
       const clearPromises = stores.map(storeName => {
@@ -800,7 +954,7 @@ const LyricsCache = {
   async getStats() {
     try {
       const db = await this._openDB();
-      const stores = ['lyrics', 'translations', 'youtube', 'metadata'];
+      const stores = ['lyrics', 'translations', 'youtube', 'metadata', 'tmi'];
       const stats = {};
 
       for (const storeName of stores) {
@@ -1036,11 +1190,19 @@ const Utils = {
       /[萬與醜專業叢東絲丟兩嚴喪個爿豐臨為麗舉麼義烏樂喬習鄉書買亂爭於虧雲亙亞產畝親褻嚲億僅從侖倉儀們價眾優夥會傴傘偉傳傷倀倫傖偽佇體餘傭僉俠侶僥偵側僑儈儕儂俁儔儼倆儷儉債傾傯僂僨償儻儐儲儺兒兌兗黨蘭關興茲養獸囅內岡冊寫軍農塚馮衝決況凍淨淒涼淩減湊凜幾鳳鳧憑凱擊氹鑿芻劃劉則剛創刪別剗剄劊劌剴劑剮劍剝劇勸辦務勱動勵勁勞勣勳猛勩勻匭匱區醫華協單賣盧鹵臥衛卻巹廠廳曆厲壓厭厙廁廂厴廈廚廄廝縣參靉靆雙發變敘疊葉號歎嘰籲後嚇呂嗎唚噸聽啟吳嘸囈嘔嚦唄員咼嗆嗚詠哢嚨嚀噝吒噅鹹呱響啞噠嘵嗶噦嘩噲嚌噥喲嘜嗊嘮啢嗩唕喚呼嘖嗇囀齧囉嘽嘯噴嘍嚳囁嗬噯噓嚶囑嚕劈囂謔團園囪圍圇國圖圓聖壙場阪壞塊堅壇壢壩塢墳墜壟壟壚壘墾坰堊墊埡墶壋塏堖塒塤堝墊垵塹墮壪牆壯聲殼壺壼處備複夠頭誇夾奪奩奐奮獎奧妝婦媽嫵嫗媯姍薑婁婭嬈嬌孌娛媧嫻嫿嬰嬋嬸媼嬡嬪嬙嬤孫學孿寧寶實寵審憲宮寬賓寢對尋導壽將爾塵堯尷屍盡層屭屜屆屬屢屨嶼歲豈嶇崗峴嶴嵐島嶺嶽崠巋嶨嶧峽嶢嶠崢巒嶗崍嶮嶄嶸嶔崳嶁脊巔鞏巰幣帥師幃帳簾幟帶幀幫幬幘幗冪襆幹並廣莊慶廬廡庫應廟龐廢廎廩開異棄張彌弳彎彈強歸當錄彠彥徹徑徠禦憶懺憂愾懷態慫憮慪悵愴憐總懟懌戀懇惡慟懨愷惻惱惲悅愨懸慳憫驚懼慘懲憊愜慚憚慣湣慍憤憒願懾憖怵懣懶懍戇戔戲戧戰戬戶紮撲扡執擴捫掃揚擾撫拋摶摳掄搶護報擔擬攏揀擁攔擰撥擇掛摯攣掗撾撻挾撓擋撟掙擠揮撏撈損撿換搗據撚擄摑擲撣摻摜摣攬撳攙擱摟攪攜攝攄擺搖擯攤攖撐攆擷擼攛擻攢敵斂數齋斕鬥斬斷無舊時曠暘曇晝曨顯晉曬曉曄暈暉暫曖劄術樸機殺雜權條來楊榪傑極構樅樞棗櫪梘棖槍楓梟櫃檸檉梔柵標棧櫛櫳棟櫨櫟欄樹棲樣欒棬椏橈楨檔榿橋樺檜槳樁夢檮棶檢欞槨櫝槧欏橢樓欖櫬櫚櫸檟檻檳櫧橫檣櫻櫫櫥櫓櫞簷檁歡歟歐殲歿殤殘殞殮殫殯毆毀轂畢斃氈毿氌氣氫氬氲彙漢汙湯洶遝溝沒灃漚瀝淪滄渢溈滬濔濘淚澩瀧瀘濼瀉潑澤涇潔灑窪浹淺漿澆湞溮濁測澮濟瀏滻渾滸濃潯濜塗湧濤澇淶漣潿渦溳渙滌潤澗漲澀澱淵淥漬瀆漸澠漁瀋滲溫遊灣濕潰濺漵漊潷滾滯灩灄滿瀅濾濫灤濱灘澦濫瀠瀟瀲濰潛瀦瀾瀨瀕灝滅燈靈災燦煬爐燉煒熗點煉熾爍爛烴燭煙煩燒燁燴燙燼熱煥燜燾煆糊溜愛爺牘犛牽犧犢強狀獷獁猶狽麅獮獰獨狹獅獪猙獄猻獫獵獼玀豬貓蝟獻獺璣璵瑒瑪瑋環現瑲璽瑉玨琺瓏璫琿璡璉瑣瓊瑤璦璿瓔瓚甕甌電畫暢佘疇癤療瘧癘瘍鬁瘡瘋皰屙癰痙癢瘂癆瘓癇癡癉瘮瘞瘺癟癱癮癭癩癬癲臒皚皺皸盞鹽監蓋盜盤瞘眥矓著睜睞瞼瞞矚矯磯礬礦碭碼磚硨硯碸礪礱礫礎硜矽碩硤磽磑礄確鹼礙磧磣堿镟滾禮禕禰禎禱禍稟祿禪離禿稈種積稱穢穠穭稅穌穩穡窮竊竅窯竄窩窺竇窶豎競篤筍筆筧箋籠籩築篳篩簹箏籌簽簡籙簀篋籜籮簞簫簣簍籃籬籪籟糴類秈糶糲粵糞糧糝餱緊縶糸糾紆紅紂纖紇約級紈纊紀紉緯紜紘純紕紗綱納紝縱綸紛紙紋紡紵紖紐紓線紺絏紱練組紳細織終縐絆紼絀紹繹經紿綁絨結絝繞絰絎繪給絢絳絡絕絞統綆綃絹繡綌綏絛繼綈績緒綾緓續綺緋綽緔緄繩維綿綬繃綢綯綹綣綜綻綰綠綴緇緙緗緘緬纜緹緲緝縕繢緦綞緞緶線緱縋緩締縷編緡緣縉縛縟縝縫縗縞纏縭縊縑繽縹縵縲纓縮繆繅纈繚繕繒韁繾繰繯繳纘罌網羅罰罷羆羈羥羨翹翽翬耮耬聳恥聶聾職聹聯聵聽聰肅腸膚膁腎腫脹脅膽勝朧腖臚脛膠脈膾髒臍腦膿臠腳脫腡臉臘醃膕齶膩靦膃騰臏臢輿艤艦艙艫艱豔艸藝節羋薌蕪蘆蓯葦藶莧萇蒼苧蘇檾蘋莖蘢蔦塋煢繭荊薦薘莢蕘蓽蕎薈薺蕩榮葷滎犖熒蕁藎蓀蔭蕒葒葤藥蒞蓧萊蓮蒔萵薟獲蕕瑩鶯蓴蘀蘿螢營縈蕭薩蔥蕆蕢蔣蔞藍薊蘺蕷鎣驀薔蘞藺藹蘄蘊藪槁蘚虜慮虛蟲虯虮雖蝦蠆蝕蟻螞蠶蠔蜆蠱蠣蟶蠻蟄蛺蟯螄蠐蛻蝸蠟蠅蟈蟬蠍螻蠑螿蟎蠨釁銜補襯袞襖嫋褘襪襲襏裝襠褌褳襝褲襇褸襤繈襴見觀覎規覓視覘覽覺覬覡覿覥覦覯覲覷觴觸觶讋譽謄訁計訂訃認譏訐訌討讓訕訖訓議訊記訒講諱謳詎訝訥許訛論訩訟諷設訪訣證詁訶評詛識詗詐訴診詆謅詞詘詔詖譯詒誆誄試詿詩詰詼誠誅詵話誕詬詮詭詢詣諍該詳詫諢詡譸誡誣語誚誤誥誘誨誑說誦誒請諸諏諾讀諑誹課諉諛誰諗調諂諒諄誶談誼謀諶諜謊諫諧謔謁謂諤諭諼讒諮諳諺諦謎諞諝謨讜謖謝謠謗諡謙謐謹謾謫譾謬譚譖譙讕譜譎讞譴譫讖穀豶貝貞負貟貢財責賢敗賬貨質販貪貧貶購貯貫貳賤賁貰貼貴貺貸貿費賀貽賊贄賈賄貲賃賂贓資賅贐賕賑賚賒賦賭齎贖賞賜贔賙賡賠賧賴賵贅賻賺賽賾贗讚贇贈贍贏贛赬趙趕趨趲躉躍蹌蹠躒踐躂蹺蹕躚躋踴躊蹤躓躑躡蹣躕躥躪躦軀車軋軌軑軔轉軛輪軟轟軲軻轤軸軹軼軤軫轢軺輕軾載輊轎輈輇輅較輒輔輛輦輩輝輥輞輬輟輜輳輻輯轀輸轡轅轄輾轆轍轔辯辮邊遼達遷過邁運還這進遠違連遲邇逕跡適選遜遞邐邏遺遙鄧鄺鄔郵鄒鄴鄰鬱郤郟鄶鄭鄆酈鄖鄲醞醱醬釅釃釀釋裏钜鑒鑾鏨釓釔針釘釗釙釕釷釺釧釤鈒釩釣鍆釹鍚釵鈃鈣鈈鈦鈍鈔鍾鈉鋇鋼鈑鈐鑰欽鈞鎢鉤鈧鈁鈥鈄鈕鈀鈺錢鉦鉗鈷缽鈳鉕鈽鈸鉞鑽鉬鉭鉀鈿鈾鐵鉑鈴鑠鉛鉚鈰鉉鉈鉍鈹鐸鉶銬銠鉺銪鋏鋣鐃銍鐺銅鋁銱銦鎧鍘銖銑鋌銩銛鏵銓鉿銚鉻銘錚銫鉸銥鏟銃鐋銨銀銣鑄鐒鋪鋙錸鋱鏈鏗銷鎖鋰鋥鋤鍋鋯鋨鏽銼鋝鋒鋅鋶鐦鐧銳銻鋃鋟鋦錒錆鍺錯錨錡錁錕錩錫錮鑼錘錐錦鍁錈錇錟錠鍵鋸錳錙鍥鍈鍇鏘鍶鍔鍤鍬鍾鍛鎪鍠鍰鎄鍍鎂鏤鎡鏌鎮鎛鎘鑷鐫鎳鎿鎦鎬鎊鎰鎔鏢鏜鏍鏰鏞鏡鏑鏃鏇鏐鐔钁鐐鏷鑥鐓鑭鐠鑹鏹鐙鑊鐳鐶鐲鐮鐿鑔鑣鑞鑲長門閂閃閆閈閉問闖閏闈閑閎間閔閌悶閘鬧閨聞闼閩閭闓閥閣閡閫鬮閱閬闍閾閹閶鬩閿閽閻閼闡闌闃闠闊闋闔闐闒闕闞闤隊陽陰陣階際陸隴陳陘陝隉隕險隨隱隸雋難雛讎靂霧霽黴靄靚靜靨韃鞽韉韝韋韌韍韓韙韞韜韻页顶顷顸项顺须顼顽顾顿颀颁颂颃预颅领颇颈颉颊颋颌颍颎颏颐频颒颓颔颕颖颗题颙颚颛颜额颞颟颠颡颢颣颤颥颦颧风飏飐飑飒飓飔飕飖飗飘飙飚飞飨餍饤饥饦饧饨饩饪饫饬饭饮饯饰饱饲饳饴饵饶饷饸饹饺饻饼饽饾饿馀馁馂馃馄馅馆馇馈馉馊馋馌馍馎馏馐馑馒馓馔馕马驭驮驯驰驱驲驳驴驵驶驷驸驹驺驻驼驽驾驿骀骁骂骃骄骅骆骇骈骉骊骋验骍骎骏骐骑骒骓骔骕骖骗骘骙骚骛骜骝骞骟骠骡骢骣骤骥骦骧髅髋髌鬓魇魉鱼鱽鱾鱿鲀鲁鲂鲄鲅鲆鲇鲈鲉鲊鲋鲌鲍鲎鲏鲐鲑鲒鲓鲔鲕鲖鲗鲘鲙鲚鲛鲜鲝鲞鲟鲠鲡鲢鲣鲤鲥鲦鲧鲨鲩鲪鲫鲬鲭鲮鲯鲰鲱鲲鲳鲴鲵鲶鲷鲸鲹鲺鲻鲼鲽鲾鲿鳀鳁鳂鳃鳄鳅鳆鳇鳈鳉鳊鳋鳌鳍鳎鳏鳐鳑鳒鳓鳔鳕鳖鳗鳘鳙鳛鳜鳝鳞鳟鳠鳡鳢鳣鸟鸠鸡鸢鸣鸤鸥鸦鸧鸨鸩鸪鸫鸬鸭鸮鸯鸰鸱鸲鸳鸴鸵鸶鸷鸸鸹鸺鸻鸼鸽鸾鸿鹀鹁鹂鹃鹄鹅鹆鹇鹈鹉鹊鹋鹌鹍鹎鹏鹐鹑鹒鹓鹔鹕鹖鹗鹘鹚鹛鹜鹝鹞鹟鹠鹡鹢鹣鹤鹥鹦鹧鹨鹩鹪鹫鹬鹭鹯鹰鹱鹲鹳鹴鹾麦麸黄黉黡黩黪黾鼋鼌鼍鼗鼹齄齐齑齿龀龁龂龃龄龅龆龇龈龉龊龋龌龙龚龛龟志制咨只里系范松没尝尝闹面准钟别闲干尽脏拼]/gu;
     const hanziRegex = /\p{Script=Han}/gu;
     const cyrillicRegex = /[\u0400-\u04FF]/gu; // Cyrillic (Russian, etc.)
+    // Vietnamese: 모든 베트남어 발음 기호
     const vietnameseRegex =
       /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/gu;
+    // Vietnamese-only: 베트남어에만 존재하는 고유 문자 (프랑스어와 구분용)
+    // đ, ư, ơ, ă 및 아래 점/물결표/후크 발음 기호가 있는 문자들
+    const vietnameseUniqueRegex =
+      /[đĐưƯơƠăĂạảẠẢắằẳẵặẮẰẲẴẶấầẩẫậẤẦẨẪẬếềểễệẾỀỂỄỆịỉĨỈỊọỏộốồổỗỌỎỐỒỔỖớờởỡợỚỜỞỠỢụủứừửữựỤỦƯỨỪỬỮỰỵỷỹỲỴỶỸ]/gu;
     const germanCharsRegex = /[äöüßÄÖÜ]/gu;
     const spanishRegex = /[áéíóúüñÁÉÍÓÚÜÑ¿¡]/gu;
+    // French: 프랑스어 발음 기호 (æ, œ, ç, ë, ï, ÿ 포함)
     const frenchRegex = /[àâæçéèêëïîôùûüÿœÀÂÆÇÉÈÊËÏÎÔÙÛÜŸŒ]/gu;
+    // French-only: 프랑스어에만 존재하는 고유 문자
+    const frenchUniqueRegex = /[æœçëïÿÆŒÇËÏŸ]/gu;
     const portugueseRegex = /[ãõáàâéêíóôõúüçÃÕÁÀÂÉÊÍÓÔÕÚÜÇ]/gu;
     const turkishRegex = /[çğıöşüÇĞİÖŞÜ]/gu;
     const polishRegex = /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/gu;
@@ -1058,9 +1220,11 @@ const Utils = {
 
     const cyrillicMatch = rawLyrics.match(cyrillicRegex);
     const vietnameseMatch = rawLyrics.match(vietnameseRegex);
+    const vietnameseUniqueMatch = rawLyrics.match(vietnameseUniqueRegex);
     const germanMatch = rawLyrics.match(germanCharsRegex);
     const spanishMatch = rawLyrics.match(spanishRegex);
     const frenchMatch = rawLyrics.match(frenchRegex);
+    const frenchUniqueMatch = rawLyrics.match(frenchUniqueRegex);
     const portugueseMatch = rawLyrics.match(portugueseRegex);
     const turkishMatch = rawLyrics.match(turkishRegex);
     const polishMatch = rawLyrics.match(polishRegex);
@@ -1098,8 +1262,37 @@ const Utils = {
       return result;
     }
 
-    // Vietnamese (distinct diacritics)
-    if (vietnameseMatch && vietnameseMatch.length > 5) {
+    // Vietnamese vs French disambiguation:
+    // 베트남어 고유 문자(đ, ư, ơ, ă, 아래점/후크 있는 문자 등)가 충분히 있으면 베트남어로 판정
+    // 그렇지 않고 프랑스어 고유 문자(æ, œ, ç, ë, ï, ÿ)가 있으면 프랑스어로 판정
+    const vietnameseUniqueCount = vietnameseUniqueMatch ? vietnameseUniqueMatch.length : 0;
+    const frenchUniqueCount = frenchUniqueMatch ? frenchUniqueMatch.length : 0;
+    const vietnameseCount = vietnameseMatch ? vietnameseMatch.length : 0;
+    const frenchCount = frenchMatch ? frenchMatch.length : 0;
+
+    // 베트남어 고유 문자가 2개 이상 있으면 베트남어로 확정
+    if (vietnameseUniqueCount >= 2) {
+      const result = "vi";
+      this._cacheLanguageResult(cacheKey, result);
+      return result;
+    }
+
+    // 프랑스어 고유 문자가 있으면 프랑스어로 우선 판정
+    if (frenchUniqueCount >= 1 && frenchCount > 3) {
+      const result = "fr";
+      this._cacheLanguageResult(cacheKey, result);
+      return result;
+    }
+
+    // 프랑스어 발음 기호가 많고 베트남어 고유 문자가 없으면 프랑스어
+    if (frenchCount > 5 && vietnameseUniqueCount === 0) {
+      const result = "fr";
+      this._cacheLanguageResult(cacheKey, result);
+      return result;
+    }
+
+    // 베트남어 발음 기호가 많고 베트남어 고유 문자가 1개 이상이면 베트남어
+    if (vietnameseCount > 5 && vietnameseUniqueCount >= 1) {
       const result = "vi";
       this._cacheLanguageResult(cacheKey, result);
       return result;
@@ -1133,8 +1326,10 @@ const Utils = {
       return result;
     }
 
-    // French (special diacritics)
-    if (frenchMatch && frenchMatch.length > 3) {
+    // Fallback: 베트남어 발음 기호가 있지만 고유 문자가 없으면
+    // 다른 언어로 명확히 판정되지 않은 경우에만 베트남어로 간주
+    if (vietnameseCount > 10 && vietnameseUniqueCount === 0) {
+      // 공통 발음 기호만 많은 경우 - 프랑스어일 가능성이 높음
       const result = "fr";
       this._cacheLanguageResult(cacheKey, result);
       return result;
@@ -1250,96 +1445,6 @@ const Utils = {
         originalText,
       };
     });
-  },
-
-  /**
-   * 통합된 번역 결과 처리 함수 - 중복 제거
-   * @param {Array|string} outText - 번역 결과 (배열 또는 문자열)
-   * @param {Array} lyrics - 원본 가사 배열
-   * @returns {Array|null} - 처리된 가사 배열 또는 null
-   */
-  processTranslationResult(outText, lyrics) {
-    if (!outText) return null;
-
-    // Handle both array and string formats
-    let lines;
-    if (Array.isArray(outText)) {
-      lines = outText;
-    } else if (typeof outText === "string") {
-      lines = outText.split("\n");
-    } else {
-      return null;
-    }
-
-    // Trim each line but preserve empty lines
-    lines = lines.map(line => line ? line.trim() : "");
-
-    // Create mapping arrays for proper alignment
-    const originalNonSectionLines = [];
-    const originalNonSectionIndices = [];
-
-    // Collect non-section lines from original lyrics (excluding empty lines)
-    lyrics.forEach((line, i) => {
-      const text = line?.text || "";
-      if (!this.isSectionHeader(text) && text.trim() !== "") {
-        originalNonSectionLines.push(text);
-        originalNonSectionIndices.push(i);
-      }
-    });
-
-    // Filter out section headers and empty lines from translation results
-    const cleanTranslationLines = lines.filter(
-      (line) =>
-        line && line.trim() !== "" && !this.isSectionHeader(line.trim())
-    );
-
-    // Smart mapping that accounts for section headers and empty lines
-    const mapped = lyrics.map((line, i) => {
-      const originalText = line?.text || "";
-
-      // If this is a section header, keep original and don't show translation
-      if (this.isSectionHeader(originalText)) {
-        return {
-          ...line,
-          text: null,
-          originalText: originalText,
-        };
-      }
-
-      // If this is an empty line, keep it empty
-      if (originalText.trim() === "") {
-        return {
-          ...line,
-          text: "",
-          originalText: originalText,
-        };
-      }
-
-      // Find the translation index for this non-section, non-empty line
-      const positionInNonSectionLines =
-        originalNonSectionIndices.indexOf(i);
-      
-      // Ensure we don't go out of bounds and have a valid translation
-      if (positionInNonSectionLines >= 0 && positionInNonSectionLines < cleanTranslationLines.length) {
-        const translatedText = cleanTranslationLines[positionInNonSectionLines]?.trim() || "";
-        if (translatedText) {
-          return {
-            ...line,
-            text: translatedText,
-            originalText: originalText,
-          };
-        }
-      }
-
-      // If translation line not found or empty, return original
-      return {
-        ...line,
-        text: line?.text || "",
-        originalText: originalText,
-      };
-    });
-
-    return mapped;
   },
   /** It seems that this function is not being used, but I'll keep it just in case it's needed in the future.*/
   processTranslatedOriginalLyrics(lyrics, synced) {
@@ -1794,9 +1899,9 @@ const Utils = {
   },
 
   /**
-   * Current version of the lyrics-plus app
+   * Current version of the ivLyrics app
    */
-  currentVersion: "3.0.1",
+  currentVersion: "3.0.5",
 
   /**
    * Check for updates from remote repository
@@ -1806,11 +1911,11 @@ const Utils = {
     try {
       // Try multiple CDN URLs to avoid CORS issues
       const urls = [
-        "https://raw.githubusercontent.com/ivLis-Studio/lyrics-plus/main/version.txt",
-        "https://cdn.jsdelivr.net/gh/ivLis-Studio/lyrics-plus@main/version.txt",
+        "https://raw.githubusercontent.com/ivLis-Studio/ivLyrics/main/version.txt",
+        "https://cdn.jsdelivr.net/gh/ivLis-Studio/ivLyrics@main/version.txt",
         //https://ghproxy.link/
-        "https://ghfast.top/https://raw.githubusercontent.com/ivLis-Studio/lyrics-plus/main/version.txt",
-        "https://corsproxy.io/?url=https://raw.githubusercontent.com/ivLis-Studio/lyrics-plus/main/version.txt",
+        "https://ghfast.top/https://raw.githubusercontent.com/ivLis-Studio/ivLyrics/main/version.txt",
+        "https://corsproxy.io/?url=https://raw.githubusercontent.com/ivLis-Studio/ivLyrics/main/version.txt",
       ];
 
       let latestVersion = null;
@@ -1923,20 +2028,20 @@ const Utils = {
     try {
       const updateInfo = await this.checkForUpdates();
 
-      console.log("[Lyrics Plus] Update check result:", updateInfo);
+      console.log("[ivLyrics] Update check result:", updateInfo);
 
       // Don't show notification if there was an error
       if (updateInfo.error) {
-        console.log("[Lyrics Plus] Update check error:", updateInfo.error);
+        console.log("[ivLyrics] Update check error:", updateInfo.error);
         return updateInfo;
       }
 
       if (updateInfo.hasUpdate) {
-        const updateKey = `lyrics-plus:update-dismissed:${updateInfo.latestVersion}`;
+        const updateKey = `ivLyrics:update-dismissed:${updateInfo.latestVersion}`;
         const isDismissed = StorageManager.getItem(updateKey);
 
         console.log(
-          "[Lyrics Plus] Update available:",
+          "[ivLyrics] Update available:",
           updateInfo.latestVersion,
           "Dismissed:",
           isDismissed
@@ -1944,32 +2049,32 @@ const Utils = {
 
         if (!isDismissed) {
           // Store update info for the banner component
-          window.lyricsPlus_updateInfo = {
+          window.ivLyrics_updateInfo = {
             available: true,
             currentVersion: updateInfo.currentVersion,
             latestVersion: updateInfo.latestVersion,
-            releaseUrl: `https://github.com/ivLis-Studio/lyrics-plus/releases/tag/v${updateInfo.latestVersion}`,
+            releaseUrl: `https://github.com/ivLis-Studio/ivLyrics/releases/tag/v${updateInfo.latestVersion}`,
           };
 
           console.log(
-            "[Lyrics Plus] Update banner info stored:",
-            window.lyricsPlus_updateInfo
+            "[ivLyrics] Update banner info stored:",
+            window.ivLyrics_updateInfo
           );
 
           // Trigger re-render if lyrics container exists
           if (window.lyricContainer) {
             try {
-              console.log("[Lyrics Plus] Triggering lyricContainer re-render");
+              console.log("[ivLyrics] Triggering lyricContainer re-render");
               window.lyricContainer.forceUpdate();
             } catch (e) {
-              console.error("[Lyrics Plus] Failed to trigger re-render:", e);
+              console.error("[ivLyrics] Failed to trigger re-render:", e);
             }
           } else {
-            console.warn("[Lyrics Plus] lyricContainer not found");
+            console.warn("[ivLyrics] lyricContainer not found");
           }
         }
       } else {
-        console.log("[Lyrics Plus] Already up to date");
+        console.log("[ivLyrics] Already up to date");
       }
 
       return updateInfo;
@@ -1988,9 +2093,9 @@ const Utils = {
    * Dismiss update notification
    */
   dismissUpdate(version) {
-    const updateKey = `lyrics-plus:update-dismissed:${version}`;
+    const updateKey = `ivLyrics:update-dismissed:${version}`;
     StorageManager.setItem(updateKey, "dismissed");
-    window.lyricsPlus_updateInfo = null;
+    window.ivLyrics_updateInfo = null;
 
     // Trigger re-render
     if (window.lyricContainer) {
@@ -2036,9 +2141,9 @@ const Utils = {
    */
   getInstallCommand() {
     const commands = {
-      windows: "iwr -useb https://ivlis.kr/lyrics-plus/install.ps1 | iex",
-      mac: "curl -fsSL https://ivlis.kr/lyrics-plus/install.sh | sh",
-      linux: "curl -fsSL https://ivlis.kr/lyrics-plus/install.sh | sh",
+      windows: "iwr -useb https://ivlis.kr/ivLyrics/install.ps1 | iex",
+      mac: "curl -fsSL https://ivlis.kr/ivLyrics/install.sh | sh",
+      linux: "curl -fsSL https://ivlis.kr/ivLyrics/install.sh | sh",
     };
     return commands[this.detectPlatform()];
   },
@@ -2061,7 +2166,7 @@ const Utils = {
     try {
       return await TrackSyncDB.getOffset(trackUri);
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to get track sync offset:", error);
+      console.error("[ivLyrics] Failed to get track sync offset:", error);
       return 0;
     }
   },
@@ -2071,11 +2176,11 @@ const Utils = {
     try {
       await TrackSyncDB.setOffset(trackUri, offset);
       // Dispatch custom event to notify offset change
-      window.dispatchEvent(new CustomEvent('lyrics-plus:offset-changed', {
+      window.dispatchEvent(new CustomEvent('ivLyrics:offset-changed', {
         detail: { trackUri, offset }
       }));
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to set track sync offset:", error);
+      console.error("[ivLyrics] Failed to set track sync offset:", error);
     }
   },
 
@@ -2084,7 +2189,7 @@ const Utils = {
     try {
       await TrackSyncDB.clearOffset(trackUri);
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to clear track sync offset:", error);
+      console.error("[ivLyrics] Failed to clear track sync offset:", error);
     }
   },
 
@@ -2096,7 +2201,7 @@ const Utils = {
    * 사용자 해시 가져오기 (없으면 생성)
    */
   getUserHash() {
-    let hash = StorageManager.getPersisted("lyrics-plus:user-hash");
+    let hash = StorageManager.getPersisted("ivLyrics:user-hash");
     if (!hash) {
       hash = crypto.randomUUID ? crypto.randomUUID() :
         'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
@@ -2104,7 +2209,7 @@ const Utils = {
           const v = c === 'x' ? r : (r & 0x3 | 0x8);
           return v.toString(16);
         });
-      StorageManager.setPersisted("lyrics-plus:user-hash", hash);
+      StorageManager.setPersisted("ivLyrics:user-hash", hash);
     }
     return hash;
   },
@@ -2120,32 +2225,16 @@ const Utils = {
 
   /**
    * 커뮤니티 싱크 오프셋 조회
+   * 캐시를 사용하지 않고 항상 서버에서 최신 데이터를 가져옴 (실시간 커뮤니티 소통을 위해)
    */
   async getCommunityOffset(trackUri) {
     const trackId = this.extractTrackId(trackUri);
     if (!trackId) return null;
 
-    // 1. 로컬 캐시 먼저 확인
-    try {
-      const cached = await LyricsCache.getSync(trackId);
-      if (cached !== null) {
-        console.log(`[Lyrics Plus] Using cached community offset for ${trackId}`);
-        // 캐시 히트 로깅
-        if (window.ApiTracker) {
-          window.ApiTracker.logCacheHit('sync', `sync:${trackId}`, {
-            offsetMs: cached.offsetMs,
-            voteCount: cached.voteCount
-          });
-        }
-        return cached;
-      }
-    } catch (e) {
-      console.warn('[Lyrics Plus] Sync cache check failed:', e);
-    }
-
-    // 2. API 호출
+    // 항상 서버에서 최신 데이터를 가져옴 (캐시 사용 안 함)
     const userHash = this.getUserHash();
-    const syncUrl = `https://lyrics.api.ivl.is/lyrics/sync?trackId=${trackId}&userHash=${userHash}`;
+    // 브라우저 캐시 우회를 위해 타임스탬프 추가
+    const syncUrl = `https://lyrics.api.ivl.is/lyrics/sync?trackId=${trackId}&userHash=${userHash}&_t=${Date.now()}`;
 
     // API 요청 로깅
     let logId = null;
@@ -2154,7 +2243,13 @@ const Utils = {
     }
 
     try {
-      const response = await fetch(syncUrl);
+      const response = await fetch(syncUrl, {
+        cache: 'no-store',  // 브라우저 캐시 완전히 우회
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      });
       const data = await response.json();
 
       if (data.success && data.data) {
@@ -2164,21 +2259,17 @@ const Utils = {
             voteCount: data.data.voteCount
           }, 'success');
         }
-        // 로컬 캐시에 저장
-        LyricsCache.setSync(trackId, data.data).catch(() => { });
         return data.data;
       }
       if (window.ApiTracker && logId) {
         window.ApiTracker.logResponse(logId, null, 'success', 'No offset found');
       }
-      // 오프셋이 없는 경우도 캐시 (null 표시를 위한 빈 객체)
-      LyricsCache.setSync(trackId, { offsetMs: null, voteCount: 0 }).catch(() => { });
       return null;
     } catch (error) {
       if (window.ApiTracker && logId) {
         window.ApiTracker.logResponse(logId, null, 'error', error.message);
       }
-      console.error("[Lyrics Plus] Failed to get community offset:", error);
+      console.error("[ivLyrics] Failed to get community offset:", error);
       return null;
     }
   },
@@ -2215,7 +2306,7 @@ const Utils = {
         if (window.ApiTracker && logId) {
           window.ApiTracker.logResponse(logId, { submitted: true }, 'success');
         }
-        console.log(`[Lyrics Plus] Community offset submitted: ${offsetMs}ms`);
+        console.log(`[ivLyrics] Community offset submitted: ${offsetMs}ms`);
         return data;
       }
       if (window.ApiTracker && logId) {
@@ -2226,7 +2317,7 @@ const Utils = {
       if (window.ApiTracker && logId) {
         window.ApiTracker.logResponse(logId, null, 'error', error.message);
       }
-      console.error("[Lyrics Plus] Failed to submit community offset:", error);
+      console.error("[ivLyrics] Failed to submit community offset:", error);
       return null;
     }
   },
@@ -2253,12 +2344,12 @@ const Utils = {
       const data = await response.json();
 
       if (data.success) {
-        console.log(`[Lyrics Plus] Community feedback submitted: ${isPositive ? '👍' : '👎'}`);
+        console.log(`[ivLyrics] Community feedback submitted: ${isPositive ? '👍' : '👎'}`);
         return data;
       }
       return null;
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to submit community feedback:", error);
+      console.error("[ivLyrics] Failed to submit community feedback:", error);
       return null;
     }
   },
@@ -2269,8 +2360,9 @@ const Utils = {
 
   /**
    * 커뮤니티 영상 목록 조회
+   * 캐시를 사용하지 않고 항상 서버에서 최신 데이터를 가져옴 (실시간 커뮤니티 소통을 위해)
    * @param {string} trackUri - 트랙 URI
-   * @param {boolean} skipCache - 캐시 우회 여부 (등록/삭제 후 새 데이터 가져올 때)
+   * @param {boolean} skipCache - (사용하지 않음, 하위 호환성 유지용)
    */
   async getCommunityVideos(trackUri, skipCache = false) {
     const trackId = this.extractTrackId(trackUri);
@@ -2279,12 +2371,16 @@ const Utils = {
     const userHash = this.getUserHash();
 
     try {
-      // skipCache가 true이면 캐시 우회를 위한 타임스탬프 추가
-      const cacheParam = skipCache ? `&_t=${Date.now()}` : '';
+      // 항상 브라우저 캐시 우회를 위해 타임스탬프 추가
       const response = await fetch(
-        `https://lyrics.api.ivl.is/lyrics/youtube/community?trackId=${trackId}&userId=${userHash}${cacheParam}`,
-        // 항상 최신 데이터를 가져오도록 no-cache 설정 (서버 캐시 문제 방지)
-        { cache: 'no-cache' }
+        `https://lyrics.api.ivl.is/lyrics/youtube/community?trackId=${trackId}&userId=${userHash}&_t=${Date.now()}`,
+        {
+          cache: 'no-store',  // 브라우저 캐시 완전히 우회
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+          }
+        }
       );
       const data = await response.json();
 
@@ -2293,7 +2389,7 @@ const Utils = {
       }
       return null;
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to get community videos:", error);
+      console.error("[ivLyrics] Failed to get community videos:", error);
       return null;
     }
   },
@@ -2327,12 +2423,12 @@ const Utils = {
       const data = await response.json();
 
       if (data.success) {
-        console.log(`[Lyrics Plus] Community video submitted: ${videoId}`);
+        console.log(`[ivLyrics] Community video submitted: ${videoId}`);
         return data;
       }
       return null;
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to submit community video:", error);
+      console.error("[ivLyrics] Failed to submit community video:", error);
       return null;
     }
   },
@@ -2357,12 +2453,12 @@ const Utils = {
       const data = await response.json();
 
       if (data.success) {
-        console.log(`[Lyrics Plus] Community vote submitted: ${voteType > 0 ? '👍' : voteType < 0 ? '👎' : '취소'}`);
+        console.log(`[ivLyrics] Community vote submitted: ${voteType > 0 ? '👍' : voteType < 0 ? '👎' : '취소'}`);
         return data;
       }
       return null;
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to vote community video:", error);
+      console.error("[ivLyrics] Failed to vote community video:", error);
       return null;
     }
   },
@@ -2391,12 +2487,12 @@ const Utils = {
       const data = await response.json();
 
       if (data.success) {
-        console.log(`[Lyrics Plus] Community video deleted: ${videoEntryId}`);
+        console.log(`[ivLyrics] Community video deleted: ${videoEntryId}`);
         return data;
       }
       return null;
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to delete community video:", error);
+      console.error("[ivLyrics] Failed to delete community video:", error);
       return null;
     }
   },
@@ -2417,7 +2513,7 @@ const Utils = {
    */
   async _openSelectedVideoDB() {
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open('LyricsPlusSelectedVideos', 1);
+      const request = indexedDB.open('ivLyricsSelectedVideos', 1);
 
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve(request.result);
@@ -2459,10 +2555,10 @@ const Utils = {
       this._cleanupOldSelectedVideos(db).catch(() => { });
 
       db.close();
-      console.log(`[Lyrics Plus] Saved selected video for ${trackUri}:`, videoInfo.youtubeVideoId);
+      console.log(`[ivLyrics] Saved selected video for ${trackUri}:`, videoInfo.youtubeVideoId);
       return true;
     } catch (error) {
-      console.error('[Lyrics Plus] Failed to save selected video:', error);
+      console.error('[ivLyrics] Failed to save selected video:', error);
       return false;
     }
   },
@@ -2507,12 +2603,12 @@ const Utils = {
       db.close();
 
       if (result) {
-        console.log(`[Lyrics Plus] Loaded selected video for ${trackUri}:`, result.youtubeVideoId);
+        console.log(`[ivLyrics] Loaded selected video for ${trackUri}:`, result.youtubeVideoId);
         return result;
       }
       return null;
     } catch (error) {
-      console.error('[Lyrics Plus] Failed to load selected video:', error);
+      console.error('[ivLyrics] Failed to load selected video:', error);
       return null;
     }
   },
@@ -2534,10 +2630,10 @@ const Utils = {
       });
 
       db.close();
-      console.log(`[Lyrics Plus] Removed selected video for ${trackUri}`);
+      console.log(`[ivLyrics] Removed selected video for ${trackUri}`);
       return true;
     } catch (error) {
-      console.error('[Lyrics Plus] Failed to remove selected video:', error);
+      console.error('[ivLyrics] Failed to remove selected video:', error);
       return false;
     }
   },
@@ -2582,7 +2678,7 @@ const Utils = {
 
       // 404 = 영상이 존재하지 않음, 401 = 비공개 영상
       if (response.status === 404 || response.status === 401) {
-        console.log("[Lyrics Plus] YouTube video not found or private:", videoId);
+        console.log("[ivLyrics] YouTube video not found or private:", videoId);
         return null;
       }
 
@@ -2593,7 +2689,7 @@ const Utils = {
       const data = await response.json();
       return data.title || null;
     } catch (error) {
-      console.error("[Lyrics Plus] Failed to get YouTube title:", error);
+      console.error("[ivLyrics] Failed to get YouTube title:", error);
 
       // 백업: noembed.com 사용
       try {
@@ -2605,13 +2701,13 @@ const Utils = {
           const backupData = await backupResponse.json();
           // noembed은 존재하지 않는 영상에 대해 error 필드를 반환함
           if (backupData.error) {
-            console.log("[Lyrics Plus] Video not found via noembed:", videoId);
+            console.log("[ivLyrics] Video not found via noembed:", videoId);
             return null;
           }
           return backupData.title || null;
         }
       } catch (backupError) {
-        console.error("[Lyrics Plus] Backup title fetch also failed:", backupError);
+        console.error("[ivLyrics] Backup title fetch also failed:", backupError);
       }
 
       return null;
@@ -2660,99 +2756,141 @@ const Utils = {
 
       return { valid: true, title: data.title, error: null };
     } catch (error) {
-      console.error("[Lyrics Plus] YouTube validation error:", error);
+      console.error("[ivLyrics] YouTube validation error:", error);
       return { valid: false, title: null, error: 'networkError' };
     }
   },
+};
+
+// ============================================
+// Custom Toast Notification System
+// ============================================
+const Toast = {
+  _container: null,
+  _toasts: [],
+  _idCounter: 0,
 
   /**
-   * 번역 결과를 원본 가사와 매핑하는 함수
-   * @param {string|Array} outText - 번역된 텍스트 (문자열 또는 배열)
-   * @param {Array} lyrics - 원본 가사 배열
-   * @returns {Array|null} 매핑된 가사 배열 또는 null
+   * Initialize toast container
    */
-  processTranslationResult(outText, lyrics) {
-    if (!outText) return null;
-
-    // Handle both array and string formats
-    let lines;
-    if (Array.isArray(outText)) {
-      lines = outText;
-    } else if (typeof outText === "string") {
-      lines = outText.split("\n");
-    } else {
-      return null;
+  _ensureContainer() {
+    if (this._container && document.body.contains(this._container)) {
+      return this._container;
     }
 
-    // Trim each line but preserve structure
-    lines = lines.map(line => line ? line.trim() : "");
-
-    // Create mapping arrays for proper alignment
-    const originalNonSectionLines = [];
-    const originalNonSectionIndices = [];
-
-    // Collect non-section lines from original lyrics (excluding empty lines)
-    lyrics.forEach((line, i) => {
-      const text = line?.text || "";
-      if (!this.isSectionHeader(text) && text.trim() !== "") {
-        originalNonSectionLines.push(text);
-        originalNonSectionIndices.push(i);
-      }
-    });
-
-    // Filter out section headers and empty lines from translation results
-    const cleanTranslationLines = lines.filter(
-      (line) =>
-        line && line.trim() !== "" && !this.isSectionHeader(line.trim())
-    );
-
-    // Smart mapping that accounts for section headers and empty lines
-    const mapped = lyrics.map((line, i) => {
-      const originalText = line?.text || "";
-
-      // If this is a section header, keep original and don't show translation
-      if (this.isSectionHeader(originalText)) {
-        return {
-          ...line,
-          text: null,
-          originalText: originalText,
-        };
-      }
-
-      // If this is an empty line, keep it empty
-      if (originalText.trim() === "") {
-        return {
-          ...line,
-          text: "",
-          originalText: originalText,
-        };
-      }
-
-      // Find the translation index for this non-section, non-empty line
-      const positionInNonSectionLines =
-        originalNonSectionIndices.indexOf(i);
-      
-      // Ensure we don't go out of bounds and have a valid translation
-      if (positionInNonSectionLines >= 0 && positionInNonSectionLines < cleanTranslationLines.length) {
-        const translatedText = cleanTranslationLines[positionInNonSectionLines]?.trim() || "";
-        // 번역이 비어있거나 너무 짧으면 원본 사용
-        if (translatedText && translatedText.length > 0) {
-          return {
-            ...line,
-            text: translatedText,
-            originalText: originalText,
-          };
-        }
-      }
-
-      // If translation line not found or empty, return original
-      return {
-        ...line,
-        text: line?.text || "",
-        originalText: originalText,
-      };
-    });
-
-    return mapped;
+    this._container = document.createElement('div');
+    this._container.className = 'ivlyrics-toast-container';
+    document.body.appendChild(this._container);
+    return this._container;
   },
+
+  /**
+   * Show a toast notification
+   * @param {string} message - The message to display
+   * @param {boolean} isError - Whether this is an error message
+   * @param {number} duration - Duration in ms (default: 3000)
+   * @returns {number} Toast ID
+   */
+  show(message, isError = false, duration = 3000) {
+    this._ensureContainer();
+
+    const id = ++this._idCounter;
+    const toast = document.createElement('div');
+    toast.className = `ivlyrics-toast ${isError ? 'ivlyrics-toast-error' : 'ivlyrics-toast-success'}`;
+    toast.dataset.toastId = id;
+
+    // Icon
+    const icon = document.createElement('span');
+    icon.className = 'ivlyrics-toast-icon';
+    icon.innerHTML = isError
+      ? '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0-1A6 6 0 1 0 8 2a6 6 0 0 0 0 12zM7.25 5h1.5v4h-1.5V5zm0 5h1.5v1.5h-1.5V10z"/></svg>'
+      : '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0-1A6 6 0 1 0 8 2a6 6 0 0 0 0 12zm3.146-8.854a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708 0l-2-2a.5.5 0 1 1 .708-.708L6.5 8.793l3.646-3.647a.5.5 0 0 1 .708 0z"/></svg>';
+
+    // Message
+    const text = document.createElement('span');
+    text.className = 'ivlyrics-toast-message';
+    text.textContent = message;
+
+    // Close button
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'ivlyrics-toast-close';
+    closeBtn.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/></svg>';
+    closeBtn.onclick = (e) => {
+      e.stopPropagation();
+      this.dismiss(id);
+    };
+
+    toast.appendChild(icon);
+    toast.appendChild(text);
+    toast.appendChild(closeBtn);
+
+    // Click anywhere to dismiss
+    toast.onclick = () => this.dismiss(id);
+
+    this._container.appendChild(toast);
+    this._toasts.push({ id, element: toast, timeout: null });
+
+    // Trigger animation
+    requestAnimationFrame(() => {
+      toast.classList.add('ivlyrics-toast-show');
+    });
+
+    // Auto dismiss
+    if (duration > 0) {
+      const toastData = this._toasts.find(t => t.id === id);
+      if (toastData) {
+        toastData.timeout = setTimeout(() => this.dismiss(id), duration);
+      }
+    }
+
+    return id;
+  },
+
+  /**
+   * Dismiss a toast
+   * @param {number} id - Toast ID
+   */
+  dismiss(id) {
+    const index = this._toasts.findIndex(t => t.id === id);
+    if (index === -1) return;
+
+    const toastData = this._toasts[index];
+    if (toastData.timeout) {
+      clearTimeout(toastData.timeout);
+    }
+
+    toastData.element.classList.remove('ivlyrics-toast-show');
+    toastData.element.classList.add('ivlyrics-toast-hide');
+
+    setTimeout(() => {
+      if (toastData.element.parentNode) {
+        toastData.element.parentNode.removeChild(toastData.element);
+      }
+      this._toasts.splice(index, 1);
+    }, 300);
+  },
+
+  /**
+   * Dismiss all toasts
+   */
+  dismissAll() {
+    [...this._toasts].forEach(t => this.dismiss(t.id));
+  },
+
+  /**
+   * Success toast shorthand
+   */
+  success(message, duration = 3000) {
+    return this.show(message, false, duration);
+  },
+
+  /**
+   * Error toast shorthand
+   */
+  error(message, duration = 3000) {
+    return this.show(message, true, duration);
+  }
 };
+
+// Export Toast globally
+window.Toast = Toast;

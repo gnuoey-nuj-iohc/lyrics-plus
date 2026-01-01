@@ -45,10 +45,12 @@
 		"OptionsMenu.js",
 		"TabBar.js",
 		"Utils.js",
+		"LyricsShareImage.js",
 		"Translator.js",
 		"CommunityVideoSelector.js",
 		"VideoBackground.js",
-		"FullscreenOverlay.js"
+		"FullscreenOverlay.js",
+		"SongInfoTicker.js"
 	],
 	"subfiles_extension": [
 		"PlaybarButton.js",

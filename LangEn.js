@@ -58,6 +58,12 @@ window.LANG_EN = {
       "label": "Enable Desktop Overlay",
       "desc": "Send lyrics to the desktop overlay app"
     },
+    "port": {
+      "label": "Connection Port",
+      "desc": "Port number to connect with overlay app (1024-65535)"
+    },
+    "portSaved": "Port saved",
+    "portInvalid": "Invalid port number (1024-65535)",
     "status": {
       "connected": "✓ Connected",
       "disconnected": "Not connected",
@@ -326,6 +332,7 @@ window.LANG_EN = {
     "copyLyrics": "Copy Lyrics",
     "searchLyrics": "Search Lyrics",
     "editLyrics": "Edit Lyrics",
+    "shareImage": "Share Lyrics Image",
     "translationOptions": "Conversion Options",
     "translationOptionsSubtitle": "Configure pronunciation and translation display for lyrics",
     "detectedLanguage": "Detected Language",
@@ -467,15 +474,17 @@ window.LANG_EN = {
     "importFailed": "Settings import failed",
     "syncDataCleared": "Sync data cleared",
     "syncDataClearFailed": "Failed to clear sync data",
-    "lyricsCopied": "✓ Lyrics copied to clipboard",
+    "lyricsCopied": "Lyrics copied to clipboard",
     "lyricsCopyFailed": "Failed to copy lyrics to clipboard",
+    "translationCopied": "Translation copied to clipboard",
     "translationCopyFailed": "Failed to copy translation to clipboard",
+    "secondTranslationCopied": "Second translation copied to clipboard",
     "secondTranslationCopyFailed": "Failed to copy second translation to clipboard",
     "installCommandCopied": "Install command copied",
     "copyFailed": "Copy failed",
-    "memoryCacheCleared": "✓ Memory cache cleared",
-    "localCacheCleared": "✓ All local cache cleared",
-    "localCacheTrackCleared": "✓ Current track cache cleared",
+    "memoryCacheCleared": "Memory cache cleared",
+    "localCacheCleared": "All local cache cleared",
+    "localCacheTrackCleared": "Current track cache cleared",
     "exportSuccessDesc": "Settings file saved to Downloads folder.",
     "exportFailed": "Settings export failed",
     "importSuccessDesc": "Page will refresh shortly...",
@@ -489,12 +498,31 @@ window.LANG_EN = {
     "noLyricsLoaded": "No lyrics loaded.",
     "translationRegenerateGeminiOnly": "Translation regeneration is only available with Gemini translation.",
     "regeneratingTranslation": "Regenerating translation...",
-    "translationRegenerated": "✓ Translation regenerated",
+    "translationRegenerated": "Translation regenerated",
     "translationRegenerateFailed": "Translation regeneration failed",
-    "translationCacheRemoved": "✓ Translation cache removed and reloaded!",
+    "translationCacheRemoved": "Translation cache removed and reloaded!",
+    "translationCacheReset": "Reset {count} translation cache entries",
     "tooManyTranslationRequests": "Too many translation requests. Please try again in 1 minute.",
     "requestingPronunciation": "Requesting pronunciation. This may take about 30 seconds",
-    "requestingTranslation": "Requesting translation. This may take about 30 seconds"
+    "requestingTranslation": "Requesting translation. This may take about 30 seconds",
+    "shareImageCopied": "Image copied to clipboard",
+    "shareImageDownloaded": "Image downloaded",
+    "shareImageShared": "Shared successfully",
+    "shareImageFailed": "Failed to generate image",
+    "shareImageNoLyrics": "Please select lyrics to share",
+    "noTrackPlaying": "No track playing",
+    "overlayConnected": "Overlay connected",
+    "romajiTranslationFailed": "Romaji/Romaja/Pinyin translation failed",
+    "koreanTranslationFailed": "Korean translation failed",
+    "pinyinLibraryUnavailable": "Pinyin library unavailable. Showing original. Allow jsDelivr or unpkg.",
+    "conversionSkippedSimplified": "Conversion skipped: Already in Simplified Chinese",
+    "conversionCompleted": "Conversion completed successfully",
+    "conversionFailed": "Conversion failed",
+    "fileTooLarge": "File too large: Maximum size is 1MB",
+    "noValidLyricsInFile": "No valid lyrics found in file",
+    "lyricsLoadedFromFile": "Successfully loaded {types} lyrics from file",
+    "lyricsLoadFailed": "Failed to load lyrics: Invalid file format",
+    "fileReadFailed": "Failed to read file: File may be corrupted"
   },
   "misc": {
     "and": "and",
@@ -636,6 +664,26 @@ window.LANG_EN = {
         "desc": "Spacing between letters in translation (pixels)"
       }
     },
+    "furiganaStyle": {
+      "title": "Furigana Style",
+      "subtitle": "Settings for reading (furigana) displayed above Japanese kanji",
+      "fontSize": {
+        "label": "Font Size",
+        "desc": "Font size for furigana (pixels)"
+      },
+      "fontWeight": {
+        "label": "Font Weight",
+        "desc": "Font weight for furigana"
+      },
+      "opacity": {
+        "label": "Opacity",
+        "desc": "Opacity of furigana (0-100%)"
+      },
+      "spacing": {
+        "label": "Spacing",
+        "desc": "Gap between furigana and kanji (pixels)"
+      }
+    },
     "textShadow": {
       "title": "Text Shadow",
       "subtitle": "Shadow effects for better readability",
@@ -662,6 +710,10 @@ window.LANG_EN = {
       "replaceButton": {
         "label": "Replace Lyrics Button",
         "info": "Replaces Spotify's default lyrics button with ivLyrics"
+      },
+      "replaceFullscreenButton": {
+        "label": "Replace Fullscreen Button",
+        "info": "Replaces Spotify's default fullscreen button with ivLyrics fullscreen"
       },
       "fullscreenShortcut": {
         "label": "Fullscreen Shortcut",
@@ -783,6 +835,14 @@ window.LANG_EN = {
         "desc": "Fullscreen Shortcut",
         "info": "Set keyboard shortcut to toggle fullscreen mode"
       },
+      "tvMode": {
+        "desc": "TV Mode",
+        "info": "Display album art and track info at bottom-left, lyrics use full screen"
+      },
+      "tvModeAlbumSize": {
+        "desc": "TV Mode Album Size",
+        "info": "Set album art size in TV mode (pixels)"
+      },
       "splitView": {
         "desc": "Split Layout",
         "info": "Display album art on left, lyrics on right in fullscreen"
@@ -798,6 +858,10 @@ window.LANG_EN = {
       "showTrackInfo": {
         "desc": "Show Track Info",
         "info": "Display song title and artist in fullscreen"
+      },
+      "trimTitle": {
+        "desc": "Trim Title",
+        "info": "Remove extra info like (Remaster), [feat. xxx] from song titles for cleaner display"
       },
       "translateMetadata": {
         "desc": "Translate Title/Artist",
@@ -925,6 +989,14 @@ window.LANG_EN = {
       "delay": {
         "desc": "Auto Hide Delay",
         "info": "Time before UI hides after mouse inactivity (1-10 seconds)"
+      }
+    },
+    "tmiStyle": {
+      "title": "TMI Style",
+      "subtitle": "Style settings for the TMI modal displayed when clicking album art",
+      "fontSize": {
+        "desc": "TMI Font Size",
+        "info": "Adjust the overall font size of the TMI modal (80-150%)"
       }
     },
     "aboutTab": {
@@ -1115,5 +1187,92 @@ window.LANG_EN = {
     "deleteError": "Failed to delete video"
   },
   "close": "Close",
-  "cancel": "Cancel"
+  "cancel": "Cancel",
+  "shareImage": {
+    "title": "Share Lyrics Image",
+    "subtitle": "Create and share beautiful lyrics images",
+    "selectLyrics": "Select Lyrics",
+    "selectLyricsHint": "Click lyrics lines to include in the image (max 6 lines)",
+    "template": "Preset",
+    "templates": {
+      "cover": "Cover Blur",
+      "gradient": "Gradient",
+      "minimal": "Minimal",
+      "glass": "Glass",
+      "story": "Story"
+    },
+    "advancedSettings": "Advanced Settings",
+    "sections": {
+      "background": "Background",
+      "cover": "Album Cover",
+      "lyrics": "Lyrics",
+      "layout": "Layout",
+      "other": "Other"
+    },
+    "copyrightWarning": "⚠️ Copyright Notice\n\nThis lyrics image may contain copyrighted content.\n\n• Use for personal purposes only\n• Do not use for commercial purposes\n• Respect the original creator when sharing on social media\n\nDo you want to continue?",
+    "copyrightTitle": "Copyright Notice",
+    "copyrightDesc": "This lyrics image may contain copyrighted content.",
+    "copyrightPoint1": "Use for personal purposes only",
+    "copyrightPoint2": "Do not use for commercial purposes",
+    "copyrightPoint3": "Respect the original creator when sharing on social media",
+    "copyrightConfirm": "Agree & Continue",
+    "settings": {
+      "backgroundType": "Background Style",
+      "coverBlur": "Blur",
+      "gradient": "Gradient",
+      "solid": "Solid",
+      "backgroundBlur": "Background Blur",
+      "backgroundOpacity": "Background Darkness",
+      "showCover": "Album Cover",
+      "showTrackInfo": "Track Info",
+      "coverPosition": "Cover Position",
+      "posLeft": "Left",
+      "posCenter": "Center",
+      "coverSize": "Cover Size",
+      "coverRadius": "Cover Radius",
+      "coverBlur": "Cover Blur",
+      "showPronunciation": "Pronunciation",
+      "showTranslation": "Translation",
+      "lyricsAlign": "Lyrics Alignment",
+      "alignLeft": "Left",
+      "alignCenter": "Center",
+      "fontSize": "Font Size",
+      "blockGap": "Line Gap",
+      "aspectRatio": "Aspect Ratio",
+      "imageWidth": "Image Width",
+      "padding": "Padding",
+      "showWatermark": "Show Watermark"
+    },
+    "preview": "Preview",
+    "actions": {
+      "copy": "Copy to Clipboard",
+      "download": "Download",
+      "share": "Share"
+    },
+    "copied": "✓ Copied to clipboard",
+    "downloaded": "✓ Downloaded",
+    "shared": "✓ Shared",
+    "maxLinesReached": "Maximum 3 lines can be selected",
+    "noSelection": "Select lyrics to continue"
+  },
+  tmi: {
+    getApiKeyDesc: "Get Gemini API Key",
+    getApiKeyInfo: "Used to fetch TMI. Available for free from Google AI Studio.",
+    viewInfo: "Click to view song details",
+    requireKey: "Gemini API Key required in settings",
+    settingTitle: "Gemini API Key",
+    settingDesc: "Required to load Song TMI/Trivia contents.",
+    title: "TMI",
+    didYouKnow: "Did you know?",
+    close: "Close",
+    cancel: "Cancel",
+    loading: "Looking up interesting facts...",
+    noData: "No TMI available for this track yet.",
+    clickForTMI: "Click for TMI",
+    clickToClose: "Click ✕ or album area to go back",
+    regenerate: "Regenerate TMI",
+    errorFetch: "An error occurred while fetching TMI.",
+    errorQuota: "API quota exceeded.",
+    errorQuotaHint: "Please try again later or enter a different API key in settings."
+  }
 };

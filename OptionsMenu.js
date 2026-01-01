@@ -1026,10 +1026,10 @@ const SyncAdjustButton = react.memo(
         if (trackId) {
           await LyricsCache.deleteSync(trackId);
         }
-        Spicetify.showNotification(I18n.t("syncAdjust.submitSuccess"), false, 2000);
+        Toast.success(I18n.t("syncAdjust.submitSuccess"));
         loadCommunityData();
       } catch (error) {
-        Spicetify.showNotification(I18n.t("syncAdjust.submitFailed"), true, 2000);
+        Toast.error(I18n.t("syncAdjust.submitFailed"));
       } finally {
         setIsSubmitting(false);
       }
@@ -1040,20 +1040,18 @@ const SyncAdjustButton = react.memo(
       if (!CONFIG.visual["community-sync-enabled"]) return;
       // 자신이 제출한 오프셋에는 피드백 불가
       if (communityData?.user?.hasSubmitted) {
-        Spicetify.showNotification(I18n.t("syncAdjust.cannotFeedbackOwnSubmission"), true, 2000);
+        Toast.error(I18n.t("syncAdjust.cannotFeedbackOwnSubmission"));
         return;
       }
       try {
         await Utils.submitCommunityFeedback(trackUri, isPositive);
         setFeedbackStatus(isPositive ? 'positive' : 'negative');
-        Spicetify.showNotification(
-          isPositive ? I18n.t("syncAdjust.feedbackPositiveSuccess") : I18n.t("syncAdjust.feedbackNegativeSuccess"),
-          false,
-          2000
+        Toast.success(
+          isPositive ? I18n.t("syncAdjust.feedbackPositiveSuccess") : I18n.t("syncAdjust.feedbackNegativeSuccess")
         );
       } catch (error) {
         console.error("[ivLyrics] Failed to submit feedback:", error);
-        Spicetify.showNotification(I18n.t("syncAdjust.feedbackFailed"), true, 2000);
+        Toast.error(I18n.t("syncAdjust.feedbackFailed"));
       }
     };
 
@@ -1882,6 +1880,1204 @@ const SettingsMenu = react.memo(() => {
         { width: 16, height: 16, viewBox: "0 0 16 16", fill: "currentColor" },
         react.createElement("path", {
           d: "M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zM8 10.93a2.93 2.93 0 1 1 0-5.86 2.93 2.93 0 0 1 0 5.86z",
+        })
+      )
+    )
+  );
+});
+// Share Lyrics Image Modal Component
+const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
+  const [selectedIndices, setSelectedIndices] = react.useState([]);
+  const [template, setTemplate] = react.useState('cover');
+  const [previewUrl, setPreviewUrl] = react.useState(null);
+  const [isGenerating, setIsGenerating] = react.useState(false);
+  const [showAdvanced, setShowAdvanced] = react.useState(false);
+  const [customSettings, setCustomSettings] = react.useState({});
+  const [showCopyrightModal, setShowCopyrightModal] = react.useState(false);
+  const [pendingAction, setPendingAction] = react.useState(null); // 'copy' | 'download' | 'share'
+  const MAX_LINES = 3;
+
+  const presets = Object.entries(LyricsShareImage?.PRESETS || {}).map(([key, val]) => ({
+    key,
+    name: I18n.t(`shareImage.templates.${key}`) || val.name
+  }));
+
+  // 현재 프리셋의 기본 설정값 가져오기
+  const getPresetSettings = (presetKey) => {
+    const preset = LyricsShareImage?.PRESETS?.[presetKey]?.settings || {};
+    const defaults = LyricsShareImage?.DEFAULT_SETTINGS || {};
+    return { ...defaults, ...preset };
+  };
+
+  // 현재 유효한 설정값 계산 (프리셋 + 커스텀 설정)
+  const currentSettings = react.useMemo(() => {
+    const base = getPresetSettings(template);
+    // customSettings의 값이 존재하면 (숫자 0 포함) 사용
+    const merged = { ...base };
+    for (const key in customSettings) {
+      if (customSettings[key] !== undefined) {
+        merged[key] = customSettings[key];
+      }
+    }
+    return merged;
+  }, [template, customSettings]);
+
+  // 템플릿 변경 시 커스텀 설정을 프리셋 값으로 초기화
+  const handleTemplateChange = (newTemplate) => {
+    setTemplate(newTemplate);
+    // 프리셋의 설정값을 커스텀 설정으로 복사
+    const presetSettings = getPresetSettings(newTemplate);
+    setCustomSettings({ ...presetSettings });
+  };
+
+  // 개별 설정 변경
+  const updateSetting = (key, value) => {
+    setCustomSettings(prev => ({ ...prev, [key]: value }));
+  };
+
+  // 컴포넌트 마운트 시 초기 프리셋 설정 로드
+  react.useEffect(() => {
+    const initialSettings = getPresetSettings(template);
+    setCustomSettings({ ...initialSettings });
+  }, []); // 마운트 시 한 번만 실행
+
+  // 가사 라인을 정규화 (원어/발음/번역 추출)
+  const normalizedLyrics = react.useMemo(() => {
+    return (lyrics || []).map((line, idx) => {
+      // 원어 텍스트
+      const originalText = line.originalText || line.text || '';
+      // 발음 텍스트 (text와 originalText가 다르면 발음)
+      const pronText = (line.text && line.text !== line.originalText && line.originalText) ? line.text : null;
+      // 번역 텍스트
+      const transText = line.text2 || line.translation || line.transText || null;
+      
+      return {
+        idx,
+        originalText: originalText.trim(),
+        pronText: pronText ? pronText.trim() : null,
+        transText: transText ? transText.trim() : null,
+        // 표시용 텍스트 (원어 우선)
+        displayText: originalText.trim() || pronText?.trim() || ''
+      };
+    }).filter(l => l.displayText && !l.displayText.startsWith('♪'));
+  }, [lyrics]);
+
+  // 선택된 가사 라인 객체들
+  const selectedLines = react.useMemo(() => {
+    return selectedIndices.map(idx => normalizedLyrics.find(l => l.idx === idx)).filter(Boolean);
+  }, [selectedIndices, normalizedLyrics]);
+
+  // Generate preview when selection or template changes
+  react.useEffect(() => {
+    if (selectedLines.length === 0 || !trackInfo) {
+      setPreviewUrl(null);
+      return;
+    }
+
+    const generatePreview = async () => {
+      setIsGenerating(true);
+      try {
+        const result = await LyricsShareImage.generateImage({
+          lyrics: selectedLines,
+          trackName: trackInfo.name || '',
+          artistName: trackInfo.artist || '',
+          albumCover: trackInfo.cover || '',
+          template,
+          customSettings,
+          width: 800, // smaller for preview
+        });
+        setPreviewUrl(result.dataUrl);
+      } catch (e) {
+        console.error('[ShareImage] Preview generation failed:', e);
+      }
+      setIsGenerating(false);
+    };
+
+    generatePreview();
+  }, [selectedLines, template, customSettings, trackInfo]);
+
+  const toggleLine = (lineIdx) => {
+    setSelectedIndices(prev => {
+      if (prev.includes(lineIdx)) {
+        return prev.filter(i => i !== lineIdx);
+      }
+      if (prev.length >= MAX_LINES) {
+        Toast.error(I18n.t("shareImage.maxLinesReached"));
+        return prev;
+      }
+      return [...prev, lineIdx];
+    });
+  };
+
+  // 저작권 경고 모달 확인 처리
+  const handleCopyrightConfirm = async () => {
+    setShowCopyrightModal(false);
+    const action = pendingAction;
+    setPendingAction(null);
+    
+    if (action === 'copy') {
+      await executeCopy();
+    } else if (action === 'download') {
+      await executeDownload();
+    } else if (action === 'share') {
+      await executeShare();
+    }
+  };
+
+  const handleCopyrightCancel = () => {
+    setShowCopyrightModal(false);
+    setPendingAction(null);
+  };
+
+  // 실제 복사 실행
+  const executeCopy = async () => {
+    setIsGenerating(true);
+    try {
+      const result = await LyricsShareImage.generateImage({
+        lyrics: selectedLines,
+        trackName: trackInfo.name || '',
+        artistName: trackInfo.artist || '',
+        albumCover: trackInfo.cover || '',
+        template,
+        customSettings,
+        width: 1080,
+      });
+      const success = await LyricsShareImage.copyToClipboard(result.blob);
+      if (success) {
+        Toast.success(I18n.t("notifications.shareImageCopied"));
+        onClose();
+      }
+    } catch (e) {
+      Toast.error(I18n.t("notifications.shareImageFailed"));
+    }
+    setIsGenerating(false);
+  };
+
+  // 실제 다운로드 실행
+  const executeDownload = async () => {
+    setIsGenerating(true);
+    try {
+      const result = await LyricsShareImage.generateImage({
+        lyrics: selectedLines,
+        trackName: trackInfo.name || '',
+        artistName: trackInfo.artist || '',
+        albumCover: trackInfo.cover || '',
+        template,
+        customSettings,
+        width: 1080,
+      });
+      const filename = `${trackInfo.name || 'lyrics'} - ${trackInfo.artist || 'unknown'}.png`.replace(/[/\\?%*:|"<>]/g, '-');
+      LyricsShareImage.download(result.dataUrl, filename);
+      Toast.success(I18n.t("notifications.shareImageDownloaded"));
+      onClose();
+    } catch (e) {
+      Toast.error(I18n.t("notifications.shareImageFailed"));
+    }
+    setIsGenerating(false);
+  };
+
+  // 실제 공유 실행
+  const executeShare = async () => {
+    setIsGenerating(true);
+    try {
+      const result = await LyricsShareImage.generateImage({
+        lyrics: selectedLines,
+        trackName: trackInfo.name || '',
+        artistName: trackInfo.artist || '',
+        albumCover: trackInfo.cover || '',
+        template,
+        customSettings,
+        width: 1080,
+      });
+      const success = await LyricsShareImage.share(result.blob, trackInfo.name, trackInfo.artist);
+      if (success) {
+        Toast.success(I18n.t("notifications.shareImageShared"));
+        onClose();
+      } else {
+        // Fallback to download if share not supported
+        executeDownload();
+      }
+    } catch (e) {
+      Toast.error(I18n.t("notifications.shareImageFailed"));
+    }
+    setIsGenerating(false);
+  };
+
+  const handleCopy = async () => {
+    if (selectedIndices.length === 0) {
+      Toast.error(I18n.t("shareImage.noSelection"));
+      return;
+    }
+    setPendingAction('copy');
+    setShowCopyrightModal(true);
+  };
+
+  const handleDownload = async () => {
+    if (selectedIndices.length === 0) {
+      Toast.error(I18n.t("shareImage.noSelection"));
+      return;
+    }
+    setPendingAction('download');
+    setShowCopyrightModal(true);
+  };
+
+  const handleShare = async () => {
+    if (selectedIndices.length === 0) {
+      Toast.error(I18n.t("shareImage.noSelection"));
+      return;
+    }
+    setPendingAction('share');
+    setShowCopyrightModal(true);
+  };
+
+  return react.createElement("div", {
+    className: "share-image-modal",
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      maxHeight: '80vh',
+    }
+  },
+    // Header
+    react.createElement("div", {
+      style: {
+        padding: '20px 24px',
+        borderBottom: '1px solid rgba(255,255,255,0.1)',
+      }
+    },
+      react.createElement("h2", {
+        style: { margin: 0, fontSize: '20px', fontWeight: '600' }
+      }, I18n.t("shareImage.title")),
+      react.createElement("p", {
+        style: { margin: '8px 0 0', fontSize: '13px', color: 'rgba(255,255,255,0.6)' }
+      }, I18n.t("shareImage.subtitle"))
+    ),
+
+    // Content
+    react.createElement("div", {
+      style: {
+        flex: 1,
+        display: 'flex',
+        overflow: 'hidden',
+        minHeight: 0,
+      }
+    },
+      // Left: Lyrics selection
+      react.createElement("div", {
+        style: {
+          width: '45%',
+          borderRight: '1px solid rgba(255,255,255,0.1)',
+          display: 'flex',
+          flexDirection: 'column',
+        }
+      },
+        react.createElement("div", {
+          style: {
+            padding: '12px 16px',
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            fontSize: '13px',
+            fontWeight: '500',
+            color: 'rgba(255,255,255,0.7)',
+          }
+        }, `${I18n.t("shareImage.selectLyrics")} (${selectedIndices.length}/${MAX_LINES})`),
+        react.createElement("div", {
+          style: {
+            flex: 1,
+            overflowY: 'auto',
+            padding: '8px',
+          }
+        },
+          normalizedLyrics.map((line) => 
+            react.createElement("div", {
+              key: line.idx,
+              onClick: () => toggleLine(line.idx),
+              style: {
+                padding: '10px 12px',
+                marginBottom: '4px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                background: selectedIndices.includes(line.idx) ? 'rgba(29, 185, 84, 0.2)' : 'rgba(255,255,255,0.05)',
+                border: selectedIndices.includes(line.idx) ? '1px solid rgba(29, 185, 84, 0.5)' : '1px solid transparent',
+                transition: 'all 0.15s ease',
+              }
+            },
+              // 원어 텍스트
+              react.createElement("div", {
+                style: { fontSize: '14px', fontWeight: '500', color: '#fff' }
+              }, line.originalText || line.pronText),
+              // 발음 텍스트 (원어와 다를 때만)
+              line.pronText && line.originalText && react.createElement("div", {
+                style: { fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '2px' }
+              }, line.pronText),
+              // 번역 텍스트
+              line.transText && react.createElement("div", {
+                style: { fontSize: '12px', color: 'rgba(29, 185, 84, 0.8)', marginTop: '2px' }
+              }, line.transText)
+            )
+          )
+        )
+      ),
+
+      // Right: Preview & Options
+      react.createElement("div", {
+        style: {
+          width: '55%',
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '16px',
+          overflowY: 'auto',
+        }
+      },
+        // Preset selector
+        react.createElement("div", {
+          style: { marginBottom: '12px' }
+        },
+          react.createElement("label", {
+            style: { fontSize: '13px', fontWeight: '500', marginBottom: '8px', display: 'block' }
+          }, I18n.t("shareImage.template")),
+          react.createElement("div", {
+            style: { display: 'flex', gap: '6px', flexWrap: 'wrap' }
+          },
+            presets.map(t => 
+              react.createElement("button", {
+                key: t.key,
+                onClick: () => handleTemplateChange(t.key),
+                style: {
+                  padding: '5px 10px',
+                  borderRadius: '6px',
+                  border: template === t.key ? '2px solid #1db954' : '1px solid rgba(255,255,255,0.2)',
+                  background: template === t.key ? 'rgba(29, 185, 84, 0.15)' : 'rgba(255,255,255,0.05)',
+                  color: '#fff',
+                  fontSize: '11px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }
+              }, t.name)
+            )
+          )
+        ),
+
+        // Advanced settings toggle
+        react.createElement("button", {
+          onClick: () => setShowAdvanced(!showAdvanced),
+          style: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '8px 0',
+            background: 'transparent',
+            border: 'none',
+            color: 'rgba(255,255,255,0.6)',
+            fontSize: '12px',
+            cursor: 'pointer',
+            marginBottom: showAdvanced ? '12px' : '0',
+          }
+        },
+          react.createElement("span", {
+            style: { 
+              transform: showAdvanced ? 'rotate(90deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s ease',
+            }
+          }, "▶"),
+          I18n.t("shareImage.advancedSettings") || "세부 설정"
+        ),
+
+        // Advanced settings panel
+        showAdvanced && react.createElement("div", {
+          style: {
+            background: 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.2) 100%)',
+            borderRadius: '12px',
+            padding: '16px',
+            marginBottom: '12px',
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '12px',
+            fontSize: '11px',
+            maxHeight: '320px',
+            overflowY: 'auto',
+            border: '1px solid rgba(255,255,255,0.05)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
+          }
+        },
+          // === 배경 설정 섹션 ===
+          react.createElement("div", { 
+            style: { 
+              gridColumn: 'span 2', 
+              fontSize: '12px', 
+              fontWeight: '600', 
+              color: '#1db954', 
+              marginBottom: '4px',
+              borderBottom: '1px solid rgba(29,185,84,0.2)',
+              paddingBottom: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              letterSpacing: '0.5px',
+              textTransform: 'uppercase'
+            } 
+          }, I18n.t("shareImage.sections.background") || "배경"),
+
+          // 배경 타입
+          react.createElement("div", { style: { gridColumn: 'span 2' } },
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+              I18n.t("shareImage.settings.backgroundType") || "배경 스타일"
+            ),
+            react.createElement("div", { style: { display: 'flex', gap: '4px' } },
+              ['coverBlur', 'gradient', 'solid'].map(type => 
+                react.createElement("button", {
+                  key: type,
+                  onClick: () => updateSetting('backgroundType', type),
+                  style: {
+                    flex: 1,
+                    padding: '5px 8px',
+                    borderRadius: '4px',
+                    border: currentSettings.backgroundType === type ? '1px solid #1db954' : '1px solid rgba(255,255,255,0.15)',
+                    background: currentSettings.backgroundType === type ? 'rgba(29,185,84,0.15)' : 'rgba(255,255,255,0.05)',
+                    color: '#fff',
+                    fontSize: '10px',
+                    cursor: 'pointer',
+                  }
+                }, type === 'coverBlur' ? (I18n.t("shareImage.settings.coverBlur") || '블러') : 
+                   type === 'gradient' ? (I18n.t("shareImage.settings.gradient") || '그라디언트') : 
+                   (I18n.t("shareImage.settings.solid") || '단색'))
+              )
+            )
+          ),
+
+          // 배경 블러 강도 (coverBlur일 때만)
+          currentSettings.backgroundType === 'coverBlur' && react.createElement("div", { style: { gridColumn: 'span 2' } },
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+              `${I18n.t("shareImage.settings.backgroundBlur") || "배경 블러"}: ${currentSettings.backgroundBlur ?? 30}px`
+            ),
+            react.createElement("input", {
+              type: 'range',
+              min: 0,
+              max: 80,
+              value: currentSettings.backgroundBlur ?? 30,
+              onChange: (e) => updateSetting('backgroundBlur', parseInt(e.target.value)),
+              style: { width: '100%', accentColor: '#1db954' }
+            })
+          ),
+
+          // 배경 어둡기
+          react.createElement("div", { style: { gridColumn: 'span 2' } },
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+              `${I18n.t("shareImage.settings.backgroundOpacity") || "배경 어둡기"}: ${Math.round((currentSettings.backgroundOpacity ?? 0.6) * 100)}%`
+            ),
+            react.createElement("input", {
+              type: 'range',
+              min: 20,
+              max: 90,
+              value: Math.round((currentSettings.backgroundOpacity ?? 0.6) * 100),
+              onChange: (e) => updateSetting('backgroundOpacity', parseInt(e.target.value) / 100),
+              style: { width: '100%', accentColor: '#1db954' }
+            })
+          ),
+
+          // === 앨범 커버 설정 섹션 ===
+          react.createElement("div", { 
+            style: { 
+              gridColumn: 'span 2', 
+              fontSize: '12px', 
+              fontWeight: '600', 
+              color: '#1db954', 
+              marginTop: '12px',
+              marginBottom: '4px',
+              borderBottom: '1px solid rgba(29,185,84,0.2)',
+              paddingBottom: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              letterSpacing: '0.5px',
+              textTransform: 'uppercase'
+            } 
+          }, I18n.t("shareImage.sections.cover") || "앨범 커버"),
+
+          // 커버 표시
+          react.createElement("div", null,
+            react.createElement("label", { 
+              style: { 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '6px',
+                color: 'rgba(255,255,255,0.7)',
+                cursor: 'pointer',
+              }
+            },
+              react.createElement("input", {
+                type: 'checkbox',
+                checked: currentSettings.showCover !== false,
+                onChange: (e) => updateSetting('showCover', e.target.checked),
+                style: { accentColor: '#1db954' }
+              }),
+              I18n.t("shareImage.settings.showCover") || "앨범 커버"
+            )
+          ),
+
+          // 곡 정보 표시
+          react.createElement("div", null,
+            react.createElement("label", { 
+              style: { 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '6px',
+                color: 'rgba(255,255,255,0.7)',
+                cursor: 'pointer',
+              }
+            },
+              react.createElement("input", {
+                type: 'checkbox',
+                checked: currentSettings.showTrackInfo !== false,
+                onChange: (e) => updateSetting('showTrackInfo', e.target.checked),
+                style: { accentColor: '#1db954' }
+              }),
+              I18n.t("shareImage.settings.showTrackInfo") || "곡 정보"
+            )
+          ),
+
+          // 커버 위치
+          currentSettings.showCover && react.createElement("div", { style: { gridColumn: 'span 2' } },
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+              I18n.t("shareImage.settings.coverPosition") || "커버 위치"
+            ),
+            react.createElement("div", { style: { display: 'flex', gap: '4px' } },
+              ['left', 'center'].map(pos => 
+                react.createElement("button", {
+                  key: pos,
+                  onClick: () => updateSetting('coverPosition', pos),
+                  style: {
+                    flex: 1,
+                    padding: '5px 8px',
+                    borderRadius: '4px',
+                    border: currentSettings.coverPosition === pos ? '1px solid #1db954' : '1px solid rgba(255,255,255,0.15)',
+                    background: currentSettings.coverPosition === pos ? 'rgba(29,185,84,0.15)' : 'rgba(255,255,255,0.05)',
+                    color: '#fff',
+                    fontSize: '10px',
+                    cursor: 'pointer',
+                  }
+                }, pos === 'left' ? (I18n.t("shareImage.settings.posLeft") || '좌측') : (I18n.t("shareImage.settings.posCenter") || '중앙'))
+              )
+            )
+          ),
+
+          // 커버 크기
+          currentSettings.showCover && react.createElement("div", { style: { gridColumn: 'span 2' } },
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+              `${I18n.t("shareImage.settings.coverSize") || "커버 크기"}: ${currentSettings.coverSize ?? 120}px`
+            ),
+            react.createElement("input", {
+              type: 'range',
+              min: 60,
+              max: 200,
+              value: currentSettings.coverSize ?? 120,
+              onChange: (e) => updateSetting('coverSize', parseInt(e.target.value)),
+              style: { width: '100%', accentColor: '#1db954' }
+            })
+          ),
+
+          // 커버 둥글기
+          currentSettings.showCover && react.createElement("div", { style: { gridColumn: 'span 2' } },
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+              `${I18n.t("shareImage.settings.coverRadius") || "커버 둥글기"}: ${currentSettings.coverRadius ?? 16}px`
+            ),
+            react.createElement("input", {
+              type: 'range',
+              min: 0,
+              max: 50,
+              value: currentSettings.coverRadius ?? 16,
+              onChange: (e) => updateSetting('coverRadius', parseInt(e.target.value)),
+              style: { width: '100%', accentColor: '#1db954' }
+            })
+          ),
+
+          // 커버 블러
+          currentSettings.showCover && react.createElement("div", { style: { gridColumn: 'span 2' } },
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+              `${I18n.t("shareImage.settings.coverBlur") || "커버 블러"}: ${currentSettings.coverBlur ?? 0}px`
+            ),
+            react.createElement("input", {
+              type: 'range',
+              min: 0,
+              max: 30,
+              value: currentSettings.coverBlur ?? 0,
+              onChange: (e) => updateSetting('coverBlur', parseInt(e.target.value)),
+              style: { width: '100%', accentColor: '#1db954' }
+            })
+          ),
+
+          // === 가사 설정 섹션 ===
+          react.createElement("div", { 
+            style: { 
+              gridColumn: 'span 2', 
+              fontSize: '12px', 
+              fontWeight: '600', 
+              color: '#1db954', 
+              marginTop: '12px',
+              marginBottom: '4px',
+              borderBottom: '1px solid rgba(29,185,84,0.2)',
+              paddingBottom: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              letterSpacing: '0.5px',
+              textTransform: 'uppercase'
+            } 
+          }, I18n.t("shareImage.sections.lyrics") || "가사"),
+
+          // 발음 표시
+          react.createElement("div", null,
+            react.createElement("label", { 
+              style: { 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '6px',
+                color: 'rgba(255,255,255,0.7)',
+                cursor: 'pointer',
+              }
+            },
+              react.createElement("input", {
+                type: 'checkbox',
+                checked: currentSettings.showPronunciation !== false,
+                onChange: (e) => updateSetting('showPronunciation', e.target.checked),
+                style: { accentColor: '#1db954' }
+              }),
+              I18n.t("shareImage.settings.showPronunciation") || "발음"
+            )
+          ),
+
+          // 번역 표시
+          react.createElement("div", null,
+            react.createElement("label", { 
+              style: { 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '6px',
+                color: 'rgba(255,255,255,0.7)',
+                cursor: 'pointer',
+              }
+            },
+              react.createElement("input", {
+                type: 'checkbox',
+                checked: currentSettings.showTranslation !== false,
+                onChange: (e) => updateSetting('showTranslation', e.target.checked),
+                style: { accentColor: '#1db954' }
+              }),
+              I18n.t("shareImage.settings.showTranslation") || "번역"
+            )
+          ),
+
+          // 가사 정렬
+          react.createElement("div", { style: { gridColumn: 'span 2' } },
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+              I18n.t("shareImage.settings.lyricsAlign") || "가사 정렬"
+            ),
+            react.createElement("div", { style: { display: 'flex', gap: '4px' } },
+              ['left', 'center'].map(align => 
+                react.createElement("button", {
+                  key: align,
+                  onClick: () => updateSetting('lyricsAlign', align),
+                  style: {
+                    flex: 1,
+                    padding: '5px 8px',
+                    borderRadius: '4px',
+                    border: currentSettings.lyricsAlign === align ? '1px solid #1db954' : '1px solid rgba(255,255,255,0.15)',
+                    background: currentSettings.lyricsAlign === align ? 'rgba(29,185,84,0.15)' : 'rgba(255,255,255,0.05)',
+                    color: '#fff',
+                    fontSize: '10px',
+                    cursor: 'pointer',
+                  }
+                }, align === 'left' ? (I18n.t("shareImage.settings.alignLeft") || '왼쪽') : (I18n.t("shareImage.settings.alignCenter") || '가운데'))
+              )
+            )
+          ),
+
+          // 글꼴 크기
+          react.createElement("div", { style: { gridColumn: 'span 2' } },
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+              `${I18n.t("shareImage.settings.fontSize") || "글꼴 크기"}: ${currentSettings.fontSize ?? 32}px`
+            ),
+            react.createElement("input", {
+              type: 'range',
+              min: 20,
+              max: 48,
+              value: currentSettings.fontSize ?? 32,
+              onChange: (e) => updateSetting('fontSize', parseInt(e.target.value)),
+              style: { width: '100%', accentColor: '#1db954' }
+            })
+          ),
+
+          // 블록 간격
+          react.createElement("div", { style: { gridColumn: 'span 2' } },
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+              `${I18n.t("shareImage.settings.blockGap") || "줄 간격"}: ${currentSettings.blockGap ?? 32}px`
+            ),
+            react.createElement("input", {
+              type: 'range',
+              min: 16,
+              max: 60,
+              value: currentSettings.blockGap ?? 32,
+              onChange: (e) => updateSetting('blockGap', parseInt(e.target.value)),
+              style: { width: '100%', accentColor: '#1db954' }
+            })
+          ),
+
+          // === 레이아웃 설정 섹션 ===
+          react.createElement("div", { 
+            style: { 
+              gridColumn: 'span 2', 
+              fontSize: '12px', 
+              fontWeight: '600', 
+              color: '#1db954', 
+              marginTop: '12px',
+              marginBottom: '4px',
+              borderBottom: '1px solid rgba(29,185,84,0.2)',
+              paddingBottom: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              letterSpacing: '0.5px',
+              textTransform: 'uppercase'
+            } 
+          }, I18n.t("shareImage.sections.layout") || "레이아웃"),
+
+          // 이미지 비율
+          react.createElement("div", { style: { gridColumn: 'span 2' } },
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+              I18n.t("shareImage.settings.aspectRatio") || "이미지 비율"
+            ),
+            react.createElement("div", { style: { display: 'flex', gap: '4px' } },
+              [
+                { key: null, label: '자동' },
+                { key: 1, label: '1:1' },
+                { key: 9/16, label: '9:16' },
+                { key: 16/9, label: '16:9' },
+              ].map(ratio => 
+                react.createElement("button", {
+                  key: ratio.key === null ? 'auto' : ratio.key,
+                  onClick: () => updateSetting('aspectRatio', ratio.key),
+                  style: {
+                    flex: 1,
+                    padding: '5px 6px',
+                    borderRadius: '4px',
+                    border: currentSettings.aspectRatio === ratio.key ? '1px solid #1db954' : '1px solid rgba(255,255,255,0.15)',
+                    background: currentSettings.aspectRatio === ratio.key ? 'rgba(29,185,84,0.15)' : 'rgba(255,255,255,0.05)',
+                    color: '#fff',
+                    fontSize: '9px',
+                    cursor: 'pointer',
+                  }
+                }, ratio.label)
+              )
+            )
+          ),
+
+          // 이미지 너비
+          react.createElement("div", { style: { gridColumn: 'span 2' } },
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+              `${I18n.t("shareImage.settings.imageWidth") || "이미지 너비"}: ${currentSettings.imageWidth ?? 1080}px`
+            ),
+            react.createElement("input", {
+              type: 'range',
+              min: 720,
+              max: 1920,
+              step: 60,
+              value: currentSettings.imageWidth ?? 1080,
+              onChange: (e) => updateSetting('imageWidth', parseInt(e.target.value)),
+              style: { width: '100%', accentColor: '#1db954' }
+            })
+          ),
+
+          // 여백
+          react.createElement("div", { style: { gridColumn: 'span 2' } },
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+              `${I18n.t("shareImage.settings.padding") || "여백"}: ${currentSettings.padding ?? 60}px`
+            ),
+            react.createElement("input", {
+              type: 'range',
+              min: 30,
+              max: 100,
+              value: currentSettings.padding ?? 60,
+              onChange: (e) => updateSetting('padding', parseInt(e.target.value)),
+              style: { width: '100%', accentColor: '#1db954' }
+            })
+          ),
+
+          // === 기타 설정 ===
+          react.createElement("div", { 
+            style: { 
+              gridColumn: 'span 2', 
+              fontSize: '12px', 
+              fontWeight: '600', 
+              color: '#1db954', 
+              marginTop: '12px',
+              marginBottom: '4px',
+              borderBottom: '1px solid rgba(29,185,84,0.2)',
+              paddingBottom: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              letterSpacing: '0.5px',
+              textTransform: 'uppercase'
+            } 
+          }, I18n.t("shareImage.sections.other") || "기타"),
+
+          // 워터마크
+          react.createElement("div", { style: { gridColumn: 'span 2' } },
+            react.createElement("label", { 
+              style: { 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '6px',
+                color: 'rgba(255,255,255,0.7)',
+                cursor: 'pointer',
+              }
+            },
+              react.createElement("input", {
+                type: 'checkbox',
+                checked: currentSettings.showWatermark !== false,
+                onChange: (e) => updateSetting('showWatermark', e.target.checked),
+                style: { accentColor: '#1db954' }
+              }),
+              I18n.t("shareImage.settings.showWatermark") || "워터마크 표시"
+            )
+          )
+        ),
+
+        // Preview
+        react.createElement("div", {
+          style: {
+            flex: 1,
+            borderRadius: '12px',
+            background: 'rgba(0,0,0,0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+            minHeight: '180px',
+          }
+        },
+          isGenerating ? react.createElement("div", {
+            style: { color: 'rgba(255,255,255,0.5)', fontSize: '14px' }
+          }, "...") :
+          previewUrl ? react.createElement("img", {
+            src: previewUrl,
+            style: {
+              maxWidth: '100%',
+              maxHeight: '100%',
+              objectFit: 'contain',
+              borderRadius: '8px',
+            }
+          }) : react.createElement("div", {
+            style: { color: 'rgba(255,255,255,0.4)', fontSize: '14px', textAlign: 'center' }
+          }, I18n.t("shareImage.selectLyricsHint"))
+        )
+      )
+    ),
+
+    // Footer: Actions
+    react.createElement("div", {
+      style: {
+        padding: '16px 24px',
+        borderTop: '1px solid rgba(255,255,255,0.1)',
+        display: 'flex',
+        justifyContent: 'flex-end',
+        gap: '10px',
+      }
+    },
+      react.createElement("button", {
+        onClick: onClose,
+        style: {
+          padding: '10px 20px',
+          borderRadius: '8px',
+          border: '1px solid rgba(255,255,255,0.2)',
+          background: 'transparent',
+          color: '#fff',
+          fontSize: '14px',
+          fontWeight: '500',
+          cursor: 'pointer',
+        }
+      }, I18n.t("buttons.cancel")),
+      react.createElement("button", {
+        onClick: handleCopy,
+        disabled: selectedIndices.length === 0 || isGenerating,
+        style: {
+          padding: '10px 20px',
+          borderRadius: '8px',
+          border: 'none',
+          background: selectedIndices.length === 0 ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.15)',
+          color: selectedIndices.length === 0 ? 'rgba(255,255,255,0.3)' : '#fff',
+          fontSize: '14px',
+          fontWeight: '500',
+          cursor: selectedIndices.length === 0 ? 'not-allowed' : 'pointer',
+        }
+      }, I18n.t("shareImage.actions.copy")),
+      react.createElement("button", {
+        onClick: handleDownload,
+        disabled: selectedIndices.length === 0 || isGenerating,
+        style: {
+          padding: '10px 20px',
+          borderRadius: '8px',
+          border: 'none',
+          background: selectedIndices.length === 0 ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.15)',
+          color: selectedIndices.length === 0 ? 'rgba(255,255,255,0.3)' : '#fff',
+          fontSize: '14px',
+          fontWeight: '500',
+          cursor: selectedIndices.length === 0 ? 'not-allowed' : 'pointer',
+        }
+      }, I18n.t("shareImage.actions.download")),
+      navigator.canShare && react.createElement("button", {
+        onClick: handleShare,
+        disabled: selectedIndices.length === 0 || isGenerating,
+        style: {
+          padding: '10px 20px',
+          borderRadius: '8px',
+          border: 'none',
+          background: selectedIndices.length === 0 ? 'rgba(29, 185, 84, 0.3)' : '#1db954',
+          color: selectedIndices.length === 0 ? 'rgba(255,255,255,0.5)' : '#000',
+          fontSize: '14px',
+          fontWeight: '600',
+          cursor: selectedIndices.length === 0 ? 'not-allowed' : 'pointer',
+        }
+      }, I18n.t("shareImage.actions.share"))
+    ),
+
+    // 저작권 경고 모달
+    showCopyrightModal && react.createElement("div", {
+      style: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0,0,0,0.8)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 10000,
+        backdropFilter: 'blur(8px)',
+      },
+      onClick: (e) => {
+        if (e.target === e.currentTarget) handleCopyrightCancel();
+      }
+    },
+      react.createElement("div", {
+        style: {
+          background: 'linear-gradient(180deg, #282828 0%, #1a1a1a 100%)',
+          borderRadius: '16px',
+          padding: '28px 32px',
+          maxWidth: '420px',
+          width: '90%',
+          boxShadow: '0 24px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1)',
+          animation: 'fadeInScale 0.2s ease-out',
+        }
+      },
+        // 아이콘
+        react.createElement("div", {
+          style: {
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            background: 'rgba(255, 179, 0, 0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 20px',
+          }
+        },
+          react.createElement("span", {
+            style: { fontSize: '28px' }
+          }, "⚠️")
+        ),
+
+        // 제목
+        react.createElement("h3", {
+          style: {
+            margin: '0 0 16px',
+            fontSize: '18px',
+            fontWeight: '600',
+            textAlign: 'center',
+            color: '#fff',
+          }
+        }, I18n.t("shareImage.copyrightTitle") || "저작권 알림"),
+
+        // 설명
+        react.createElement("p", {
+          style: {
+            margin: '0 0 20px',
+            fontSize: '14px',
+            lineHeight: '1.6',
+            color: 'rgba(255,255,255,0.7)',
+            textAlign: 'center',
+          }
+        }, I18n.t("shareImage.copyrightDesc") || "이 가사 이미지에는 저작권이 있는 콘텐츠가 포함될 수 있습니다."),
+
+        // 주의사항 리스트
+        react.createElement("div", {
+          style: {
+            background: 'rgba(255,255,255,0.05)',
+            borderRadius: '12px',
+            padding: '16px',
+            marginBottom: '24px',
+          }
+        },
+          react.createElement("ul", {
+            style: {
+              margin: 0,
+              padding: '0 0 0 20px',
+              fontSize: '13px',
+              lineHeight: '1.8',
+              color: 'rgba(255,255,255,0.6)',
+            }
+          },
+            react.createElement("li", null, I18n.t("shareImage.copyrightPoint1") || "개인적인 용도로만 사용해 주세요"),
+            react.createElement("li", null, I18n.t("shareImage.copyrightPoint2") || "상업적 목적으로 사용하지 마세요"),
+            react.createElement("li", null, I18n.t("shareImage.copyrightPoint3") || "SNS 공유 시 원작자를 존중해 주세요")
+          )
+        ),
+
+        // 버튼들
+        react.createElement("div", {
+          style: {
+            display: 'flex',
+            gap: '12px',
+          }
+        },
+          react.createElement("button", {
+            onClick: handleCopyrightCancel,
+            style: {
+              flex: 1,
+              padding: '12px 20px',
+              borderRadius: '8px',
+              border: '1px solid rgba(255,255,255,0.2)',
+              background: 'transparent',
+              color: '#fff',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }
+          }, I18n.t("buttons.cancel") || "취소"),
+          react.createElement("button", {
+            onClick: handleCopyrightConfirm,
+            style: {
+              flex: 1,
+              padding: '12px 20px',
+              borderRadius: '8px',
+              border: 'none',
+              background: '#1db954',
+              color: '#000',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }
+          }, I18n.t("shareImage.copyrightConfirm") || "동의 후 계속")
+        )
+      )
+    )
+  );
+};
+
+// Open Share Image Modal
+function openShareImageModal(lyrics, trackInfo) {
+  const existingOverlay = document.getElementById("ivLyrics-share-image-overlay");
+  if (existingOverlay) {
+    existingOverlay.remove();
+  }
+
+  const overlay = document.createElement("div");
+  overlay.id = "ivLyrics-share-image-overlay";
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease-out;
+  `;
+
+  const modalContainer = document.createElement("div");
+  modalContainer.style.cssText = `
+    background: rgba(28, 28, 30, 0.95);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 900px;
+    max-height: 85vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  `;
+
+  const closeModal = () => {
+    overlay.style.opacity = "0";
+    setTimeout(() => overlay.remove(), 200);
+  };
+
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      closeModal();
+    }
+  });
+
+  const handleEscape = (e) => {
+    if (e.key === "Escape") {
+      closeModal();
+      document.removeEventListener("keydown", handleEscape);
+    }
+  };
+  document.addEventListener("keydown", handleEscape);
+
+  overlay.appendChild(modalContainer);
+  document.body.appendChild(overlay);
+
+  const dom = window.Spicetify?.ReactDOM ?? window.ReactDOM ?? null;
+  if (!dom?.render) {
+    return;
+  }
+
+  const modalComponent = react.createElement(ShareImageModal, {
+    lyrics,
+    trackInfo,
+    onClose: closeModal,
+  });
+
+  dom.render(modalComponent, modalContainer);
+}
+
+// Share Image Button
+const ShareImageButton = react.memo(({ lyrics, trackInfo }) => {
+  const handleClick = () => {
+    if (!lyrics || lyrics.length === 0) {
+      Toast.error(I18n.t("notifications.shareImageNoLyrics"));
+      return;
+    }
+    openShareImageModal(lyrics, trackInfo);
+  };
+
+  return react.createElement(
+    Spicetify.ReactComponent.TooltipWrapper,
+    { label: I18n.t("menu.shareImage") },
+    react.createElement(
+      "button",
+      {
+        className: "lyrics-config-button",
+        onClick: handleClick,
+      },
+      react.createElement(
+        "svg",
+        { width: 16, height: 16, viewBox: "0 0 16 16", fill: "currentColor" },
+        react.createElement("path", {
+          d: "M4.502 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"
+        }),
+        react.createElement("path", {
+          d: "M14.002 13a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V5A2 2 0 0 1 2 3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-1.998 2zM14 2H4a1 1 0 0 0-1 1h9.002a2 2 0 0 1 2 2v7A1 1 0 0 0 15 11V3a1 1 0 0 0-1-1zM2.002 4a1 1 0 0 0-1 1v8l2.646-2.354a.5.5 0 0 1 .63-.062l2.66 1.773 3.71-3.71a.5.5 0 0 1 .577-.094l1.777 1.947V5a1 1 0 0 0-1-1h-10z"
         })
       )
     )

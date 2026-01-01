@@ -9,7 +9,7 @@ const ProviderIvLyrics = (() => {
 
 		// 1. 로컬 캐시 먼저 확인 (API 호출 절약)
 		try {
-			const cached = await LyricsCache.getLyrics(trackId);
+			const cached = await LyricsCache.getLyrics(trackId, 'ivlyrics');
 			if (cached) {
 				console.log(`[ProviderIvLyrics] Using local cache for ${trackId}`);
 				// 캐시 히트 로깅
@@ -80,7 +80,7 @@ const ProviderIvLyrics = (() => {
 			}
 
 			// 3. 로컬 캐시에 저장 (백그라운드)
-			LyricsCache.setLyrics(trackId, response).catch(() => { });
+			LyricsCache.setLyrics(trackId, 'ivlyrics', response).catch(() => { });
 
 			return response;
 		} catch (e) {

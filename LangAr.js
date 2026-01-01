@@ -58,6 +58,12 @@ window.LANG_AR = {
       "label": "تفعيل طبقة سطح المكتب",
       "desc": "إرسال الكلمات إلى تطبيق طبقة سطح المكتب"
     },
+    "port": {
+      "label": "منفذ الاتصال",
+      "desc": "رقم المنفذ للاتصال بتطبيق الـ Overlay (1024-65535)"
+    },
+    "portSaved": "تم حفظ المنفذ",
+    "portInvalid": "رقم منفذ غير صالح (1024-65535)",
     "status": {
       "connected": "✓ متصل",
       "disconnected": "غير متصل",
@@ -326,6 +332,7 @@ window.LANG_AR = {
     "copyLyrics": "نسخ الكلمات",
     "searchLyrics": "بحث عن الكلمات",
     "editLyrics": "تعديل الكلمات",
+    "shareImage": "مشاركة صورة كلمات",
     "translationOptions": "خيارات التحويل",
     "translationOptionsSubtitle": "ضبط عرض النطق والترجمة",
     "detectedLanguage": "اللغة المكتشفة",
@@ -469,7 +476,9 @@ window.LANG_AR = {
     "syncDataClearFailed": "فشل مسح بيانات المزامنة",
     "lyricsCopied": "✓ تم نسخ الكلمات إلى الحافظة",
     "lyricsCopyFailed": "فشل نسخ الكلمات",
+    "translationCopied": "تم نسخ الترجمة إلى الحافظة",
     "translationCopyFailed": "فشل نسخ الترجمة",
+    "secondTranslationCopied": "تم نسخ الترجمة الثانية إلى الحافظة",
     "secondTranslationCopyFailed": "فشل نسخ الترجمة الثانية",
     "installCommandCopied": "تم نسخ أمر التثبيت",
     "copyFailed": "فشل النسخ",
@@ -492,9 +501,28 @@ window.LANG_AR = {
     "translationRegenerated": "✓ تم إعادة توليد الترجمة",
     "translationRegenerateFailed": "فشل إعادة توليد الترجمة",
     "translationCacheRemoved": "✓ تم حذف ذاكرة الترجمة المؤقتة وإعادة تحميلها!",
+    "translationCacheReset": "تم إعادة تعيين {count} من إدخالات ذاكرة الترجمة المؤقتة",
     "tooManyTranslationRequests": "طلبات ترجمة كثيرة جداً. يرجى المحاولة مرة أخرى بعد دقيقة.",
     "requestingPronunciation": "جاري طلب النطق. سيستغرق حوالي 30 ثانية",
-    "requestingTranslation": "جاري طلب الترجمة. سيستغرق حوالي 30 ثانية"
+    "requestingTranslation": "جاري طلب الترجمة. سيستغرق حوالي 30 ثانية",
+    "shareImageCopied": "تم نسخ الصورة إلى الحافظة",
+    "shareImageDownloaded": "تم تنزيل الصورة",
+    "shareImageShared": "تمت المشاركة بنجاح",
+    "shareImageFailed": "فشل في إنشاء الصورة",
+    "shareImageNoLyrics": "يرجى اختيار كلمات للمشاركة",
+    "noTrackPlaying": "لا يوجد مسار قيد التشغيل",
+    "overlayConnected": "تم الاتصال بـ Overlay",
+    "romajiTranslationFailed": "فشل تحويل الروماجي/النطق",
+    "koreanTranslationFailed": "فشل الترجمة الكورية",
+    "pinyinLibraryUnavailable": "مكتبة بينيين غير متوفرة. عرض الأصل. السماح لـ jsDelivr أو unpkg.",
+    "conversionSkippedSimplified": "تم تخطي التحويل: بالفعل صينية مبسطة",
+    "conversionCompleted": "اكتمل التحويل بنجاح",
+    "conversionFailed": "فشل التحويل",
+    "fileTooLarge": "الملف كبير جداً: الحد الأقصى 1 ميجابايت",
+    "noValidLyricsInFile": "لم يتم العثور على كلمات صالحة في الملف",
+    "lyricsLoadedFromFile": "تم تحميل كلمات {types} بنجاح من الملف",
+    "lyricsLoadFailed": "فشل تحميل الكلمات: تنسيق ملف غير صالح",
+    "fileReadFailed": "فشل قراءة الملف: قد يكون الملف تالفاً"
   },
   "misc": {
     "and": "و",
@@ -636,6 +664,26 @@ window.LANG_AR = {
         "desc": "المسافة بين الحروف في الترجمة (بكسل)"
       }
     },
+    "furiganaStyle": {
+      "title": "نمط فوريغانا",
+      "subtitle": "إعدادات القراءة (فوريغانا) المعروضة فوق الكانجي الياباني",
+      "fontSize": {
+        "label": "حجم الخط",
+        "desc": "حجم الخط للفوريغانا (بكسل)"
+      },
+      "fontWeight": {
+        "label": "وزن الخط",
+        "desc": "وزن الخط للفوريغانا"
+      },
+      "opacity": {
+        "label": "الشفافية",
+        "desc": "شفافية الفوريغانا (0-100%)"
+      },
+      "spacing": {
+        "label": "التباعد",
+        "desc": "المسافة بين الفوريغانا والكانجي (بكسل)"
+      }
+    },
     "textShadow": {
       "title": "ظل النص",
       "subtitle": "تأثير الظل لتحسين القراءة",
@@ -662,6 +710,10 @@ window.LANG_AR = {
       "replaceButton": {
         "label": "استبدال زر الكلمات",
         "info": "استبدال زر كلمات Spotify الافتراضي بـ ivLyrics"
+      },
+      "replaceFullscreenButton": {
+        "label": "استبدال زر ملء الشاشة",
+        "info": "استبدال زر ملء الشاشة الافتراضي في Spotify بـ ivLyrics"
       },
       "fullscreenShortcut": {
         "label": "اختصار ملء الشاشة",
@@ -783,6 +835,14 @@ window.LANG_AR = {
         "desc": "اختصار ملء الشاشة",
         "info": "تعيين اختصار لوحة المفاتيح لتبديل وضع ملء الشاشة"
       },
+      "tvMode": {
+        "desc": "وضع التلفزيون",
+        "info": "عرض غلاف الألبوم ومعلومات المسار في أسفل اليسار، الكلمات تستخدم ملء الشاشة"
+      },
+      "tvModeAlbumSize": {
+        "desc": "حجم الألبوم في وضع التلفزيون",
+        "info": "تعيين حجم غلاف الألبوم في وضع التلفزيون (بكسل)"
+      },
       "splitView": {
         "desc": "عرض مقسم",
         "info": "عرض غلاف الألبوم على اليسار والكلمات على اليمين في وضع ملء الشاشة"
@@ -798,6 +858,10 @@ window.LANG_AR = {
       "showTrackInfo": {
         "desc": "إظهار معلومات المسار",
         "info": "عرض عنوان الأغنية والفنان في وضع ملء الشاشة"
+      },
+      "trimTitle": {
+        "desc": "اختصار العنوان",
+        "info": "إزالة المعلومات الإضافية مثل (Remaster)، [feat. xxx] من العناوين لعرض أنظف"
       },
       "translateMetadata": {
         "desc": "ترجمة العنوان/الفنان",
@@ -929,6 +993,14 @@ window.LANG_AR = {
       "delay": {
         "desc": "تأخير الإخفاء التلقائي",
         "info": "وقت عدم نشاط الماوس قبل إخفاء الواجهة (1-10 ثواني)"
+      }
+    },
+    "tmiStyle": {
+      "title": "نمط TMI",
+      "subtitle": "إعدادات النمط لنافذة TMI التي تظهر عند النقر على غلاف الألبوم",
+      "fontSize": {
+        "desc": "حجم خط TMI",
+        "info": "ضبط حجم الخط العام لنافذة TMI (80-150%)"
       }
     },
     "aboutTab": {
@@ -1119,6 +1191,87 @@ window.LANG_AR = {
     "deleteError": "فشل في حذف الفيديو"
   },
   "close": "إغلاق",
-  "cancel": "إلغاء"
+  "cancel": "إلغاء",
+  "shareImage": {
+    "title": "مشاركة صورة كلمات",
+    "subtitle": "أنشئ وشارك صور كلمات جميلة",
+    "selectLyrics": "اختر الكلمات",
+    "selectLyricsHint": "انقر على الأسطر لتضمينها في الصورة (الحد الأقصى 6 أسطر)",
+    "template": "قالب",
+    "templates": {
+      "cover": "غلاف ضبابي",
+      "gradient": "تدرج",
+      "minimal": "بسيط",
+      "glass": "زجاجي",
+      "story": "قصة"
+    },
+    "advancedSettings": "إعدادات متقدمة",
+    "sections": {
+      "background": "الخلفية",
+      "cover": "غلاف الألبوم",
+      "lyrics": "الكلمات",
+      "layout": "التخطيط",
+      "other": "أخرى"
+    },
+    "copyrightWarning": "⚠️ إشعار حقوق الطبع والنشر\n\nقد تحتوي صورة الكلمات هذه على محتوى محمي بحقوق الطبع والنشر.\n\n• استخدم للأغراض الشخصية فقط\n• لا تستخدم للأغراض التجارية\n• احترم المبدع الأصلي عند المشاركة على وسائل التواصل الاجتماعي\n\nهل تريد المتابعة؟",
+    "settings": {
+      "backgroundType": "نمط الخلفية",
+      "coverBlur": "ضبابي",
+      "gradient": "تدرج",
+      "solid": "صلب",
+      "backgroundBlur": "ضبابية الخلفية",
+      "backgroundOpacity": "درجة عتامة الخلفية",
+      "showCover": "غلاف الألبوم",
+      "showTrackInfo": "معلومات الأغنية",
+      "coverPosition": "موضع الغلاف",
+      "posLeft": "يسار",
+      "posCenter": "وسط",
+      "coverSize": "حجم الغلاف",
+      "coverRadius": "استدارة الغلاف",
+      "coverBlur": "ضبابية الغلاف",
+      "showPronunciation": "النطق",
+      "showTranslation": "الترجمة",
+      "lyricsAlign": "محاذاة الكلمات",
+      "alignLeft": "يسار",
+      "alignCenter": "وسط",
+      "fontSize": "حجم الخط",
+      "blockGap": "المسافة بين الأسطر",
+      "aspectRatio": "نسبة الأبعاد",
+      "imageWidth": "عرض الصورة",
+      "padding": "الهامش",
+      "showWatermark": "إظهار العلامة المائية"
+    },
+    "preview": "معاينة",
+    "actions": {
+      "copy": "نسخ إلى الحافظة",
+      "download": "تنزيل",
+      "share": "مشاركة"
+    },
+    "copied": "✓ تم النسخ إلى الحافظة",
+    "downloaded": "✓ تم التنزيل",
+    "shared": "✓ تمت المشاركة",
+    "maxLinesReached": "يمكن اختيار 3 أسطر كحد أقصى",
+    "noSelection": "يرجى اختيار الكلمات"
+  },
+  tmi: {
+    getApiKeyDesc: "الحصول على مفتاح API Gemini",
+    getApiKeyInfo: "يستخدم لجلب TMI. متاح مجانًا من Google AI Studio.",
+    viewInfo: "انقر لعرض تفاصيل الأغنية",
+    requireKey: "مفتاح API Gemini مطلوب في الإعدادات",
+    settingTitle: "مفتاح API Gemini",
+    settingDesc: "مطلوب لتحميل محتويات TMI/معلومات عامة عن الأغنية.",
+    title: "TMI",
+    didYouKnow: "هل تعلم؟",
+    close: "إغلاق",
+    cancel: "إلغاء",
+    loading: "البحث عن حقائق مثيرة...",
+    noData: "لا يوجد TMI متاح لهذا المسار بعد.",
+    clickForTMI: "انقر للحصول على TMI",
+    clickToClose: "انقر فوق ✕ أو منطقة الألبوم للعودة",
+    regenerate: "إعادة إنشاء TMI",
+    errorFetch: "حدث خطأ أثناء جلب TMI.",
+    errorQuota: "تم تجاوز حصة API.",
+    errorQuotaHint: "يرجى المحاولة لاحقًا أو إدخال مفتاح API آخر في الإعدادات."
+  }
 };
 

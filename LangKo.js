@@ -1,9 +1,9 @@
-// Korean language file for Lyrics Plus
+// Korean language file for ivLyrics
 window.LANG_KO = {
   "meta": {
     "language": "한국어",
     "code": "ko",
-    "author": "lyrics-plus"
+    "author": "ivLyrics"
   },
   "tabs": {
     "general": "일반",
@@ -58,6 +58,12 @@ window.LANG_KO = {
       "label": "데스크탑 오버레이 사용",
       "desc": "가사를 데스크탑 오버레이 앱으로 전송합니다"
     },
+    "port": {
+      "label": "연결 포트",
+      "desc": "오버레이 앱과 연결할 포트 번호 (1024-65535)"
+    },
+    "portSaved": "포트가 저장되었습니다",
+    "portInvalid": "올바르지 않은 포트 번호입니다 (1024-65535)",
     "status": {
       "connected": "✓ 연결됨",
       "disconnected": "연결 안됨",
@@ -326,6 +332,7 @@ window.LANG_KO = {
     "copyLyrics": "가사 복사",
     "searchLyrics": "가사 검색",
     "editLyrics": "가사 편집",
+    "shareImage": "가사 이미지 공유",
     "translationOptions": "변환 옵션",
     "translationOptionsSubtitle": "가사의 발음과 번역 표시를 설정하세요",
     "detectedLanguage": "감지된 언어",
@@ -336,9 +343,9 @@ window.LANG_KO = {
     "translationLabel": "번역",
     "translationInfo": "원문 가사를 한국어로 번역하여 표시합니다",
     "apiSettings": "API 설정",
-    "apiSettingsSubtitle": "Perplexity API와 Google Gemini API를 구성하세요",
+    "apiSettingsSubtitle": "Gemini API를 구성하세요",
     "apiKeySettings": "API 키 설정",
-    "apiKeySettingsInfo": "Perplexity API 키와 Google Gemini API 키를 설정하려면 여기를 클릭하세요",
+    "apiKeySettingsInfo": "Gemini API 키를 설정하려면 여기를 클릭하세요",
     "openSettings": "설정 열기",
     "translationSettings": "변환 설정",
     "regenerateTranslation": "번역 재생성",
@@ -414,6 +421,14 @@ window.LANG_KO = {
       "share": "공유 링크 복사",
       "shareCopied": "🔗 공유 링크가 복사되었습니다"
     },
+    "queue": {
+      "title": "재생목록",
+      "recentlyPlayed": "최근 재생한 항목",
+      "nowPlaying": "지금 재생 중",
+      "upNext": "다음 재생 목록",
+      "empty": "대기열이 비어 있습니다",
+      "noRecent": "최근 재생 기록이 없습니다"
+    },
     "contextType": {
       "playlist": "플레이리스트",
       "album": "앨범",
@@ -459,15 +474,17 @@ window.LANG_KO = {
     "importFailed": "설정 불러오기 실패",
     "syncDataCleared": "싱크 데이터가 삭제되었습니다",
     "syncDataClearFailed": "싱크 데이터 삭제에 실패했습니다",
-    "lyricsCopied": "✓ 가사가 클립보드에 복사되었습니다",
+    "lyricsCopied": "가사가 클립보드에 복사되었습니다",
     "lyricsCopyFailed": "가사 클립보드 복사 실패",
+    "translationCopied": "번역이 클립보드에 복사되었습니다",
     "translationCopyFailed": "번역 클립보드 복사 실패",
+    "secondTranslationCopied": "두 번째 번역이 클립보드에 복사되었습니다",
     "secondTranslationCopyFailed": "두 번째 번역 클립보드 복사 실패",
     "installCommandCopied": "설치 명령어가 복사되었습니다",
     "copyFailed": "복사에 실패했습니다",
-    "memoryCacheCleared": "✓ 메모리 캐시가 초기화되었습니다",
-    "localCacheCleared": "✓ 로컬 캐시가 모두 삭제되었습니다",
-    "localCacheTrackCleared": "✓ 현재 곡의 로컬 캐시가 삭제되었습니다",
+    "memoryCacheCleared": "메모리 캐시가 초기화되었습니다",
+    "localCacheCleared": "로컬 캐시가 모두 삭제되었습니다",
+    "localCacheTrackCleared": "현재 곡의 로컬 캐시가 삭제되었습니다",
     "exportSuccessDesc": "설정파일을 다운로드 폴더에 저장합니다.",
     "exportFailed": "설정 내보내기 실패",
     "importSuccessDesc": "잠시 후 페이지가 새로고침됩니다...",
@@ -481,12 +498,31 @@ window.LANG_KO = {
     "noLyricsLoaded": "가사가 로드되지 않았습니다.",
     "translationRegenerateGeminiOnly": "번역 재생성은 Gemini 번역에서만 사용할 수 있습니다.",
     "regeneratingTranslation": "번역을 재생성하는 중...",
-    "translationRegenerated": "✓ 번역이 재생성되었습니다",
+    "translationRegenerated": "번역이 재생성되었습니다",
     "translationRegenerateFailed": "번역 재생성 실패",
-    "translationCacheRemoved": "✓ 번역 캐시를 제거하고 다시 불러왔습니다!",
+    "translationCacheRemoved": "번역 캐시를 제거하고 다시 불러왔습니다!",
+    "translationCacheReset": "번역 캐시 {count}개 항목이 초기화되었습니다",
     "tooManyTranslationRequests": "번역 요청이 너무 많습니다. 1분 뒤, 다시시도해주세요.",
     "requestingPronunciation": "발음을 요청하고 있습니다. 30초 정도 소요됩니다",
-    "requestingTranslation": "번역을 요청하고 있습니다. 30초 정도 소요됩니다"
+    "requestingTranslation": "번역을 요청하고 있습니다. 30초 정도 소요됩니다",
+    "shareImageCopied": "이미지가 클립보드에 복사되었습니다",
+    "shareImageDownloaded": "이미지가 다운로드되었습니다",
+    "shareImageShared": "공유되었습니다",
+    "shareImageFailed": "이미지 생성에 실패했습니다",
+    "shareImageNoLyrics": "공유할 가사를 선택하세요",
+    "noTrackPlaying": "재생 중인 트랙이 없습니다",
+    "overlayConnected": "오버레이 연결됨",
+    "romajiTranslationFailed": "로마자/발음 변환 실패",
+    "koreanTranslationFailed": "한국어 번역 실패",
+    "pinyinLibraryUnavailable": "핀인 라이브러리를 사용할 수 없습니다. 원본을 표시합니다. jsDelivr 또는 unpkg를 허용하세요.",
+    "conversionSkippedSimplified": "변환 건너뜀: 이미 간체자입니다",
+    "conversionCompleted": "변환이 완료되었습니다",
+    "conversionFailed": "변환 실패",
+    "fileTooLarge": "파일이 너무 큽니다: 최대 크기는 1MB입니다",
+    "noValidLyricsInFile": "파일에서 유효한 가사를 찾을 수 없습니다",
+    "lyricsLoadedFromFile": "파일에서 {types} 가사를 성공적으로 불러왔습니다",
+    "lyricsLoadFailed": "가사 로드 실패: 잘못된 파일 형식",
+    "fileReadFailed": "파일 읽기 실패: 파일이 손상되었을 수 있습니다"
   },
   "misc": {
     "and": "및",
@@ -628,6 +664,26 @@ window.LANG_KO = {
         "desc": "번역 가사의 글자 사이 간격 (픽셀)"
       }
     },
+    "furiganaStyle": {
+      "title": "후리가나 스타일",
+      "subtitle": "일본어 한자 위에 표시되는 읽기(후리가나) 설정",
+      "fontSize": {
+        "label": "글꼴 크기",
+        "desc": "후리가나의 글꼴 크기 (픽셀)"
+      },
+      "fontWeight": {
+        "label": "글꼴 두께",
+        "desc": "후리가나의 글꼴 굵기"
+      },
+      "opacity": {
+        "label": "투명도",
+        "desc": "후리가나의 불투명도 (0-100%)"
+      },
+      "spacing": {
+        "label": "간격",
+        "desc": "후리가나와 한자 사이의 여백 (픽셀)"
+      }
+    },
     "textShadow": {
       "title": "텍스트 그림자",
       "subtitle": "가독성을 높이는 그림자 효과",
@@ -653,7 +709,11 @@ window.LANG_KO = {
       "subtitle": "재생 관련 기능 설정",
       "replaceButton": {
         "label": "가사 버튼 교체",
-        "info": "Spotify의 기본 가사 버튼을 Lyrics Plus로 교체합니다"
+        "info": "Spotify의 기본 가사 버튼을 ivLyrics로 교체합니다"
+      },
+      "replaceFullscreenButton": {
+        "label": "전체화면 버튼 교체",
+        "info": "Spotify의 기본 전체화면 버튼을 ivLyrics 전체화면으로 교체합니다"
       },
       "fullscreenShortcut": {
         "label": "전체화면 단축키",
@@ -775,6 +835,14 @@ window.LANG_KO = {
         "desc": "전체화면 단축키",
         "info": "전체화면 모드를 토글하는 키보드 단축키를 설정합니다"
       },
+      "tvMode": {
+        "desc": "TV 모드",
+        "info": "좌측 하단에 앨범 아트와 곡 정보를 표시하고 가사는 전체 화면을 사용합니다"
+      },
+      "tvModeAlbumSize": {
+        "desc": "TV 모드 앨범 크기",
+        "info": "TV 모드에서 앨범 아트의 크기를 설정합니다 (픽셀)"
+      },
       "splitView": {
         "desc": "분할 레이아웃",
         "info": "전체화면에서 왼쪽에 앨범 아트, 오른쪽에 가사를 표시합니다"
@@ -791,6 +859,10 @@ window.LANG_KO = {
         "desc": "트랙 정보 표시",
         "info": "전체화면에서 곡 제목과 아티스트를 표시합니다"
       },
+      "trimTitle": {
+        "desc": "짧은 제목 표시",
+        "info": "곡 제목에서 (Remaster), [feat. xxx] 등 부가 정보를 제거하여 간결하게 표시합니다"
+      },
       "translateMetadata": {
         "desc": "제목/아티스트 번역",
         "info": "외국어 곡 제목과 아티스트 이름을 번역하여 표시합니다 (Gemini API 키 필요)"
@@ -802,8 +874,6 @@ window.LANG_KO = {
           "all": "모두 표시 (원어 + 번역 + 발음)",
           "translated": "번역만 표시 (없으면 원어)",
           "romanized": "발음만 표시 (없으면 원어)",
-          "original-translated": "원어 + 번역",
-          "original-romanized": "원어 + 발음",
           "originalTranslated": "원어 + 번역",
           "originalRomanized": "원어 + 발음"
         }
@@ -891,6 +961,10 @@ window.LANG_KO = {
       "showLyricsProgress": {
         "desc": "가사 진행률 표시",
         "info": "현재 가사 줄 번호와 전체 가사 줄 수를 표시합니다"
+      },
+      "showQueue": {
+        "desc": "대기열 패널 표시",
+        "info": "화면 오른쪽에 마우스를 가져가면 재생 대기열을 표시합니다"
       }
     },
     "controllerStyle": {
@@ -915,6 +989,14 @@ window.LANG_KO = {
       "delay": {
         "desc": "자동 숨김 딜레이",
         "info": "마우스 비활동 후 UI가 숨겨지기까지의 시간 (1-10초)"
+      }
+    },
+    "tmiStyle": {
+      "title": "TMI 스타일",
+      "subtitle": "앨범 아트 클릭 시 표시되는 TMI 모달의 스타일 설정",
+      "fontSize": {
+        "desc": "TMI 폰트 크기",
+        "info": "TMI 모달의 전체 폰트 크기를 조정합니다 (80-150%)"
       }
     },
     "aboutTab": {
@@ -949,7 +1031,7 @@ window.LANG_KO = {
         "subtitle": "최신 업데이트 내역",
         "loading": "패치 노트를 불러오는 중..."
       },
-      "subtitle": "Lyrics Plus에 대해",
+      "subtitle": "ivLyrics에 대해",
       "appDescription": "Spicetify를 위한 한국어 대응 가사 확장 프로그램.",
       "versionPrefix": "버전",
       "viewOnGithub": "GitHub에서 보기",
@@ -984,38 +1066,6 @@ window.LANG_KO = {
       "geminiKey": {
         "desc": "Gemini API 키",
         "info": "Google Gemini AI를 활용한 가사 번역 기능을 사용하려면 API 키가 필요합니다"
-      },
-      "googleGeminiKey": {
-        "desc": "Google Gemini API 키",
-        "info": "Google Gemini AI를 활용한 가사 번역 기능을 사용하려면 API 키가 필요합니다"
-      },
-      "getGoogleApiKey": {
-        "desc": "API 키 발급받기",
-        "info": "Google AI Studio에서 무료로 Gemini API 키를 발급받을 수 있습니다",
-        "button": "API 키 발급 페이지 열기"
-      },
-      "perplexity": {
-        "title": "Perplexity API 설정",
-        "subtitle": "Perplexity API를 구성하세요"
-      },
-      "getPerplexityKey": {
-        "button": "Perplexity API 키 발급 페이지 열기"
-      },
-      "perplexityKey": {
-        "desc": "Perplexity API 키",
-        "info": "Perplexity AI를 활용한 가사 번역 기능을 사용하려면 API 키가 필요합니다"
-      },
-      "perplexityModel": {
-        "desc": "Perplexity 모델",
-        "info": "Perplexity API에서 사용할 모델을 선택합니다. sonar는 기본 모델, sonar-pro는 더 강력한 모델입니다"
-      },
-      "phoneticLanguage": {
-        "desc": "발음 표기 언어",
-        "info": "발음 표기를 영어(로마자)로 표시할지 한국어(한글)로 표시할지 선택합니다",
-        "options": {
-          "english": "영어 (로마자)",
-          "korean": "한국어 (한글)"
-        }
       }
     },
     "update": {
@@ -1067,15 +1117,15 @@ window.LANG_KO = {
     "loadingMessage": "영상 배경 로딩 중... 30초 정도 소요됩니다."
   },
   "translator": {
-    "missingApiKey": "Perplexity API 키가 설정되지 않았습니다. 설정에서 API 키를 입력해주세요.",
-    "invalidApiKeyFormat": "올바르지 않은 API 키 형식입니다.",
+    "missingApiKey": "Gemini API 키가 설정되지 않았습니다. 설정에서 API 키를 입력해주세요.",
+    "invalidApiKeyFormat": "올바르지 않은 API 키 형식입니다. Gemini API 키는 'AIza'로 시작해야 합니다.",
     "invalidRequestFormat": "요청 형식이 올바르지 않습니다. API 키를 확인해주세요.",
-    "invalidApiKey": "잘못된 API 키입니다. 설정에서 Perplexity API 키를 확인해주세요.",
+    "invalidApiKey": "잘못된 API 키입니다. 설정에서 Gemini API 키를 확인해주세요.",
     "accessForbidden": "API 접근이 금지되었습니다. API 키 권한을 확인해주세요.",
     "rateLimitExceeded": "요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.",
     "serviceUnavailable": "번역 서비스를 일시적으로 사용할 수 없습니다. 나중에 다시 시도해주세요.",
     "requestFailed": "API 요청이 실패했습니다",
-    "apiKeyError": "Perplexity API 키 관련 오류가 발생했습니다. 설정에서 API 키를 확인해주세요.",
+    "apiKeyError": "Gemini API 키 관련 오류가 발생했습니다. 설정에서 API 키를 확인해주세요.",
     "translationFailed": "번역에 실패했습니다",
     "requestTimeout": "번역 요청이 시간 초과되었습니다. 다시 시도해주세요.",
     "failedPrefix": "번역 실패"
@@ -1137,5 +1187,92 @@ window.LANG_KO = {
     "deleteError": "영상 삭제에 실패했습니다"
   },
   "close": "닫기",
-  "cancel": "취소"
+  "cancel": "취소",
+  "shareImage": {
+    "title": "가사 이미지 공유",
+    "subtitle": "좋아하는 가사를 이미지로 만들어 공유하세요",
+    "selectLyrics": "가사 선택",
+    "selectLyricsHint": "이미지에 포함할 가사 라인을 클릭하세요 (최대 6줄)",
+    "template": "프리셋",
+    "templates": {
+      "cover": "커버 블러",
+      "gradient": "그라디언트",
+      "minimal": "미니멀",
+      "glass": "글래스",
+      "story": "스토리"
+    },
+    "advancedSettings": "세부 설정",
+    "sections": {
+      "background": "배경",
+      "cover": "앨범 커버",
+      "lyrics": "가사",
+      "layout": "레이아웃",
+      "other": "기타"
+    },
+    "copyrightWarning": "⚠️ 저작권 알림\n\n이 가사 이미지에는 저작권이 있는 콘텐츠가 포함될 수 있습니다.\n\n• 개인적인 용도로만 사용해 주세요\n• 상업적 목적으로 사용하지 마세요\n• SNS 공유 시 원작자를 존중해 주세요\n\n계속하시겠습니까?",
+    "copyrightTitle": "저작권 알림",
+    "copyrightDesc": "이 가사 이미지에는 저작권이 있는 콘텐츠가 포함될 수 있습니다.",
+    "copyrightPoint1": "개인적인 용도로만 사용해 주세요",
+    "copyrightPoint2": "상업적 목적으로 사용하지 마세요",
+    "copyrightPoint3": "SNS 공유 시 원작자를 존중해 주세요",
+    "copyrightConfirm": "동의 후 계속",
+    "settings": {
+      "backgroundType": "배경 스타일",
+      "coverBlur": "블러",
+      "gradient": "그라디언트",
+      "solid": "단색",
+      "backgroundBlur": "배경 블러",
+      "backgroundOpacity": "배경 어둡기",
+      "showCover": "앨범 커버",
+      "showTrackInfo": "곡 정보",
+      "coverPosition": "커버 위치",
+      "posLeft": "좌측",
+      "posCenter": "중앙",
+      "coverSize": "커버 크기",
+      "coverRadius": "커버 둥글기",
+      "coverBlur": "커버 블러",
+      "showPronunciation": "발음",
+      "showTranslation": "번역",
+      "lyricsAlign": "가사 정렬",
+      "alignLeft": "왼쪽",
+      "alignCenter": "가운데",
+      "fontSize": "글꼴 크기",
+      "blockGap": "줄 간격",
+      "aspectRatio": "이미지 비율",
+      "imageWidth": "이미지 너비",
+      "padding": "여백",
+      "showWatermark": "워터마크 표시"
+    },
+    "preview": "미리보기",
+    "actions": {
+      "copy": "클립보드에 복사",
+      "download": "다운로드",
+      "share": "공유"
+    },
+    "copied": "✓ 클립보드에 복사됨",
+    "downloaded": "✓ 다운로드됨",
+    "shared": "✓ 공유됨",
+    "maxLinesReached": "최대 3줄까지 선택할 수 있습니다",
+    "noSelection": "가사를 선택하세요"
+  },
+  tmi: {
+    getApiKeyDesc: "Gemini API 키 발급받기",
+    getApiKeyInfo: "TMI를 불러올 때 사용됩니다. Google AI Studio에서 무료로 발급받을 수 있습니다.",
+    viewInfo: "눌러서 이 곡에 대한 다양한 정보를 확인하세요",
+    requireKey: "설정에서 Gemini API 키 설정이 필요합니다",
+    settingTitle: "Gemini API 키",
+    settingDesc: "곡 TMI/정보를 불러오기 위해 필요합니다.",
+    title: "TMI",
+    didYouKnow: "알고 계셨나요?",
+    close: "닫기",
+    cancel: "취소",
+    loading: "흥미로운 사실들을 찾는 중...",
+    noData: "이 곡에 대한 TMI가 아직 없습니다.",
+    clickForTMI: "TMI 보러가기",
+    clickToClose: "✕ 또는 앨범 아트를 클릭하여 닫기",
+    regenerate: "TMI를 재생성합니다.",
+    errorFetch: "TMI를 불러오는 중 오류가 발생했습니다.",
+    errorQuota: "API 할당량을 초과했습니다.",
+    errorQuotaHint: "잠시 후 다시 시도하거나, 설정에서 다른 API 키를 입력해주세요."
+  }
 };

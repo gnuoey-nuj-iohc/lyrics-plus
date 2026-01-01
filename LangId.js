@@ -636,6 +636,26 @@ window.LANG_ID = {
         "desc": "Jarak antar huruf dalam terjemahan (piksel)"
       }
     },
+    "furiganaStyle": {
+      "title": "Gaya Furigana",
+      "subtitle": "Pengaturan untuk bacaan (furigana) yang ditampilkan di atas kanji Jepang",
+      "fontSize": {
+        "label": "Ukuran font",
+        "desc": "Ukuran font untuk furigana (piksel)"
+      },
+      "fontWeight": {
+        "label": "Ketebalan font",
+        "desc": "Ketebalan font untuk furigana"
+      },
+      "opacity": {
+        "label": "Opasitas",
+        "desc": "Opasitas furigana (0-100%)"
+      },
+      "spacing": {
+        "label": "Spasi",
+        "desc": "Jarak antara furigana dan kanji (piksel)"
+      }
+    },
     "textShadow": {
       "title": "Bayangan Teks",
       "subtitle": "Efek bayangan untuk meningkatkan keterbacaan",
@@ -662,6 +682,10 @@ window.LANG_ID = {
       "replaceButton": {
         "label": "Ganti Tombol Lirik",
         "info": "Ganti tombol lirik default Spotify dengan ivLyrics"
+      },
+      "replaceFullscreenButton": {
+        "label": "Ganti Tombol Layar Penuh",
+        "info": "Ganti tombol layar penuh default Spotify dengan ivLyrics"
       },
       "fullscreenShortcut": {
         "label": "Pintasan Layar Penuh",
@@ -783,6 +807,14 @@ window.LANG_ID = {
         "desc": "Pintasan Layar Penuh",
         "info": "Atur pintasan keyboard untuk beralih mode layar penuh"
       },
+      "tvMode": {
+        "desc": "Mode TV",
+        "info": "Tampilkan sampul album dan info lagu di kiri bawah, lirik menggunakan layar penuh"
+      },
+      "tvModeAlbumSize": {
+        "desc": "Ukuran Album Mode TV",
+        "info": "Atur ukuran sampul album dalam mode TV (piksel)"
+      },
       "splitView": {
         "desc": "Tampilan Terpisah",
         "info": "Tampilkan sampul album di kiri dan lirik di kanan dalam mode layar penuh"
@@ -798,6 +830,10 @@ window.LANG_ID = {
       "showTrackInfo": {
         "desc": "Tampilkan Info Lagu",
         "info": "Tampilkan judul lagu dan artis dalam mode layar penuh"
+      },
+      "trimTitle": {
+        "desc": "Persingkat judul",
+        "info": "Hapus info tambahan seperti (Remaster), [feat. xxx] dari judul untuk tampilan lebih bersih"
       },
       "translateMetadata": {
         "desc": "Terjemahkan judul/artis",
@@ -929,6 +965,14 @@ window.LANG_ID = {
       "delay": {
         "desc": "Jeda Sembunyikan Otomatis",
         "info": "Waktu setelah berhenti menggerakkan mouse sebelum UI disembunyikan (1-10 detik)"
+      }
+    },
+    "tmiStyle": {
+      "title": "Gaya TMI",
+      "subtitle": "Pengaturan gaya untuk modal TMI yang ditampilkan saat mengklik sampul album",
+      "fontSize": {
+        "desc": "Ukuran Font TMI",
+        "info": "Sesuaikan ukuran font keseluruhan modal TMI (80-150%)"
       }
     },
     "aboutTab": {
@@ -1119,6 +1163,93 @@ window.LANG_ID = {
     "deleteError": "Gagal menghapus video"
   },
   "close": "Tutup",
-  "cancel": "Batal"
+  "cancel": "Batal",
+  "shareImage": {
+    "title": "Bagikan gambar lirik",
+    "subtitle": "Buat dan bagikan gambar lirik yang indah",
+    "selectLyrics": "Pilih lirik",
+    "selectLyricsHint": "Klik baris untuk disertakan dalam gambar (maks. 6 baris)",
+    "template": "Template",
+    "templates": {
+      "cover": "Blur Cover",
+      "gradient": "Gradien",
+      "minimal": "Minimal",
+      "glass": "Kaca",
+      "story": "Story"
+    },
+    "advancedSettings": "Pengaturan lanjutan",
+    "sections": {
+      "background": "Latar belakang",
+      "cover": "Cover album",
+      "lyrics": "Lirik",
+      "layout": "Tata letak",
+      "other": "Lainnya"
+    },
+    "copyrightWarning": "⚠️ Pemberitahuan Hak Cipta\n\nGambar lirik ini mungkin berisi konten yang dilindungi hak cipta.\n\n• Gunakan hanya untuk keperluan pribadi\n• Jangan gunakan untuk tujuan komersial\n• Hormati pencipta asli saat berbagi di media sosial\n\nApakah Anda ingin melanjutkan?",
+    "copyrightTitle": "Pemberitahuan Hak Cipta",
+    "copyrightDesc": "Gambar lirik ini mungkin berisi konten yang dilindungi hak cipta.",
+    "copyrightPoint1": "Gunakan hanya untuk keperluan pribadi",
+    "copyrightPoint2": "Jangan gunakan untuk tujuan komersial",
+    "copyrightPoint3": "Hormati pencipta asli saat berbagi di media sosial",
+    "copyrightConfirm": "Setuju & Lanjutkan",
+    "settings": {
+      "backgroundType": "Gaya latar belakang",
+      "coverBlur": "Blur",
+      "gradient": "Gradien",
+      "solid": "Solid",
+      "backgroundBlur": "Blur latar belakang",
+      "backgroundOpacity": "Kegelapan latar belakang",
+      "showCover": "Cover album",
+      "showTrackInfo": "Info lagu",
+      "coverPosition": "Posisi cover",
+      "posLeft": "Kiri",
+      "posCenter": "Tengah",
+      "coverSize": "Ukuran cover",
+      "coverRadius": "Radius cover",
+      "coverBlur": "Blur cover",
+      "showPronunciation": "Pengucapan",
+      "showTranslation": "Terjemahan",
+      "lyricsAlign": "Perataan lirik",
+      "alignLeft": "Kiri",
+      "alignCenter": "Tengah",
+      "fontSize": "Ukuran font",
+      "blockGap": "Jarak baris",
+      "aspectRatio": "Rasio aspek",
+      "imageWidth": "Lebar gambar",
+      "padding": "Margin",
+      "showWatermark": "Tampilkan watermark"
+    },
+    "preview": "Pratinjau",
+    "actions": {
+      "copy": "Salin ke clipboard",
+      "download": "Unduh",
+      "share": "Bagikan"
+    },
+    "copied": "✓ Disalin ke clipboard",
+    "downloaded": "✓ Diunduh",
+    "shared": "✓ Dibagikan",
+    "maxLinesReached": "Maksimal 3 baris dapat dipilih",
+    "noSelection": "Silakan pilih lirik"
+  },
+  tmi: {
+    getApiKeyDesc: "Dapatkan Kunci API Gemini",
+    getApiKeyInfo: "Digunakan untuk mengambil TMI. Tersedia gratis dari Google AI Studio.",
+    viewInfo: "Klik untuk melihat detail lagu",
+    requireKey: "Kunci API Gemini diperlukan di pengaturan",
+    settingTitle: "Kunci API Gemini",
+    settingDesc: "Diperlukan untuk memuat konten TMI/Trivia lagu.",
+    title: "TMI",
+    didYouKnow: "Tahukah kamu?",
+    close: "Tutup",
+    cancel: "Batal",
+    loading: "Mencari fakta menarik...",
+    noData: "Belum ada TMI yang tersedia untuk lagu ini.",
+    clickForTMI: "Klik untuk TMI",
+    clickToClose: "Klik ✕ atau area album untuk kembali",
+    regenerate: "Regenerasi TMI",
+    errorFetch: "Terjadi kesalahan saat mengambil TMI.",
+    errorQuota: "Kuota API terlampaui.",
+    errorQuotaHint: "Silakan coba lagi nanti atau masukkan kunci API lain di pengaturan."
+  }
 };
 

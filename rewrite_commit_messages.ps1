@@ -29,3 +29,5 @@ Write-Host "  git commit --amend -m '올바른 메시지'" -ForegroundColor Yell
 
 
 
+
+

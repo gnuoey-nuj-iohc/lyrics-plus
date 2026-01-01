@@ -52,23 +52,27 @@ const OverlaySettings = () => {
   const [enabled, setEnabled] = useState(window.OverlaySender?.enabled ?? false);
   const [isConnected, setIsConnected] = useState(window.OverlaySender?.isConnected ?? false);
   const [checking, setChecking] = useState(false);
+  const [port, setPort] = useState(window.OverlaySender?.port ?? 15000);
+  const [portInput, setPortInput] = useState(String(window.OverlaySender?.port ?? 15000));
 
   // 연결 상태 이벤트 리스너
   useEffect(() => {
     const handleConnection = (e) => {
       setIsConnected(e.detail.connected);
     };
-    window.addEventListener('lyrics-plus:overlay-connection', handleConnection);
+    window.addEventListener('ivLyrics:overlay-connection', handleConnection);
 
     // 초기 연결 상태 확인
     if (window.OverlaySender) {
       setIsConnected(window.OverlaySender.isConnected);
+      setPort(window.OverlaySender.port);
+      setPortInput(String(window.OverlaySender.port));
       // 설정창 열림 알림 (폴링 모드 활성화)
       window.OverlaySender.setSettingsOpen?.(true);
     }
 
     return () => {
-      window.removeEventListener('lyrics-plus:overlay-connection', handleConnection);
+      window.removeEventListener('ivLyrics:overlay-connection', handleConnection);
       // 설정창 닫힘 알림
       window.OverlaySender?.setSettingsOpen?.(false);
     };
@@ -80,6 +84,26 @@ const OverlaySettings = () => {
     setEnabled(newValue);
     if (window.OverlaySender) {
       window.OverlaySender.enabled = newValue;
+    }
+  };
+
+  // 포트 변경 핸들러
+  const handlePortChange = (e) => {
+    setPortInput(e.target.value);
+  };
+
+  // 포트 저장 핸들러
+  const handlePortSave = () => {
+    const newPort = parseInt(portInput, 10);
+    if (newPort >= 1024 && newPort <= 65535) {
+      setPort(newPort);
+      if (window.OverlaySender) {
+        window.OverlaySender.port = newPort;
+      }
+      Toast?.success?.(I18n.t("overlay.portSaved"));
+    } else {
+      setPortInput(String(port));
+      Toast?.error?.(I18n.t("overlay.portInvalid"));
     }
   };
 
@@ -99,7 +123,7 @@ const OverlaySettings = () => {
 
   // 다운로드 URL
   const handleDownload = () => {
-    const url = window.OverlaySender?.getDownloadUrl?.() || 'https://github.com/ivLis-Studio/lyrics-plus-overlay/releases/latest';
+    const url = window.OverlaySender?.getDownloadUrl?.() || 'https://github.com/ivLis-Studio/ivLyrics-overlay/releases/latest';
     window.open(url, '_blank');
   };
 
@@ -117,67 +141,115 @@ const OverlaySettings = () => {
   };
 
   return react.createElement(
-    "div",
-    { className: "setting-row" }, // Flex container
+    react.Fragment,
+    null,
+    // Enable/Disable Row
     react.createElement(
       "div",
-      { className: "setting-row-content" },
+      { className: "setting-row" },
       react.createElement(
         "div",
-        { className: "setting-row-left" },
-        react.createElement("div", { className: "setting-name" },
-          I18n.t("overlay.enabled.label"),
-          // Status Tag (Connected / Disconnected / Checking) only when enabled
-          enabled && react.createElement("span", {
-            style: {
-              marginLeft: "10px",
-              fontSize: "10px",
-              padding: "2px 8px",
-              borderRadius: "12px",
-              backgroundColor: isConnected ? "rgba(74, 222, 128, 0.2)" : "rgba(239, 68, 68, 0.2)",
-              color: isConnected ? "#4ade80" : "#ef4444",
-              border: `1px solid ${isConnected ? "rgba(74, 222, 128, 0.3)" : "rgba(239, 68, 68, 0.3)"}`,
-              fontWeight: "600",
-              verticalAlign: "middle"
-            }
-          }, getStatusText())
-        ),
-        react.createElement("div", { className: "setting-description" },
-          I18n.t("overlay.enabled.desc")
-        )
-      ),
-      react.createElement(
-        "div",
-        { className: "setting-row-right", style: { display: "flex", alignItems: "center", gap: "10px" } },
-        // Download Button (Only if enabled AND disconnected)
-        enabled && !isConnected && react.createElement(
-          "button",
-          {
-            className: "btn",
-            onClick: handleDownload,
-            style: { fontSize: "11px", padding: "4px 8px", height: "auto" }
-          },
-          I18n.t("overlay.download")
-        ),
-        // Toggle Switch
+        { className: "setting-row-content" },
         react.createElement(
-          "button",
-          {
-            className: `switch-checkbox${enabled ? " active" : ""}`,
-            onClick: handleToggle,
-            "aria-checked": enabled,
-            role: "checkbox",
-          },
-          react.createElement("svg", {
-            width: 12,
-            height: 12,
-            viewBox: "0 0 16 16",
-            fill: "currentColor",
-            dangerouslySetInnerHTML: {
-              __html: enabled
-                ? '<path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/>'
-                : '<path fill-rule="evenodd" d="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z"/>',
+          "div",
+          { className: "setting-row-left" },
+          react.createElement("div", { className: "setting-name" },
+            I18n.t("overlay.enabled.label"),
+            // Status Tag (Connected / Disconnected / Checking) only when enabled
+            enabled && react.createElement("span", {
+              style: {
+                marginLeft: "10px",
+                fontSize: "10px",
+                padding: "2px 8px",
+                borderRadius: "12px",
+                backgroundColor: isConnected ? "rgba(74, 222, 128, 0.2)" : "rgba(239, 68, 68, 0.2)",
+                color: isConnected ? "#4ade80" : "#ef4444",
+                border: `1px solid ${isConnected ? "rgba(74, 222, 128, 0.3)" : "rgba(239, 68, 68, 0.3)"}`,
+                fontWeight: "600",
+                verticalAlign: "middle"
+              }
+            }, getStatusText())
+          ),
+          react.createElement("div", { className: "setting-description" },
+            I18n.t("overlay.enabled.desc")
+          )
+        ),
+        react.createElement(
+          "div",
+          { className: "setting-row-right", style: { display: "flex", alignItems: "center", gap: "10px" } },
+          // Download Button (Only if enabled AND disconnected)
+          enabled && !isConnected && react.createElement(
+            "button",
+            {
+              className: "btn",
+              onClick: handleDownload,
+              style: { fontSize: "11px", padding: "4px 8px", height: "auto" }
             },
+            I18n.t("overlay.download")
+          ),
+          // Toggle Switch
+          react.createElement(
+            "button",
+            {
+              className: `switch-checkbox${enabled ? " active" : ""}`,
+              onClick: handleToggle,
+              "aria-checked": enabled,
+              role: "checkbox",
+            },
+            react.createElement("svg", {
+              width: 12,
+              height: 12,
+              viewBox: "0 0 16 16",
+              fill: "currentColor",
+              dangerouslySetInnerHTML: {
+                __html: enabled
+                  ? '<path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/>'
+                  : '<path fill-rule="evenodd" d="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z"/>',
+              },
+            })
+          )
+        )
+      )
+    ),
+    // Port Setting Row (Only shown when enabled)
+    enabled && react.createElement(
+      "div",
+      { className: "setting-row" },
+      react.createElement(
+        "div",
+        { className: "setting-row-content" },
+        react.createElement(
+          "div",
+          { className: "setting-row-left" },
+          react.createElement("div", { className: "setting-name" },
+            I18n.t("overlay.port.label")
+          ),
+          react.createElement("div", { className: "setting-description" },
+            I18n.t("overlay.port.desc")
+          )
+        ),
+        react.createElement(
+          "div",
+          { className: "setting-row-right", style: { display: "flex", alignItems: "center", gap: "8px" } },
+          react.createElement("input", {
+            type: "number",
+            value: portInput,
+            onChange: handlePortChange,
+            onBlur: handlePortSave,
+            onKeyDown: (e) => { if (e.key === 'Enter') handlePortSave(); },
+            min: 1024,
+            max: 65535,
+            style: {
+              width: "80px",
+              padding: "6px 10px",
+              borderRadius: "6px",
+              border: "1px solid rgba(255,255,255,0.1)",
+              backgroundColor: "rgba(0,0,0,0.2)",
+              color: "var(--spice-text)",
+              fontSize: "13px",
+              textAlign: "center",
+              fontFamily: "monospace"
+            }
           })
         )
       )
@@ -224,11 +296,7 @@ const LocalCacheManager = () => {
 
       // 캐시는 이미 지웠으므로 clearCache=false로 호출
       reloadLyrics?.(false);
-      Spicetify.showNotification(
-        I18n.t("notifications.localCacheCleared"),
-        false,
-        2000
-      );
+      Toast.success(I18n.t("notifications.localCacheCleared"));
     } catch (e) {
       console.error('[LocalCacheManager] Clear all failed:', e);
     }
@@ -239,7 +307,7 @@ const LocalCacheManager = () => {
     const trackUri = Spicetify.Player.data?.item?.uri;
     const trackId = trackUri?.split(':')[2];
     if (!trackId) {
-      Spicetify.showNotification("No track playing", true, 2000);
+      Toast.error(I18n.t("notifications.noTrackPlaying"));
       return;
     }
 
@@ -258,11 +326,7 @@ const LocalCacheManager = () => {
 
       // 캐시는 이미 지웠으므로 clearCache=false로 호출
       reloadLyrics?.(false);
-      Spicetify.showNotification(
-        I18n.t("notifications.localCacheTrackCleared"),
-        false,
-        2000
-      );
+      Toast.success(I18n.t("notifications.localCacheTrackCleared"));
     } catch (e) {
       console.error('[LocalCacheManager] Clear track failed:', e);
     }
@@ -472,19 +536,19 @@ const DebugInfoPanel = () => {
     try {
       await navigator.clipboard.writeText(debugText);
       setCopied(true);
-      Spicetify.showNotification(I18n.t("settingsAdvanced.debugTab.copied"), false, 2000);
+      Toast.success(I18n.t("settingsAdvanced.debugTab.copied"));
 
       // 3초 후 copied 상태 리셋
       setTimeout(() => setCopied(false), 3000);
     } catch (e) {
-      Spicetify.showNotification(I18n.t("settingsAdvanced.debugTab.copyFailed"), true, 2000);
+      Toast.error(I18n.t("settingsAdvanced.debugTab.copyFailed"));
     }
   };
 
   // Discord로 보내기 (클립보드 복사 후 Discord 링크 열기)
   const handleSendToDiscord = async () => {
     await handleCopy();
-    window.open("https://ivlis.kr/lyrics-plus/discord.php", "_blank");
+    window.open("https://ivlis.kr/ivLyrics/discord.php", "_blank");
   };
 
   // API 로그 항목 토글
@@ -1369,7 +1433,7 @@ const ConfigSelection = ({
   );
 };
 
-const ConfigInput = ({ name, defaultValue, onChange = () => { } }) => {
+const ConfigInput = ({ name, defaultValue, onChange = () => { }, inputType = "text" }) => {
   const [value, setValue] = useState(defaultValue);
 
   const setValueCallback = useCallback(
@@ -1398,7 +1462,7 @@ const ConfigInput = ({ name, defaultValue, onChange = () => { } }) => {
         "div",
         { className: "setting-row-right" },
         react.createElement("input", {
-          type: "text",
+          type: inputType,
           value,
           onChange: setValueCallback,
         })
@@ -1918,9 +1982,9 @@ const OptionList = ({ type, items, onChange }) => {
       if (event.detail?.type !== type) return;
       setItemList(event.detail.items);
     };
-    document.addEventListener("lyrics-plus", eventListener);
+    document.addEventListener("ivLyrics", eventListener);
 
-    return () => document.removeEventListener("lyrics-plus", eventListener);
+    return () => document.removeEventListener("ivLyrics", eventListener);
   }, []);
 
   const renderedItems = (itemList || []).map((item, index) => {
@@ -2062,7 +2126,7 @@ const ConfigModal = () => {
 
   // FAD (Full Screen) 확장 프로그램 감지
   const isFadActive = react.useMemo(() => {
-    return !!document.getElementById("fad-lyrics-plus-container");
+    return !!document.getElementById("fad-ivLyrics-container");
   }, []);
 
   // 컴포넌트 마운트 시 저장된 폰트 설정 로드 및 Google Font 링크 추가
@@ -2075,13 +2139,13 @@ const ConfigModal = () => {
 
       fonts.forEach((font) => {
         console.log(
-          `[Lyrics Plus] Checking font: ${font} for loading`
+          `[ivLyrics] Checking font: ${font} for loading`
         );
 
         if (font && GOOGLE_FONTS.includes(font)) {
           // Create unique ID for each font to avoid duplicates
           const fontId = font.replace(/ /g, "-").toLowerCase();
-          const linkId = `lyrics-plus-google-font-${fontId}`;
+          const linkId = `ivLyrics-google-font-${fontId}`;
 
           let link = document.getElementById(linkId);
           if (!link) {
@@ -2090,7 +2154,7 @@ const ConfigModal = () => {
             link.rel = "stylesheet";
             document.head.appendChild(link);
             console.log(
-              `[Lyrics Plus] Created new link element for: ${font}`
+              `[ivLyrics] Created new link element for: ${font}`
             );
 
             if (font === "Pretendard Variable") {
@@ -2102,11 +2166,11 @@ const ConfigModal = () => {
                 "+"
               )}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
             }
-            console.log(`[Lyrics Plus] Font link href set to: ${link.href}`);
+            console.log(`[ivLyrics] Font link href set to: ${link.href}`);
           }
         } else {
           console.log(
-            `[Lyrics Plus] Font ${font} not in GOOGLE_FONTS list or invalid`
+            `[ivLyrics] Font ${font} not in GOOGLE_FONTS list or invalid`
           );
         }
       });
@@ -2114,32 +2178,32 @@ const ConfigModal = () => {
 
     // 기본 폰트 로드 (separate-fonts가 false일 때 사용)
     const baseFont = CONFIG.visual["font-family"];
-    console.log(`[Lyrics Plus] Base font from CONFIG: ${baseFont}`);
-    loadFont(baseFont, "lyrics-plus-google-font-base");
+    console.log(`[ivLyrics] Base font from CONFIG: ${baseFont}`);
+    loadFont(baseFont, "ivLyrics-google-font-base");
 
     // 원문 폰트 로드
     const originalFont = CONFIG.visual["original-font-family"];
-    console.log(`[Lyrics Plus] Original font from CONFIG: ${originalFont}`);
-    loadFont(originalFont, "lyrics-plus-google-font-original");
+    console.log(`[ivLyrics] Original font from CONFIG: ${originalFont}`);
+    loadFont(originalFont, "ivLyrics-google-font-original");
 
     // 발음 폰트 로드
     const phoneticFont = CONFIG.visual["phonetic-font-family"];
-    console.log(`[Lyrics Plus] Phonetic font from CONFIG: ${phoneticFont}`);
-    loadFont(phoneticFont, "lyrics-plus-google-font-phonetic");
+    console.log(`[ivLyrics] Phonetic font from CONFIG: ${phoneticFont}`);
+    loadFont(phoneticFont, "ivLyrics-google-font-phonetic");
 
     // 번역 폰트 로드
     const translationFont = CONFIG.visual["translation-font-family"];
     console.log(
-      `[Lyrics Plus] Translation font from CONFIG: ${translationFont}`
+      `[ivLyrics] Translation font from CONFIG: ${translationFont}`
     );
-    loadFont(translationFont, "lyrics-plus-google-font-translation");
+    loadFont(translationFont, "ivLyrics-google-font-translation");
   }, []);
 
   // 외관 탭으로 전환될 때 미리보기 폰트 강제 업데이트
   react.useEffect(() => {
     if (activeTab === "appearance") {
       console.log(
-        `[Lyrics Plus] Appearance tab activated, updating preview fonts`
+        `[ivLyrics] Appearance tab activated, updating preview fonts`
       );
       // 약간의 지연을 주어 DOM이 렌더링된 후 실행
       setTimeout(() => {
@@ -2154,7 +2218,7 @@ const ConfigModal = () => {
         const translationFont = CONFIG.visual["translation-font-family"];
 
         console.log(
-          `[Lyrics Plus] Fonts - original: ${originalFont}, phonetic: ${phoneticFont}, translation: ${translationFont}`
+          `[ivLyrics] Fonts - original: ${originalFont}, phonetic: ${phoneticFont}, translation: ${translationFont}`
         );
 
         if (lyricsPreview) {
@@ -2163,7 +2227,7 @@ const ConfigModal = () => {
           // 짧은 지연 후 실제 폰트 적용
           setTimeout(() => {
             console.log(
-              `[Lyrics Plus] Setting lyrics preview font to: ${originalFont}`
+              `[ivLyrics] Setting lyrics preview font to: ${originalFont}`
             );
             lyricsPreview.style.fontFamily =
               originalFont || "Pretendard Variable";
@@ -2174,7 +2238,7 @@ const ConfigModal = () => {
           phoneticPreview.style.fontFamily = "var(--font-family)";
           setTimeout(() => {
             console.log(
-              `[Lyrics Plus] Setting phonetic preview font to: ${phoneticFont}`
+              `[ivLyrics] Setting phonetic preview font to: ${phoneticFont}`
             );
             phoneticPreview.style.fontFamily =
               phoneticFont || "Pretendard Variable";
@@ -2185,7 +2249,7 @@ const ConfigModal = () => {
           translationPreview.style.fontFamily = "var(--font-family)";
           setTimeout(() => {
             console.log(
-              `[Lyrics Plus] Setting translation preview font to: ${translationFont}`
+              `[ivLyrics] Setting translation preview font to: ${translationFont}`
             );
             translationPreview.style.fontFamily =
               translationFont || "Pretendard Variable";
@@ -2204,7 +2268,7 @@ const ConfigModal = () => {
 
         try {
           const response = await fetch(
-            "https://api.github.com/repos/ivLis-Studio/lyrics-plus/releases/latest"
+            "https://api.github.com/repos/ivLis-Studio/ivLyrics/releases/latest"
           );
 
           if (!response.ok) {
@@ -2348,7 +2412,7 @@ const ConfigModal = () => {
         react.createElement(
           "div",
           { className: "settings-title-section" },
-          react.createElement("h1", null, "Lyrics Plus"),
+          react.createElement("h1", null, "ivLyrics"),
           react.createElement(
             "span",
             { className: "settings-version" },
@@ -2364,7 +2428,7 @@ const ConfigModal = () => {
               className: "settings-github-btn",
               onClick: () =>
                 window.open(
-                  "https://github.com/ivLis-Studio/lyrics-plus",
+                  "https://github.com/ivLis-Studio/ivLyrics",
                   "_blank"
                 ),
               title: I18n.t("settingsAdvanced.aboutTab.visitGithub"),
@@ -2387,7 +2451,7 @@ const ConfigModal = () => {
               className: "settings-discord-btn",
               onClick: () =>
                 window.open(
-                  "https://ivlis.kr/lyrics-plus/discord.php",
+                  "https://ivlis.kr/ivLyrics/discord.php",
                   "_blank"
                 ),
               title: I18n.t("settingsAdvanced.aboutTab.joinDiscord"),
@@ -3420,7 +3484,7 @@ const ConfigModal = () => {
               window.I18n.setLanguage(value);
             }
             // 설정 페이지로 돌아오기 위해 플래그 저장
-            localStorage.setItem("lyrics-plus:return-to-settings", "true");
+            localStorage.setItem("ivLyrics:return-to-settings", "true");
             // 자동 새로고침
             location.reload();
           },
@@ -3603,7 +3667,7 @@ const ConfigModal = () => {
             CONFIG.visual[name] = value;
             StorageManager.saveConfig(name, value);
             lyricContainerUpdate?.();
-            const configChange = new CustomEvent("lyrics-plus", {
+            const configChange = new CustomEvent("ivLyrics", {
               detail: {
                 type: "config",
                 name: name,
@@ -3660,7 +3724,7 @@ const ConfigModal = () => {
             CONFIG.visual[name] = value;
             StorageManager.saveConfig(name, value);
             lyricContainerUpdate?.();
-            const configChange = new CustomEvent("lyrics-plus", {
+            const configChange = new CustomEvent("ivLyrics", {
               detail: {
                 type: "config",
                 name: name,
@@ -3821,7 +3885,7 @@ const ConfigModal = () => {
                     fonts.forEach((font) => {
                       if (font && GOOGLE_FONTS.includes(font)) {
                         const fontId = font.replace(/ /g, "-").toLowerCase();
-                        const linkId = `lyrics-plus-google-font-${fontId}`;
+                        const linkId = `ivLyrics-google-font-${fontId}`;
 
                         let link = document.getElementById(linkId);
                         if (!link) {
@@ -3851,7 +3915,7 @@ const ConfigModal = () => {
 
                   lyricContainerUpdate?.();
                   window.dispatchEvent(
-                    new CustomEvent("lyrics-plus", {
+                    new CustomEvent("ivLyrics", {
                       detail: {
                         type: "config",
                         name: "original-font-family",
@@ -3930,7 +3994,7 @@ const ConfigModal = () => {
             }
             lyricContainerUpdate?.();
             window.dispatchEvent(
-              new CustomEvent("lyrics-plus", {
+              new CustomEvent("ivLyrics", {
                 detail: { type: "config", name, value },
               })
             );
@@ -3980,7 +4044,7 @@ const ConfigModal = () => {
                     fonts.forEach((font) => {
                       if (font && GOOGLE_FONTS.includes(font)) {
                         const fontId = font.replace(/ /g, "-").toLowerCase();
-                        const linkId = `lyrics-plus-google-font-${fontId}`;
+                        const linkId = `ivLyrics-google-font-${fontId}`;
 
                         let link = document.getElementById(linkId);
                         if (!link) {
@@ -4010,7 +4074,7 @@ const ConfigModal = () => {
 
                   lyricContainerUpdate?.();
                   window.dispatchEvent(
-                    new CustomEvent("lyrics-plus", {
+                    new CustomEvent("ivLyrics", {
                       detail: {
                         type: "config",
                         name: "phonetic-font-family",
@@ -4117,7 +4181,7 @@ const ConfigModal = () => {
               lyricContainerUpdate?.();
             }
             window.dispatchEvent(
-              new CustomEvent("lyrics-plus", {
+              new CustomEvent("ivLyrics", {
                 detail: { type: "config", name, value },
               })
             );
@@ -4167,7 +4231,7 @@ const ConfigModal = () => {
                     fonts.forEach((font) => {
                       if (font && GOOGLE_FONTS.includes(font)) {
                         const fontId = font.replace(/ /g, "-").toLowerCase();
-                        const linkId = `lyrics-plus-google-font-${fontId}`;
+                        const linkId = `ivLyrics-google-font-${fontId}`;
 
                         let link = document.getElementById(linkId);
                         if (!link) {
@@ -4198,7 +4262,7 @@ const ConfigModal = () => {
 
                   lyricContainerUpdate?.();
                   window.dispatchEvent(
-                    new CustomEvent("lyrics-plus", {
+                    new CustomEvent("ivLyrics", {
                       detail: {
                         type: "config",
                         name: "translation-font-family",
@@ -4292,7 +4356,72 @@ const ConfigModal = () => {
             }
             lyricContainerUpdate?.();
             window.dispatchEvent(
-              new CustomEvent("lyrics-plus", {
+              new CustomEvent("ivLyrics", {
+                detail: { type: "config", name, value },
+              })
+            );
+          },
+        }),
+        react.createElement(SectionTitle, {
+          title: I18n.t("settingsAdvanced.furiganaStyle.title"),
+          subtitle: I18n.t("settingsAdvanced.furiganaStyle.subtitle"),
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: I18n.t("settingsAdvanced.furiganaStyle.fontSize.label"),
+              info: I18n.t("settingsAdvanced.furiganaStyle.fontSize.desc"),
+              key: "furigana-font-size",
+              type: ConfigSliderRange,
+              min: 8,
+              max: 48,
+              step: 1,
+              unit: "px",
+            },
+            {
+              desc: I18n.t("settingsAdvanced.furiganaStyle.fontWeight.label"),
+              info: I18n.t("settingsAdvanced.furiganaStyle.fontWeight.desc"),
+              key: "furigana-font-weight",
+              type: ConfigSelection,
+              options: {
+                100: "Thin (100)",
+                200: "Extra Light (200)",
+                300: "Light (300)",
+                400: "Regular (400)",
+                500: "Medium (500)",
+                600: "Semi Bold (600)",
+                700: "Bold (700)",
+                800: "Extra Bold (800)",
+                900: "Black (900)",
+              },
+            },
+            {
+              desc: I18n.t("settingsAdvanced.furiganaStyle.opacity.label"),
+              info: I18n.t("settingsAdvanced.furiganaStyle.opacity.desc"),
+              key: "furigana-opacity",
+              type: ConfigSliderRange,
+              min: 0,
+              max: 100,
+              step: 5,
+              unit: "%",
+            },
+            {
+              desc: I18n.t("settingsAdvanced.furiganaStyle.spacing.label"),
+              info: I18n.t("settingsAdvanced.furiganaStyle.spacing.desc"),
+              key: "furigana-spacing",
+              type: ConfigSliderRange,
+              min: -5,
+              max: 20,
+              step: 1,
+              unit: "px",
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            StorageManager.setItem(`${APP_NAME}:visual:${name}`, value);
+            lyricContainerUpdate?.();
+            window.dispatchEvent(
+              new CustomEvent("ivLyrics", {
                 detail: { type: "config", name, value },
               })
             );
@@ -4365,7 +4494,7 @@ const ConfigModal = () => {
             }
             lyricContainerUpdate?.();
             window.dispatchEvent(
-              new CustomEvent("lyrics-plus", {
+              new CustomEvent("ivLyrics", {
                 detail: { type: "config", name, value },
               })
             );
@@ -4387,7 +4516,13 @@ const ConfigModal = () => {
             {
               desc: I18n.t("settingsAdvanced.playback.replaceButton.label"),
               key: "playbar-button",
-              info: I18n.t("settingsAdvanced.playback.replaceButton.info") || "Replaces Spotify's default lyrics button with Lyrics Plus",
+              info: I18n.t("settingsAdvanced.playback.replaceButton.info") || "Replaces Spotify's default lyrics button with ivLyrics",
+              type: ConfigSlider,
+            },
+            {
+              desc: I18n.t("settingsAdvanced.playback.replaceFullscreenButton.label"),
+              key: "fullscreen-button",
+              info: I18n.t("settingsAdvanced.playback.replaceFullscreenButton.info") || "Replaces Spotify's default fullscreen button with ivLyrics fullscreen",
               type: ConfigSlider,
             },
 
@@ -4403,7 +4538,7 @@ const ConfigModal = () => {
             StorageManager.saveConfig(name, value);
             lyricContainerUpdate?.();
             window.dispatchEvent(
-              new CustomEvent("lyrics-plus", {
+              new CustomEvent("ivLyrics", {
                 detail: { type: "config", name, value },
               })
             );
@@ -4433,7 +4568,7 @@ const ConfigModal = () => {
             StorageManager.saveConfig(name, value);
             lyricContainerUpdate?.();
             window.dispatchEvent(
-              new CustomEvent("lyrics-plus", {
+              new CustomEvent("ivLyrics", {
                 detail: { type: "config", name, value },
               })
             );
@@ -4591,7 +4726,7 @@ const ConfigModal = () => {
             StorageManager.saveConfig(name, value);
             lyricContainerUpdate?.();
             window.dispatchEvent(
-              new CustomEvent("lyrics-plus", {
+              new CustomEvent("ivLyrics", {
                 detail: { type: "config", name, value },
               })
             );
@@ -4619,69 +4754,11 @@ const ConfigModal = () => {
               key: "gemini-api-key",
               type: ConfigKeyList,
             },
+
           ],
           onChange: (name, value) => {
             CONFIG.visual[name] = value;
             StorageManager.saveConfig(name, value);
-            lyricContainerUpdate?.();
-            window.dispatchEvent(
-              new CustomEvent("ivLyrics", {
-                detail: { type: "config", name, value },
-              })
-            );
-          },
-        }),
-        react.createElement(SectionTitle, {
-          title: I18n.t("settingsAdvanced.api.perplexity.title"),
-          subtitle: I18n.t("settingsAdvanced.api.perplexity.subtitle"),
-        }),
-        react.createElement(OptionList, {
-          items: [
-            {
-              text: I18n.t("settingsAdvanced.api.getPerplexityKey.button"),
-              type: ConfigButton,
-              onChange: () => {
-                window.open("https://www.perplexity.ai/settings/api", "_blank");
-              },
-            },
-            {
-              desc: I18n.t("settingsAdvanced.api.perplexityKey.desc"),
-              info: I18n.t("settingsAdvanced.api.perplexityKey.info"),
-              key: "perplexity-api-key",
-              type: ConfigKeyList,
-            },
-            {
-              desc: I18n.t("settingsAdvanced.api.perplexityModel.desc"),
-              info: I18n.t("settingsAdvanced.api.perplexityModel.info"),
-              key: "perplexity-model",
-              type: ConfigSelection,
-              options: {
-                "sonar": "sonar (기본, 빠름)",
-                "sonar-pro": "sonar-pro (고품질, 느림)",
-              },
-              defaultValue: CONFIG.visual["perplexity-model"] || "sonar",
-            },
-            {
-              desc: I18n.t("settingsAdvanced.api.phoneticLanguage.desc"),
-              info: I18n.t("settingsAdvanced.api.phoneticLanguage.info"),
-              key: "phonetic-language",
-              type: ConfigSelection,
-              options: {
-                "english": I18n.t("settingsAdvanced.api.phoneticLanguage.options.english"),
-                "korean": I18n.t("settingsAdvanced.api.phoneticLanguage.options.korean"),
-              },
-              defaultValue: CONFIG.visual["phonetic-language"] || "english",
-            },
-          ],
-          onChange: (name, value) => {
-            CONFIG.visual[name] = value;
-            StorageManager.saveConfig(name, value);
-            // Clear API key cache when Perplexity settings change
-            if (name === "perplexity-api-key" || name === "perplexity-model" || name === "phonetic-language") {
-              if (typeof Translator !== "undefined" && Translator._clearApiKeyCache) {
-                Translator._clearApiKeyCache();
-              }
-            }
             lyricContainerUpdate?.();
             window.dispatchEvent(
               new CustomEvent("ivLyrics", {
@@ -4712,7 +4789,7 @@ const ConfigModal = () => {
                 try {
                   const cfg = await StorageManager.exportConfig();
                   console.log("[Settings] Config before serialize:", cfg);
-                  console.log("[Settings] Has track-sync-offsets:", "lyrics-plus:track-sync-offsets" in cfg);
+                  console.log("[Settings] Has track-sync-offsets:", "ivLyrics:track-sync-offsets" in cfg);
                   const u8 = settingsObject.serialize(cfg);
                   // download as file
                   const blob = new Blob([u8], {
@@ -4721,7 +4798,7 @@ const ConfigModal = () => {
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement("a");
                   a.href = url;
-                  a.download = "lyrics-plus.lpconfig";
+                  a.download = "ivLyrics.lpconfig";
                   document.body.appendChild(a);
                   a.click();
                   document.body.removeChild(a);
@@ -5041,11 +5118,11 @@ const ConfigModal = () => {
                 }
 
                 try {
-                  // localStorage에서 lyrics-plus 관련 모든 항목 제거
+                  // localStorage에서 ivLyrics 관련 모든 항목 제거
                   const keysToRemove = [];
                   for (let i = 0; i < localStorage.length; i++) {
                     const key = localStorage.key(i);
-                    if (key && key.startsWith("lyrics-plus:")) {
+                    if (key && key.startsWith("ivLyrics:")) {
                       keysToRemove.push(key);
                     }
                   }
@@ -5149,11 +5226,28 @@ const ConfigModal = () => {
               type: ConfigHotkey,
             },
             {
+              desc: I18n.t("settingsAdvanced.fullscreenMode.tvMode.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenMode.tvMode.info"),
+              key: "fullscreen-tv-mode",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-tv-mode"] ?? false,
+            },
+            {
+              desc: I18n.t("settingsAdvanced.fullscreenMode.tvModeAlbumSize.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenMode.tvModeAlbumSize.info"),
+              key: "fullscreen-tv-album-size",
+              type: ConfigInput,
+              inputType: "number",
+              defaultValue: CONFIG.visual["fullscreen-tv-album-size"] || "140",
+              when: () => CONFIG.visual["fullscreen-tv-mode"] === true,
+            },
+            {
               desc: I18n.t("settingsAdvanced.fullscreenMode.twoColumnLayout.desc"),
               info: I18n.t("settingsAdvanced.fullscreenMode.splitView.info"),
               key: "fullscreen-two-column",
               type: ConfigSlider,
               defaultValue: CONFIG.visual["fullscreen-two-column"] ?? true,
+              when: () => CONFIG.visual["fullscreen-tv-mode"] !== true,
             },
             {
               desc: I18n.t("settingsAdvanced.fullscreenMode.invertPosition.desc"),
@@ -5178,6 +5272,13 @@ const ConfigModal = () => {
               type: ConfigSlider,
               defaultValue: CONFIG.visual["fullscreen-show-info"] ?? true,
               when: () => CONFIG.visual["fullscreen-two-column"] !== false,
+            },
+            {
+              desc: I18n.t("settingsAdvanced.fullscreenMode.trimTitle.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenMode.trimTitle.info"),
+              key: "fullscreen-trim-title",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-trim-title"] ?? false,
             },
             {
               desc: I18n.t("settingsAdvanced.fullscreenMode.translateMetadata.desc"),
@@ -5222,7 +5323,7 @@ const ConfigModal = () => {
             StorageManager.saveConfig(name, value);
             lyricContainerUpdate?.();
             window.dispatchEvent(
-              new CustomEvent("lyrics-plus", {
+              new CustomEvent("ivLyrics", {
                 detail: { type: "config", name, value },
               })
             );
@@ -5306,7 +5407,7 @@ const ConfigModal = () => {
             StorageManager.saveConfig(name, value);
             lyricContainerUpdate?.();
             window.dispatchEvent(
-              new CustomEvent("lyrics-plus", {
+              new CustomEvent("ivLyrics", {
                 detail: { type: "config", name, value },
               })
             );
@@ -5401,13 +5502,20 @@ const ConfigModal = () => {
               type: ConfigSlider,
               defaultValue: CONFIG.visual["fullscreen-show-lyrics-progress"] ?? false,
             },
+            {
+              desc: I18n.t("settingsAdvanced.fullscreenUI.showQueue.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenUI.showQueue.info"),
+              key: "fullscreen-show-queue",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-show-queue"] ?? true,
+            },
           ],
           onChange: (name, value) => {
             CONFIG.visual[name] = value;
             StorageManager.saveConfig(name, value);
             lyricContainerUpdate?.();
             window.dispatchEvent(
-              new CustomEvent("lyrics-plus", {
+              new CustomEvent("ivLyrics", {
                 detail: { type: "config", name, value },
               })
             );
@@ -5443,7 +5551,7 @@ const ConfigModal = () => {
             StorageManager.saveConfig(name, value);
             lyricContainerUpdate?.();
             window.dispatchEvent(
-              new CustomEvent("lyrics-plus", {
+              new CustomEvent("ivLyrics", {
                 detail: { type: "config", name, value },
               })
             );
@@ -5480,7 +5588,36 @@ const ConfigModal = () => {
             StorageManager.saveConfig(name, value);
             lyricContainerUpdate?.();
             window.dispatchEvent(
-              new CustomEvent("lyrics-plus", {
+              new CustomEvent("ivLyrics", {
+                detail: { type: "config", name, value },
+              })
+            );
+          },
+        }),
+        react.createElement(SectionTitle, {
+          title: I18n.t("settingsAdvanced.tmiStyle.title"),
+          subtitle: I18n.t("settingsAdvanced.tmiStyle.subtitle"),
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: I18n.t("settingsAdvanced.tmiStyle.fontSize.desc"),
+              info: I18n.t("settingsAdvanced.tmiStyle.fontSize.info"),
+              key: "fullscreen-tmi-font-size",
+              type: ConfigSliderRange,
+              min: 80,
+              max: 150,
+              step: 5,
+              unit: "%",
+              defaultValue: CONFIG.visual["fullscreen-tmi-font-size"] || 100,
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            StorageManager.saveConfig(name, value);
+            lyricContainerUpdate?.();
+            window.dispatchEvent(
+              new CustomEvent("ivLyrics", {
                 detail: { type: "config", name, value },
               })
             );
@@ -5536,7 +5673,7 @@ const ConfigModal = () => {
               },
             },
             react.createElement("span", null, "🎵"),
-            "Lyrics Plus"
+            "ivLyrics"
           ),
           react.createElement(
             "p",
@@ -5589,7 +5726,7 @@ const ConfigModal = () => {
               },
             },
             react.createElement("strong", null, I18n.t("settingsAdvanced.aboutTab.originalProject")),
-            " lyrics-plus by khanhas"
+            " ivLyrics by khanhas"
           ),
           react.createElement(
             "p",
@@ -5669,9 +5806,9 @@ const ConfigModal = () => {
                 onClick: () => {
                   const clientId = StorageManager.getClientId();
                   navigator.clipboard.writeText(clientId).then(() => {
-                    Spicetify.showNotification(I18n.t("settingsAdvanced.aboutTab.clientInfo.copied"), false, 2000);
+                    Toast.success(I18n.t("settingsAdvanced.aboutTab.clientInfo.copied"));
                   }).catch(() => {
-                    Spicetify.showNotification(I18n.t("settingsAdvanced.aboutTab.clientInfo.copyFailed"), true, 2000);
+                    Toast.error(I18n.t("settingsAdvanced.aboutTab.clientInfo.copyFailed"));
                   });
                 },
                 style: {
@@ -5863,7 +6000,7 @@ const ConfigModal = () => {
 															transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 															letter-spacing: -0.01em;
 														">${I18n.t("update.copyCommand")}</button>
-														<a href="https://github.com/ivLis-Studio/lyrics-plus/releases/tag/v${updateInfo.latestVersion}" 
+														<a href="https://github.com/ivLis-Studio/ivLyrics/releases/tag/v${updateInfo.latestVersion}" 
 														   target="_blank"
 														   style="
 															flex: 1;
@@ -5903,14 +6040,9 @@ const ConfigModal = () => {
                             copyBtn.style.color = "rgba(16, 185, 129, 1)";
                             copyBtn.style.cursor = "default";
                             copyBtn.disabled = true;
-                            Spicetify.showNotification(
-                              I18n.t("settingsAdvanced.aboutTab.update.installCopied")
-                            );
+                            Toast.success(I18n.t("settingsAdvanced.aboutTab.update.installCopied"));
                           } else {
-                            Spicetify.showNotification(
-                              I18n.t("settingsAdvanced.aboutTab.update.copyFailed"),
-                              true
-                            );
+                            Toast.error(I18n.t("settingsAdvanced.aboutTab.update.copyFailed"));
                           }
                         });
                       }
@@ -6026,7 +6158,7 @@ function openConfig() {
 
   // Create a full-screen overlay instead of nested modal
   const overlay = document.createElement("div");
-  overlay.id = "lyrics-plus-settings-overlay";
+  overlay.id = "ivLyrics-settings-overlay";
   overlay.style.cssText = `
 		position: fixed;
 		top: 0;
@@ -6077,7 +6209,7 @@ function openConfig() {
 
   // Render React component
   const dom =
-    window.lyricsPlusEnsureReactDOM?.() ||
+    window.ivLyricsEnsureReactDOM?.() ||
     (typeof reactDOM !== "undefined"
       ? reactDOM
       : window.Spicetify?.ReactDOM ?? window.ReactDOM ?? null);
@@ -6089,9 +6221,9 @@ function openConfig() {
 
 // 언어 변경 후 자동으로 설정 페이지 열기
 (function checkReturnToSettings() {
-  const shouldReturn = localStorage.getItem("lyrics-plus:return-to-settings");
+  const shouldReturn = localStorage.getItem("ivLyrics:return-to-settings");
   if (shouldReturn === "true") {
-    localStorage.removeItem("lyrics-plus:return-to-settings");
+    localStorage.removeItem("ivLyrics:return-to-settings");
     // DOM이 준비된 후 설정 열기
     const tryOpenSettings = () => {
       if (typeof openConfig === "function" && document.body) {

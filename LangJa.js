@@ -58,6 +58,12 @@ window.LANG_JA = {
       "label": "デスクトップオーバーレイを使用",
       "desc": "歌詞をデスクトップオーバーレイアプリに送信します"
     },
+    "port": {
+      "label": "接続ポート",
+      "desc": "オーバーレイアプリとの接続ポート番号 (1024-65535)"
+    },
+    "portSaved": "ポートが保存されました",
+    "portInvalid": "無効なポート番号です (1024-65535)",
     "status": {
       "connected": "✓ 接続済み",
       "disconnected": "未接続",
@@ -326,6 +332,7 @@ window.LANG_JA = {
     "copyLyrics": "歌詞をコピー",
     "searchLyrics": "歌詞を検索",
     "editLyrics": "歌詞を編集",
+    "shareImage": "歌詞画像を共有",
     "translationOptions": "変換オプション",
     "translationOptionsSubtitle": "歌詞の発音と翻訳表示を設定",
     "detectedLanguage": "検出された言語",
@@ -469,7 +476,9 @@ window.LANG_JA = {
     "syncDataClearFailed": "同期データのクリアに失敗しました",
     "lyricsCopied": "✓ 歌詞がクリップボードにコピーされました",
     "lyricsCopyFailed": "歌詞のクリップボードへのコピーに失敗しました",
+    "translationCopied": "翻訳がクリップボードにコピーされました",
     "translationCopyFailed": "翻訳のクリップボードへのコピーに失敗しました",
+    "secondTranslationCopied": "第2翻訳がクリップボードにコピーされました",
     "secondTranslationCopyFailed": "第2翻訳のクリップボードへのコピーに失敗しました",
     "installCommandCopied": "インストールコマンドがコピーされました",
     "copyFailed": "コピーに失敗しました",
@@ -492,9 +501,28 @@ window.LANG_JA = {
     "translationRegenerated": "✓ 翻訳が再生成されました",
     "translationRegenerateFailed": "翻訳の再生成に失敗しました",
     "translationCacheRemoved": "✓ 翻訳キャッシュがクリアされ、再読み込みされました！",
+    "translationCacheReset": "翻訳キャッシュ {count}件がリセットされました",
     "tooManyTranslationRequests": "翻訳リクエストが多すぎます。1分後に再試行してください。",
     "requestingPronunciation": "発音をリクエスト中。約30秒かかります",
-    "requestingTranslation": "翻訳をリクエスト中。約30秒かかります"
+    "requestingTranslation": "翻訳をリクエスト中。約30秒かかります",
+    "shareImageCopied": "画像がクリップボードにコピーされました",
+    "shareImageDownloaded": "画像がダウンロードされました",
+    "shareImageShared": "共有されました",
+    "shareImageFailed": "画像生成に失敗しました",
+    "shareImageNoLyrics": "共有する歌詞を選択してください",
+    "noTrackPlaying": "再生中のトラックがありません",
+    "overlayConnected": "オーバーレイ接続済み",
+    "romajiTranslationFailed": "ローマ字/発音変換に失敗",
+    "koreanTranslationFailed": "韓国語翻訳に失敗",
+    "pinyinLibraryUnavailable": "ピンインライブラリが利用できません。オリジナルを表示します。jsDelivrまたはunpkgを許可してください。",
+    "conversionSkippedSimplified": "変換スキップ：既に簡体字です",
+    "conversionCompleted": "変換が完了しました",
+    "conversionFailed": "変換に失敗しました",
+    "fileTooLarge": "ファイルが大きすぎます：最大サイズは1MBです",
+    "noValidLyricsInFile": "ファイルに有効な歌詞が見つかりません",
+    "lyricsLoadedFromFile": "ファイルから {types} 歌詞を読み込みました",
+    "lyricsLoadFailed": "歌詞の読み込みに失敗：無効なファイル形式",
+    "fileReadFailed": "ファイルの読み取りに失敗：ファイルが破損している可能性があります"
   },
   "misc": {
     "and": "および",
@@ -636,6 +664,26 @@ window.LANG_JA = {
         "desc": "翻訳歌詞の文字間隔（ピクセル）"
       }
     },
+    "furiganaStyle": {
+      "title": "ふりがなスタイル",
+      "subtitle": "漢字の上に表示されるふりがなの設定",
+      "fontSize": {
+        "label": "フォントサイズ",
+        "desc": "ふりがなのフォントサイズ（ピクセル）"
+      },
+      "fontWeight": {
+        "label": "フォントの太さ",
+        "desc": "ふりがなのフォントの太さ"
+      },
+      "opacity": {
+        "label": "不透明度",
+        "desc": "ふりがなの不透明度 (0-100%)"
+      },
+      "spacing": {
+        "label": "間隔",
+        "desc": "ふりがなと漢字の間隔（ピクセル）"
+      }
+    },
     "textShadow": {
       "title": "テキストシャドウ",
       "subtitle": "可読性を向上させるシャドウ効果",
@@ -662,6 +710,10 @@ window.LANG_JA = {
       "replaceButton": {
         "label": "歌詞ボタンを置換",
         "info": "Spotifyのデフォルト歌詞ボタンをivLyricsに置き換え"
+      },
+      "replaceFullscreenButton": {
+        "label": "フルスクリーンボタンを置換",
+        "info": "SpotifyのデフォルトフルスクリーンボタンをivLyricsフルスクリーンに置き換え"
       },
       "fullscreenShortcut": {
         "label": "フルスクリーンショートカット",
@@ -783,6 +835,14 @@ window.LANG_JA = {
         "desc": "フルスクリーンショートカット",
         "info": "フルスクリーンモード切り替えのキーボードショートカットを設定"
       },
+      "tvMode": {
+        "desc": "TVモード",
+        "info": "左下にアルバムカバーと曲情報を表示し、歌詞は全画面を使用します"
+      },
+      "tvModeAlbumSize": {
+        "desc": "TVモードアルバムサイズ",
+        "info": "TVモードでのアルバムカバーのサイズを設定（ピクセル）"
+      },
       "splitView": {
         "desc": "分割レイアウト",
         "info": "フルスクリーンで左にアルバムカバー、右に歌詞を表示"
@@ -798,6 +858,10 @@ window.LANG_JA = {
       "showTrackInfo": {
         "desc": "トラック情報を表示",
         "info": "フルスクリーンで曲名とアーティストを表示"
+      },
+      "trimTitle": {
+        "desc": "タイトル短縮",
+        "info": "曲名から(Remaster)、[feat. xxx]などの付加情報を削除してシンプルに表示"
       },
       "translateMetadata": {
         "desc": "タイトル/アーティスト翻訳",
@@ -925,6 +989,14 @@ window.LANG_JA = {
       "delay": {
         "desc": "自動非表示遅延",
         "info": "マウス非アクティブ後にUIが非表示になるまでの時間 (1-10秒)"
+      }
+    },
+    "tmiStyle": {
+      "title": "TMIスタイル",
+      "subtitle": "アルバムアートクリック時に表示されるTMIモーダルのスタイル設定",
+      "fontSize": {
+        "desc": "TMIフォントサイズ",
+        "info": "TMIモーダルの全体フォントサイズを調整 (80-150%)"
       }
     },
     "aboutTab": {
@@ -1115,5 +1187,92 @@ window.LANG_JA = {
     "deleteError": "動画の削除に失敗しました"
   },
   "close": "閉じる",
-  "cancel": "キャンセル"
+  "cancel": "キャンセル",
+  "shareImage": {
+    "title": "歌詞画像を共有",
+    "subtitle": "美しい歌詞画像を作成して共有しましょう",
+    "selectLyrics": "歌詞を選択",
+    "selectLyricsHint": "画像に含める歌詞行をクリックしてください（最大6行）",
+    "template": "プリセット",
+    "templates": {
+      "cover": "カバーブラー",
+      "gradient": "グラデーション",
+      "minimal": "ミニマル",
+      "glass": "グラス",
+      "story": "ストーリー"
+    },
+    "advancedSettings": "詳細設定",
+    "sections": {
+      "background": "背景",
+      "cover": "アルバムカバー",
+      "lyrics": "歌詞",
+      "layout": "レイアウト",
+      "other": "その他"
+    },
+    "copyrightWarning": "⚠️ 著作権について\n\nこの歌詞画像には著作権で保護されたコンテンツが含まれている可能性があります。\n\n• 個人的な使用に限定してください\n• 商用目的での使用は避けてください\n• SNSで共有する際は原作者を尊重してください\n\n続行しますか？",
+    "copyrightTitle": "著作権について",
+    "copyrightDesc": "この歌詞画像には著作権で保護されたコンテンツが含まれている可能性があります。",
+    "copyrightPoint1": "個人的な使用に限定してください",
+    "copyrightPoint2": "商用目的での使用は避けてください",
+    "copyrightPoint3": "SNSで共有する際は原作者を尊重してください",
+    "copyrightConfirm": "同意して続行",
+    "settings": {
+      "backgroundType": "背景スタイル",
+      "coverBlur": "ブラー",
+      "gradient": "グラデーション",
+      "solid": "単色",
+      "backgroundBlur": "背景ブラー",
+      "backgroundOpacity": "背景の暗さ",
+      "showCover": "アルバムカバー",
+      "showTrackInfo": "曲情報",
+      "coverPosition": "カバー位置",
+      "posLeft": "左",
+      "posCenter": "中央",
+      "coverSize": "カバーサイズ",
+      "coverRadius": "カバーの丸み",
+      "coverBlur": "カバーブラー",
+      "showPronunciation": "発音",
+      "showTranslation": "翻訳",
+      "lyricsAlign": "歌詞配置",
+      "alignLeft": "左",
+      "alignCenter": "中央",
+      "fontSize": "フォントサイズ",
+      "blockGap": "行間隔",
+      "aspectRatio": "アスペクト比",
+      "imageWidth": "画像幅",
+      "padding": "余白",
+      "showWatermark": "ウォーターマーク表示"
+    },
+    "preview": "プレビュー",
+    "actions": {
+      "copy": "クリップボードにコピー",
+      "download": "ダウンロード",
+      "share": "共有"
+    },
+    "copied": "✓ クリップボードにコピーされました",
+    "downloaded": "✓ ダウンロードされました",
+    "shared": "✓ 共有されました",
+    "maxLinesReached": "最大3行まで選択できます",
+    "noSelection": "歌詞を選択してください"
+  },
+  tmi: {
+    getApiKeyDesc: "Gemini API キーを取得する",
+    getApiKeyInfo: "TMIの取得に使用されます。Google AI Studioから無料で取得できます。",
+    viewInfo: "クリックして曲の更なる情報を確認する",
+    requireKey: "設定で Gemini API キーの設定が必要です",
+    settingTitle: "Gemini API キー",
+    settingDesc: "曲の TMI/情報を読み込むために必要です。",
+    title: "TMI",
+    didYouKnow: "ご存知ですか？",
+    close: "閉じる",
+    cancel: "キャンセル",
+    loading: "興味深い事実を検索中...",
+    noData: "この曲のTMIはまだありません。",
+    clickForTMI: "TMIを見る",
+    clickToClose: "✕またはアルバムエリアをクリックして閉じる",
+    regenerate: "TMIを再生成します",
+    errorFetch: "TMIの取得中にエラーが発生しました。",
+    errorQuota: "APIの割り当て量を超過しました。",
+    errorQuotaHint: "しばらくしてから再試行するか、設定で別のAPIキーを入力してください。"
+  }
 };

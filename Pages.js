@@ -875,10 +875,10 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 								const copyText = Utils.formatLyricLineToCopy(mainText, subText, subText2, originalText);
 								if (copyText) {
 									Spicetify.Platform.ClipboardAPI.copy(copyText)
-										.then(() => Spicetify.showNotification(I18n.t("notifications.lyricsCopied"), false, 2000))
-										.catch(() => Spicetify.showNotification(I18n.t("notifications.lyricsCopyFailed"), true, 2000));
+										.then(() => Toast.success(I18n.t("notifications.lyricsCopied")))
+										.catch(() => Toast.error(I18n.t("notifications.lyricsCopyFailed")));
 								} else {
-									Spicetify.showNotification(I18n.t("notifications.lyricsCopyFailed"), true, 2000);
+									Toast.error(I18n.t("notifications.lyricsCopyFailed"));
 								}
 							},
 							// For Furigana/Hiragana HTML strings - React 310 방지를 위한 안전한 검증
@@ -1376,10 +1376,10 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright,
 							const copyText = Utils.formatLyricLineToCopy(mainText, subText, subText2, originalText);
 							if (copyText) {
 								Spicetify.Platform.ClipboardAPI.copy(copyText)
-									.then(() => Spicetify.showNotification(I18n.t("notifications.lyricsCopied"), false, 2000))
-									.catch(() => Spicetify.showNotification(I18n.t("notifications.lyricsCopyFailed"), true, 2000));
+									.then(() => Toast.success(I18n.t("notifications.lyricsCopied")))
+									.catch(() => Toast.error(I18n.t("notifications.lyricsCopyFailed")));
 							} else {
-								Spicetify.showNotification(I18n.t("notifications.lyricsCopyFailed"), true, 2000);
+								Toast.error(I18n.t("notifications.lyricsCopyFailed"));
 							}
 						},
 						// For Furigana/Hiragana HTML strings - React 310 방지를 위한 안전한 검증
@@ -1509,8 +1509,8 @@ const UnsyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => 
 						onContextMenu: (event) => {
 							event.preventDefault();
 							Spicetify.Platform.ClipboardAPI.copy(Utils.convertParsedToUnsynced(lyrics, belowMode).original)
-								.then(() => Spicetify.showNotification(I18n.t("notifications.lyricsCopied"), false, 2000))
-								.catch(() => Spicetify.showNotification(I18n.t("notifications.lyricsCopyFailed"), true, 2000));
+								.then(() => Toast.success(I18n.t("notifications.lyricsCopied")))
+								.catch(() => Toast.error(I18n.t("notifications.lyricsCopyFailed")));
 						},
 						// React 310 방지: 문자열이고 비어있지 않을 때만 dangerouslySetInnerHTML 사용
 						...(typeof lineText === "string" && lineText
@@ -1530,8 +1530,8 @@ const UnsyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => 
 						onContextMenu: (event) => {
 							event.preventDefault();
 							Spicetify.Platform.ClipboardAPI.copy(Utils.convertParsedToUnsynced(lyrics, belowMode).conver)
-								.then(() => Spicetify.showNotification("✓ Translation copied to clipboard", false, 2000))
-								.catch(() => Spicetify.showNotification(I18n.t("notifications.translationCopyFailed"), true, 2000));
+								.then(() => Toast.success(I18n.t("notifications.translationCopied")))
+								.catch(() => Toast.error(I18n.t("notifications.translationCopyFailed")));
 						},
 						// React 310 방지: 문자열이고 비어있지 않을 때만 dangerouslySetInnerHTML 사용
 						...(typeof subText === "string" && subText
@@ -1551,8 +1551,8 @@ const UnsyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => 
 						onContextMenu: (event) => {
 							event.preventDefault();
 							Spicetify.Platform.ClipboardAPI.copy(showMode2Translation)
-								.then(() => Spicetify.showNotification("✓ Second translation copied to clipboard", false, 2000))
-								.catch(() => Spicetify.showNotification(I18n.t("notifications.secondTranslationCopyFailed"), true, 2000));
+								.then(() => Toast.success(I18n.t("notifications.secondTranslationCopied")))
+								.catch(() => Toast.error(I18n.t("notifications.secondTranslationCopyFailed")));
 						},
 						// React 310 방지: 문자열이고 비어있지 않을 때만 dangerouslySetInnerHTML 사용
 						...(typeof showMode2Translation === "string" && showMode2Translation

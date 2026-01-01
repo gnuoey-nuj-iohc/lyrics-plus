@@ -58,6 +58,12 @@ window.LANG_VI = {
       "label": "Kích hoạt lớp phủ Desktop",
       "desc": "Gửi lời bài hát đến ứng dụng lớp phủ desktop"
     },
+    "port": {
+      "label": "Cổng kết nối",
+      "desc": "Số cổng để kết nối với ứng dụng overlay (1024-65535)"
+    },
+    "portSaved": "Đã lưu cổng",
+    "portInvalid": "Số cổng không hợp lệ (1024-65535)",
     "status": {
       "connected": "✓ Đã kết nối",
       "disconnected": "Chưa kết nối",
@@ -326,6 +332,7 @@ window.LANG_VI = {
     "copyLyrics": "Sao chép lời bài hát",
     "searchLyrics": "Tìm kiếm lời bài hát",
     "editLyrics": "Chỉnh sửa lời bài hát",
+    "shareImage": "Chia sẻ hình ảnh lời bài hát",
     "translationOptions": "Tùy chọn chuyển đổi",
     "translationOptionsSubtitle": "Cài đặt hiển thị phiên âm và dịch nghĩa",
     "detectedLanguage": "Ngôn ngữ được phát hiện",
@@ -469,7 +476,9 @@ window.LANG_VI = {
     "syncDataClearFailed": "Xóa dữ liệu đồng bộ thất bại",
     "lyricsCopied": "✓ Đã sao chép lời bài hát vào khay nhớ tạm",
     "lyricsCopyFailed": "Sao chép lời bài hát thất bại",
+    "translationCopied": "Đã sao chép bản dịch vào khay nhớ tạm",
     "translationCopyFailed": "Sao chép bản dịch thất bại",
+    "secondTranslationCopied": "Đã sao chép bản dịch thứ hai vào khay nhớ tạm",
     "secondTranslationCopyFailed": "Sao chép bản dịch thứ hai thất bại",
     "installCommandCopied": "Đã sao chép lệnh cài đặt",
     "copyFailed": "Sao chép thất bại",
@@ -492,9 +501,28 @@ window.LANG_VI = {
     "translationRegenerated": "✓ Đã tạo lại bản dịch",
     "translationRegenerateFailed": "Tạo lại bản dịch thất bại",
     "translationCacheRemoved": "✓ Đã xóa bộ nhớ đệm bản dịch và tải lại!",
+    "translationCacheReset": "Đã đặt lại {count} mục bộ nhớ đệm bản dịch",
     "tooManyTranslationRequests": "Quá nhiều yêu cầu dịch. Vui lòng thử lại sau 1 phút.",
     "requestingPronunciation": "Đang yêu cầu phát âm. Sẽ mất khoảng 30 giây.",
-    "requestingTranslation": "Đang yêu cầu bản dịch. Sẽ mất khoảng 30 giây."
+    "requestingTranslation": "Đang yêu cầu bản dịch. Sẽ mất khoảng 30 giây.",
+    "shareImageCopied": "Đã sao chép hình ảnh vào khay nhớ tạm",
+    "shareImageDownloaded": "Đã tải xuống hình ảnh",
+    "shareImageShared": "Chia sẻ thành công",
+    "shareImageFailed": "Không thể tạo hình ảnh",
+    "shareImageNoLyrics": "Vui lòng chọn lời bài hát để chia sẻ",
+    "noTrackPlaying": "Không có bài hát đang phát",
+    "overlayConnected": "Overlay đã kết nối",
+    "romajiTranslationFailed": "Chuyển đổi romaji/phát âm thất bại",
+    "koreanTranslationFailed": "Dịch tiếng Hàn thất bại",
+    "pinyinLibraryUnavailable": "Thư viện Pinyin không khả dụng. Hiển thị bản gốc. Cho phép jsDelivr hoặc unpkg.",
+    "conversionSkippedSimplified": "Bỏ qua chuyển đổi: Đã là tiếng Trung giản thể",
+    "conversionCompleted": "Chuyển đổi thành công",
+    "conversionFailed": "Chuyển đổi thất bại",
+    "fileTooLarge": "Tệp quá lớn: Kích thước tối đa 1MB",
+    "noValidLyricsInFile": "Không tìm thấy lời bài hát hợp lệ trong tệp",
+    "lyricsLoadedFromFile": "Đã tải lời bài hát {types} từ tệp thành công",
+    "lyricsLoadFailed": "Không thể tải lời bài hát: Định dạng tệp không hợp lệ",
+    "fileReadFailed": "Không thể đọc tệp: Tệp có thể bị hỏng"
   },
   "misc": {
     "and": "và",
@@ -636,6 +664,26 @@ window.LANG_VI = {
         "desc": "Khoảng cách giữa các chữ trong bản dịch (pixel)"
       }
     },
+    "furiganaStyle": {
+      "title": "Kiểu Furigana",
+      "subtitle": "Cài đặt cho cách đọc (furigana) hiển thị phía trên chữ Hán Nhật Bản",
+      "fontSize": {
+        "label": "Kích thước phông",
+        "desc": "Kích thước phông cho furigana (pixel)"
+      },
+      "fontWeight": {
+        "label": "Độ dày phông",
+        "desc": "Độ dày phông cho furigana"
+      },
+      "opacity": {
+        "label": "Độ mờ",
+        "desc": "Độ mờ của furigana (0-100%)"
+      },
+      "spacing": {
+        "label": "Khoảng cách",
+        "desc": "Khoảng cách giữa furigana và kanji (pixel)"
+      }
+    },
     "textShadow": {
       "title": "Bóng văn bản",
       "subtitle": "Hiệu ứng bóng để tăng khả năng đọc",
@@ -662,6 +710,10 @@ window.LANG_VI = {
       "replaceButton": {
         "label": "Thay thế nút lời bài hát",
         "info": "Thay thế nút lời bài hát mặc định của Spotify bằng ivLyrics"
+      },
+      "replaceFullscreenButton": {
+        "label": "Thay thế nút toàn màn hình",
+        "info": "Thay thế nút toàn màn hình mặc định của Spotify bằng ivLyrics"
       },
       "fullscreenShortcut": {
         "label": "Phím tắt toàn màn hình",
@@ -782,6 +834,18 @@ window.LANG_VI = {
       "shortcut": {
         "desc": "Phím tắt toàn màn hình",
         "info": "Cài đặt phím tắt để bật/tắt chế độ toàn màn hình"
+      },
+      "tvMode": {
+        "desc": "Chế độ TV",
+        "info": "Hiển thị bìa album và thông tin bài hát ở góc dưới bên trái, lời bài hát sử dụng toàn màn hình"
+      },
+      "tvModeAlbumSize": {
+        "desc": "Kích thước album chế độ TV",
+        "info": "Cài đặt kích thước bìa album trong chế độ TV (pixel)"
+      },
+      "trimTitle": {
+        "desc": "Rút gọn tiêu đề",
+        "info": "Xóa thông tin bổ sung như (Remaster), [feat. xxx] khỏi tiêu đề để hiển thị gọn gàng hơn"
       },
       "splitView": {
         "desc": "Chế độ xem chia đôi",
@@ -929,6 +993,14 @@ window.LANG_VI = {
       "delay": {
         "desc": "Độ trễ tự động ẩn",
         "info": "Thời gian sau khi ngừng di chuyển chuột trước khi UI ẩn đi (1-10 giây)"
+      }
+    },
+    "tmiStyle": {
+      "title": "Kiểu TMI",
+      "subtitle": "Cài đặt kiểu cho modal TMI hiển thị khi nhấp vào bìa album",
+      "fontSize": {
+        "desc": "Kích thước chữ TMI",
+        "info": "Điều chỉnh kích thước chữ tổng thể của modal TMI (80-150%)"
       }
     },
     "aboutTab": {
@@ -1119,6 +1191,93 @@ window.LANG_VI = {
     "deleteError": "Không thể xóa video"
   },
   "close": "Đóng",
-  "cancel": "Hủy"
+  "cancel": "Hủy",
+  "shareImage": {
+    "title": "Chia sẻ hình ảnh lời bài hát",
+    "subtitle": "Tạo và chia sẻ hình ảnh lời bài hát đẹp",
+    "selectLyrics": "Chọn lời bài hát",
+    "selectLyricsHint": "Nhấp vào các dòng để đưa vào hình ảnh (tối đa 6 dòng)",
+    "template": "Mẫu",
+    "templates": {
+      "cover": "Mờ bìa",
+      "gradient": "Chuyển đổi",
+      "minimal": "Tối giản",
+      "glass": "Kính",
+      "story": "Story"
+    },
+    "advancedSettings": "Cài đặt nâng cao",
+    "sections": {
+      "background": "Nền",
+      "cover": "Ảnh bìa album",
+      "lyrics": "Lời bài hát",
+      "layout": "Bố cục",
+      "other": "Khác"
+    },
+    "copyrightWarning": "⚠️ Thông báo bản quyền\n\nHình ảnh lời bài hát này có thể chứa nội dung được bảo hộ bản quyền.\n\n• Chỉ sử dụng cho mục đích cá nhân\n• Không sử dụng cho mục đích thương mại\n• Tôn trọng tác giả gốc khi chia sẻ trên mạng xã hội\n\nBạn có muốn tiếp tục không?",
+    "copyrightTitle": "Thông báo bản quyền",
+    "copyrightDesc": "Hình ảnh lời bài hát này có thể chứa nội dung được bảo hộ bản quyền.",
+    "copyrightPoint1": "Chỉ sử dụng cho mục đích cá nhân",
+    "copyrightPoint2": "Không sử dụng cho mục đích thương mại",
+    "copyrightPoint3": "Tôn trọng tác giả gốc khi chia sẻ trên mạng xã hội",
+    "copyrightConfirm": "Đồng ý và tiếp tục",
+    "settings": {
+      "backgroundType": "Kiểu nền",
+      "coverBlur": "Làm mờ",
+      "gradient": "Chuyển đổi",
+      "solid": "Đơn sắc",
+      "backgroundBlur": "Độ mờ nền",
+      "backgroundOpacity": "Độ tối nền",
+      "showCover": "Ảnh bìa album",
+      "showTrackInfo": "Thông tin bài hát",
+      "coverPosition": "Vị trí bìa",
+      "posLeft": "Trái",
+      "posCenter": "Giữa",
+      "coverSize": "Kích thước bìa",
+      "coverRadius": "Bo góc bìa",
+      "coverBlur": "Độ mờ bìa",
+      "showPronunciation": "Phát âm",
+      "showTranslation": "Dịch",
+      "lyricsAlign": "Căn chỉnh lời",
+      "alignLeft": "Trái",
+      "alignCenter": "Giữa",
+      "fontSize": "Cỡ chữ",
+      "blockGap": "Khoảng cách dòng",
+      "aspectRatio": "Tỷ lệ hình ảnh",
+      "imageWidth": "Chiều rộng hình",
+      "padding": "Lề",
+      "showWatermark": "Hiển thị watermark"
+    },
+    "preview": "Xem trước",
+    "actions": {
+      "copy": "Sao chép vào clipboard",
+      "download": "Tải xuống",
+      "share": "Chia sẻ"
+    },
+    "copied": "✓ Đã sao chép vào clipboard",
+    "downloaded": "✓ Đã tải xuống",
+    "shared": "✓ Đã chia sẻ",
+    "maxLinesReached": "Tối đa có thể chọn 3 dòng",
+    "noSelection": "Vui lòng chọn lời bài hát"
+  },
+  tmi: {
+    getApiKeyDesc: "Lấy Gemini API Key",
+    getApiKeyInfo: "Được sử dụng để lấy TMI. Có sẵn miễn phí từ Google AI Studio.",
+    viewInfo: "Nhấp để xem chi tiết bài hát",
+    requireKey: "Yêu cầu Gemini API Key trong cài đặt",
+    settingTitle: "Gemini API Key",
+    settingDesc: "Yêu cầu để tải nội dung TMI/Thông tin bên lề bài hát.",
+    title: "TMI",
+    didYouKnow: "Bạn có biết?",
+    close: "Đóng",
+    cancel: "Hủy",
+    loading: "Đang tìm kiếm sự thật thú vị...",
+    noData: "Chưa có TMI cho bài hát này.",
+    clickForTMI: "Nhấp để xem TMI",
+    clickToClose: "Nhấp ✕ hoặc vùng album để quay lại",
+    regenerate: "Tạo lại TMI",
+    errorFetch: "Đã xảy ra lỗi khi tải TMI.",
+    errorQuota: "Hạn mức API đã vượt quá.",
+    errorQuotaHint: "Vui lòng thử lại sau hoặc nhập API key khác trong cài đặt."
+  }
 };
 
