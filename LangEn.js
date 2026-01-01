@@ -726,6 +726,10 @@ window.LANG_EN = {
       "panelLyricsLines": {
         "label": "Panel Lyrics Lines",
         "desc": "Number of lyrics lines to show in the panel (default: 5)"
+      },
+      "panelFontScale": {
+        "label": "Panel Font Scale",
+        "desc": "Font scale for lyrics in the panel (50%-200%)"
       }
     },
     "karaokeMode": {

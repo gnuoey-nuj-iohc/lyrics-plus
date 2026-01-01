@@ -156,6 +156,7 @@ const SettingKeys = [
   "ivLyrics:visual:fullscreen-show-queue",
   "ivLyrics:visual:translate-metadata",
   "ivLyrics:visual:translate-metadata-mode",
+  "ivLyrics:visual:panel-font-scale",
 ];
 
 const BYTES_FOR_INDEX = Math.ceil(SettingKeys.length / 255);

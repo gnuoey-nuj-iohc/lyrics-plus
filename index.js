@@ -704,6 +704,8 @@ const TrackSyncDB = {
   },
 };
 
+// TrackSyncDB를 window에 등록 (LyricsService와 다른 컴포넌트에서 사용 가능)
+window.TrackSyncDB = TrackSyncDB;
 // Migrate from localStorage to IndexedDB
 (async () => {
   try {
@@ -940,6 +942,8 @@ const CONFIG = {
     ),
     "panel-lyrics-lines":
       StorageManager.getItem("ivLyrics:visual:panel-lyrics-lines") || "5",
+    "panel-font-scale":
+      StorageManager.getItem("ivLyrics:visual:panel-font-scale") || "100",
     colorful: StorageManager.get("ivLyrics:visual:colorful", false),
     "gradient-background": StorageManager.get(
       "ivLyrics:visual:gradient-background"

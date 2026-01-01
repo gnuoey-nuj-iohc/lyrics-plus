@@ -718,6 +718,18 @@ window.LANG_VI = {
       "fullscreenShortcut": {
         "label": "Phím tắt toàn màn hình",
         "desc": "Phím tắt để vào chế độ lời bài hát toàn màn hình"
+      },
+      "panelLyrics": {
+        "label": "Hiện lời bài hát ở bảng bên phải",
+        "desc": "Hiển thị lời bài hát hiện tại trong bảng Đang phát"
+      },
+      "panelLyricsLines": {
+        "label": "Số dòng lời bài hát",
+        "desc": "Số dòng lời bài hát hiển thị trong bảng (mặc định: 5)"
+      },
+      "panelFontScale": {
+        "label": "Tỷ lệ cỡ chữ",
+        "desc": "Tỷ lệ cỡ chữ cho lời bài hát trong bảng (50%-200%)"
       }
     },
     "karaokeMode": {

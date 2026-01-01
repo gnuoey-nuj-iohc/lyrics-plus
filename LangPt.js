@@ -718,6 +718,18 @@ window.LANG_PT = {
       "fullscreenShortcut": {
         "label": "Atalho de Tela Cheia",
         "desc": "Atalho de teclado para o modo de tela cheia de letras"
+      },
+      "panelLyrics": {
+        "label": "Mostrar letras no painel direito",
+        "desc": "Exibir letras atuais no painel Tocando agora"
+      },
+      "panelLyricsLines": {
+        "label": "Linhas de letras do painel",
+        "desc": "Número de linhas de letras a mostrar no painel (padrão: 5)"
+      },
+      "panelFontScale": {
+        "label": "Escala de fonte do painel",
+        "desc": "Escala de fonte para letras no painel (50%-200%)"
       }
     },
     "karaokeMode": {

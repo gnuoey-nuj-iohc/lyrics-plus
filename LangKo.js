@@ -726,6 +726,10 @@ window.LANG_KO = {
       "panelLyricsLines": {
         "label": "패널 가사 줄 수",
         "desc": "패널에 표시할 가사 줄 수 (기본: 5)"
+      },
+      "panelFontScale": {
+        "label": "패널 글꼴 크기",
+        "desc": "패널 가사의 글꼴 크기 비율 (50%-200%)"
       }
     },
     "karaokeMode": {

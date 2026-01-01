@@ -718,6 +718,18 @@ window.LANG_ZH_TW = {
       "fullscreenShortcut": {
         "label": "全螢幕快速鍵",
         "desc": "歌詞全螢幕模式的鍵盤快速鍵"
+      },
+      "panelLyrics": {
+        "label": "在右側面板顯示歌詞",
+        "desc": "在正在播放面板中顯示目前歌詞"
+      },
+      "panelLyricsLines": {
+        "label": "面板歌詞行數",
+        "desc": "面板中顯示的歌詞行數（預設: 5）"
+      },
+      "panelFontScale": {
+        "label": "面板字型大小",
+        "desc": "面板歌詞的字型大小比例（50%-200%）"
       }
     },
     "karaokeMode": {

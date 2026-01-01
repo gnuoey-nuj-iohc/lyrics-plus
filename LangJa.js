@@ -718,6 +718,18 @@ window.LANG_JA = {
       "fullscreenShortcut": {
         "label": "フルスクリーンショートカット",
         "desc": "歌詞フルスクリーンモードのキーボードショートカット"
+      },
+      "panelLyrics": {
+        "label": "右パネルに歌詞を表示",
+        "desc": "再生中パネルに現在の歌詞を表示"
+      },
+      "panelLyricsLines": {
+        "label": "パネル歌詞行数",
+        "desc": "パネルに表示する歌詞の行数（デフォルト: 5）"
+      },
+      "panelFontScale": {
+        "label": "パネルフォントサイズ",
+        "desc": "パネル歌詞のフォントサイズ比率（50%-200%）"
       }
     },
     "karaokeMode": {

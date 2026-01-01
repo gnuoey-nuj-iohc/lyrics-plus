@@ -718,6 +718,18 @@ window.LANG_IT = {
       "fullscreenShortcut": {
         "label": "Scorciatoia Schermo Intero",
         "desc": "Scorciatoia da tastiera per la modalità schermo intero testi"
+      },
+      "panelLyrics": {
+        "label": "Mostra testi nel pannello destro",
+        "desc": "Mostra i testi attuali nel pannello In riproduzione"
+      },
+      "panelLyricsLines": {
+        "label": "Righe testo del pannello",
+        "desc": "Numero di righe di testo da mostrare nel pannello (predefinito: 5)"
+      },
+      "panelFontScale": {
+        "label": "Scala font del pannello",
+        "desc": "Scala del font per i testi nel pannello (50%-200%)"
       }
     },
     "karaokeMode": {

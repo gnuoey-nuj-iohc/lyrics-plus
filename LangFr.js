@@ -718,6 +718,18 @@ window.LANG_FR = {
       "fullscreenShortcut": {
         "label": "Raccourci plein écran",
         "desc": "Raccourci clavier pour le mode plein écran des paroles"
+      },
+      "panelLyrics": {
+        "label": "Afficher les paroles dans le panneau droit",
+        "desc": "Afficher les paroles actuelles dans le panneau En cours de lecture"
+      },
+      "panelLyricsLines": {
+        "label": "Lignes de paroles du panneau",
+        "desc": "Nombre de lignes de paroles à afficher dans le panneau (par défaut: 5)"
+      },
+      "panelFontScale": {
+        "label": "Échelle de police du panneau",
+        "desc": "Échelle de police pour les paroles du panneau (50%-200%)"
       }
     },
     "karaokeMode": {

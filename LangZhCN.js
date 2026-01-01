@@ -718,6 +718,18 @@ window.LANG_ZH_CN = {
       "fullscreenShortcut": {
         "label": "全屏快捷键",
         "desc": "歌词全屏模式的键盘快捷键"
+      },
+      "panelLyrics": {
+        "label": "在右侧面板显示歌词",
+        "desc": "在正在播放面板中显示当前歌词"
+      },
+      "panelLyricsLines": {
+        "label": "面板歌词行数",
+        "desc": "面板中显示的歌词行数（默认: 5）"
+      },
+      "panelFontScale": {
+        "label": "面板字体大小",
+        "desc": "面板歌词的字体大小比例（50%-200%）"
       }
     },
     "karaokeMode": {

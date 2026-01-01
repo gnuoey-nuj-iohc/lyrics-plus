@@ -718,6 +718,18 @@ window.LANG_ES = {
       "fullscreenShortcut": {
         "label": "Atajo de pantalla completa",
         "desc": "Atajo de teclado para el modo de pantalla completa de letras"
+      },
+      "panelLyrics": {
+        "label": "Mostrar letras en el panel derecho",
+        "desc": "Mostrar letras actuales en el panel de Reproduciendo ahora"
+      },
+      "panelLyricsLines": {
+        "label": "Líneas de letras del panel",
+        "desc": "Número de líneas de letras a mostrar en el panel (predeterminado: 5)"
+      },
+      "panelFontScale": {
+        "label": "Escala de fuente del panel",
+        "desc": "Escala de fuente para las letras del panel (50%-200%)"
       }
     },
     "karaokeMode": {

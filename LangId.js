@@ -690,6 +690,18 @@ window.LANG_ID = {
       "fullscreenShortcut": {
         "label": "Pintasan Layar Penuh",
         "desc": "Pintasan keyboard untuk masuk ke mode lirik layar penuh"
+      },
+      "panelLyrics": {
+        "label": "Tampilkan lirik di panel kanan",
+        "desc": "Tampilkan lirik saat ini di panel Sedang Diputar"
+      },
+      "panelLyricsLines": {
+        "label": "Baris lirik panel",
+        "desc": "Jumlah baris lirik yang ditampilkan di panel (default: 5)"
+      },
+      "panelFontScale": {
+        "label": "Skala font panel",
+        "desc": "Skala ukuran font untuk lirik di panel (50%-200%)"
       }
     },
     "karaokeMode": {

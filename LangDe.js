@@ -718,6 +718,18 @@ window.LANG_DE = {
       "fullscreenShortcut": {
         "label": "Vollbild-Tastenkürzel",
         "desc": "Tastenkürzel für den Songtext-Vollbildmodus"
+      },
+      "panelLyrics": {
+        "label": "Songtexte im rechten Panel anzeigen",
+        "desc": "Aktuelle Songtexte im Jetzt-läuft-Panel anzeigen"
+      },
+      "panelLyricsLines": {
+        "label": "Panel-Songtext-Zeilen",
+        "desc": "Anzahl der Songtextzeilen im Panel (Standard: 5)"
+      },
+      "panelFontScale": {
+        "label": "Panel-Schriftgröße",
+        "desc": "Schriftgrößenskalierung für Panel-Songtexte (50%-200%)"
       }
     },
     "karaokeMode": {

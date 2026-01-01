@@ -4550,6 +4550,21 @@ const ConfigModal = () => {
                 "9": "9",
               },
             },
+            {
+              desc: I18n.t("settingsAdvanced.playback.panelFontScale.label") || "Panel Font Scale",
+              key: "panel-font-scale",
+              info: I18n.t("settingsAdvanced.playback.panelFontScale.desc") || "Font scale for lyrics in the panel (50%-200%)",
+              type: ConfigSelection,
+              options: {
+                "50": "50%",
+                "75": "75%",
+                "100": "100%",
+                "125": "125%",
+                "150": "150%",
+                "175": "175%",
+                "200": "200%",
+              },
+            },
           ],
           onChange: (name, value) => {
             CONFIG.visual[name] = value;
