@@ -1317,6 +1317,7 @@ window.LANG_KO = {
     regenerate: "TMI를 재생성합니다.",
     errorFetch: "TMI를 불러오는 중 오류가 발생했습니다.",
     errorQuota: "API 할당량을 초과했습니다.",
-    errorQuotaHint: "잠시 후 다시 시도하거나, 설정에서 다른 API 키를 입력해주세요."
+    errorQuotaHint: "잠시 후 다시 시도하거나, 설정에서 다른 API 키를 입력해주세요.",
+    disclaimer: "해당 컨텐츠는 인터넷에 있는 정보들을 AI로 가공하여 표시되며, 올바르지 않은 정보가 포함될 수 있습니다."
   }
 };

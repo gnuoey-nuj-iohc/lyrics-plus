@@ -1317,7 +1317,8 @@ window.LANG_FR = {
     regenerate: "Régénérer TMI",
     errorFetch: "Une erreur s'est produite lors de la récupération des TMI.",
     errorQuota: "Quota API dépassé.",
-    errorQuotaHint: "Veuillez réessayer plus tard ou entrer une autre clé API dans les paramètres."
+    errorQuotaHint: "Veuillez réessayer plus tard ou entrer une autre clé API dans les paramètres.",
+    disclaimer: "Ce contenu est généré par l'IA à partir d'informations sur Internet et peut contenir des informations inexactes."
   }
 };
 

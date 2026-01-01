@@ -1317,6 +1317,7 @@ window.LANG_JA = {
     regenerate: "TMIを再生成します",
     errorFetch: "TMIの取得中にエラーが発生しました。",
     errorQuota: "APIの割り当て量を超過しました。",
-    errorQuotaHint: "しばらくしてから再試行するか、設定で別のAPIキーを入力してください。"
+    errorQuotaHint: "しばらくしてから再試行するか、設定で別のAPIキーを入力してください。",
+    disclaimer: "このコンテンツはインターネット上の情報をAIで加工して表示しており、正確でない情報が含まれている可能性があります。"
   }
 };

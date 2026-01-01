@@ -1317,7 +1317,8 @@ window.LANG_PT = {
     regenerate: "Regenerar TMI",
     errorFetch: "Ocorreu um erro ao buscar TMI.",
     errorQuota: "Cota de API excedida.",
-    errorQuotaHint: "Tente novamente mais tarde ou insira outra chave API nas configurações."
+    errorQuotaHint: "Tente novamente mais tarde ou insira outra chave API nas configurações.",
+    disclaimer: "Este conteúdo é gerado por IA usando informações da internet e pode conter informações imprecisas."
   }
 };
 

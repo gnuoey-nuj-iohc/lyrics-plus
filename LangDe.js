@@ -1317,7 +1317,8 @@ window.LANG_DE = {
     regenerate: "TMI neu generieren",
     errorFetch: "Beim Abrufen der TMI ist ein Fehler aufgetreten.",
     errorQuota: "API-Kontingent überschritten.",
-    errorQuotaHint: "Bitte versuchen Sie es später erneut oder geben Sie einen anderen API-Schlüssel in den Einstellungen ein."
+    errorQuotaHint: "Bitte versuchen Sie es später erneut oder geben Sie einen anderen API-Schlüssel in den Einstellungen ein.",
+    disclaimer: "Dieser Inhalt wird von KI aus Internetinformationen generiert und kann ungenaue Informationen enthalten."
   }
 };
 

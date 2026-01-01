@@ -1293,7 +1293,8 @@ window.LANG_ID = {
     regenerate: "Regenerasi TMI",
     errorFetch: "Terjadi kesalahan saat mengambil TMI.",
     errorQuota: "Kuota API terlampaui.",
-    errorQuotaHint: "Silakan coba lagi nanti atau masukkan kunci API lain di pengaturan."
+    errorQuotaHint: "Silakan coba lagi nanti atau masukkan kunci API lain di pengaturan.",
+    disclaimer: "Konten ini dihasilkan oleh AI menggunakan informasi dari internet dan mungkin berisi informasi yang tidak akurat."
   }
 };
 

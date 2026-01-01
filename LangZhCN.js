@@ -1317,6 +1317,7 @@ window.LANG_ZH_CN = {
     regenerate: "重新生成 TMI",
     errorFetch: "获取 TMI 时发生错误。",
     errorQuota: "API 配额已超出。",
-    errorQuotaHint: "请稍后重试或在设置中输入其他 API 密钥。"
+    errorQuotaHint: "请稍后重试或在设置中输入其他 API 密钥。",
+    disclaimer: "此内容由AI处理互联网信息后生成，可能包含不准确的信息。"
   }
 };

@@ -1345,7 +1345,10 @@ const FullscreenOverlay = (() => {
                                         CONFIG.visual?.["gemini-api-key"]
                                             ? I18n.t("tmi.viewInfo")
                                             : I18n.t("tmi.requireKey")
-                                    )
+                                    ),
+                                    CONFIG.visual?.["gemini-api-key"] && react.createElement("span", { 
+                                        className: "album-tmi-disclaimer" 
+                                    }, I18n.t("tmi.disclaimer"))
                                 )
                             )
                         ),

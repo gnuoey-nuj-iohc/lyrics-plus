@@ -1321,7 +1321,8 @@ window.LANG_VI = {
     regenerate: "Tạo lại TMI",
     errorFetch: "Đã xảy ra lỗi khi tải TMI.",
     errorQuota: "Hạn mức API đã vượt quá.",
-    errorQuotaHint: "Vui lòng thử lại sau hoặc nhập API key khác trong cài đặt."
+    errorQuotaHint: "Vui lòng thử lại sau hoặc nhập API key khác trong cài đặt.",
+    disclaimer: "Nội dung này được tạo bởi AI sử dụng thông tin từ internet và có thể chứa thông tin không chính xác."
   }
 };
 
