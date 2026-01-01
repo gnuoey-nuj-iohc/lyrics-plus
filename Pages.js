@@ -597,10 +597,19 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 	const [position, setPosition] = useState(0);
 	const [trackOffset, setTrackOffset] = useState(0);
 	const [isScrolling, setIsScrolling] = useState(false);
+	const [containerReady, setContainerReady] = useState(false);
 	const activeLineEle = useRef();
 	const lyricContainerEle = useRef();
 	const scrollTimeout = useRef(null);
 	const lyricsId = useMemo(() => lyrics[0]?.text || "no-lyrics", [lyrics]);
+
+	// ref callback to detect when container is mounted
+	const containerRefCallback = useCallback((node) => {
+		lyricContainerEle.current = node;
+		if (node) {
+			setContainerReady(true);
+		}
+	}, []);
 
 	useEffect(() => {
 		const container = lyricContainerEle.current;
@@ -622,7 +631,7 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 			container.removeEventListener("touchmove", handleWheel);
 			if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
 		};
-	}, [lyricsId]);
+	}, [lyricsId, containerReady]);
 
 	const handleContainerClick = () => {
 		if (isScrolling) {
@@ -742,20 +751,26 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 		}));
 	}, [activeLineIndex, lyrics.length]);
 
+	// 스크롤 모드 진입 시 한 번만 현재 줄로 이동
+	const prevIsScrolling = useRef(false);
 	useEffect(() => {
-		if (!isScrolling) return;
-		const node = activeLineEle.current;
-		if (!node) return;
-		const raf = typeof requestAnimationFrame === "function"
-			? requestAnimationFrame
-			: (cb) => setTimeout(cb, 0);
-		raf(() => {
-			node.scrollIntoView({
-				block: "center",
-				inline: "nearest",
-			});
-		});
-	}, [isScrolling, activeLineIndex]);
+		// 스크롤 모드가 false -> true로 변경될 때만 scrollIntoView 호출
+		if (isScrolling && !prevIsScrolling.current) {
+			const node = activeLineEle.current;
+			if (node) {
+				const raf = typeof requestAnimationFrame === "function"
+					? requestAnimationFrame
+					: (cb) => setTimeout(cb, 0);
+				raf(() => {
+					node.scrollIntoView({
+						block: "center",
+						inline: "nearest",
+					});
+				});
+			}
+		}
+		prevIsScrolling.current = isScrolling;
+	}, [isScrolling]);
 
 	// 유효성 검사는 Hook 호출 후에 수행
 	if (!Array.isArray(lyrics) || lyrics.length === 0) {
@@ -785,7 +800,7 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 		"div",
 		{
 			className: `lyrics-lyricsContainer-SyncedLyricsPage ${isScrolling ? "scrolling-active" : ""}`,
-			ref: lyricContainerEle,
+			ref: containerRefCallback,
 			onClick: handleContainerClick,
 		},
 		react.createElement(

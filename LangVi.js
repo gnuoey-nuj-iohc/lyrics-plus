@@ -835,6 +835,10 @@ window.LANG_VI = {
         "desc": "Phím tắt toàn màn hình",
         "info": "Cài đặt phím tắt để bật/tắt chế độ toàn màn hình"
       },
+      "toggleTvModeKey": {
+        "desc": "Phím tắt chuyển đổi chế độ TV",
+        "info": "Chỉ hoạt động ở chế độ toàn màn hình. Chuyển đổi giữa TV và thường"
+      },
       "tvMode": {
         "desc": "Chế độ TV",
         "info": "Hiển thị bìa album và thông tin bài hát ở góc dưới bên trái, lời bài hát sử dụng toàn màn hình"
@@ -897,6 +901,34 @@ window.LANG_VI = {
         "desc": "Sử dụng Spotify toàn màn hình",
         "info": "Chuyển Spotify sang chế độ toàn màn hình màn hình khi vào chế độ toàn màn hình"
       }
+    },
+    "normalMode": {
+      "title": "Bố cục Chế độ Thường",
+      "subtitle": "Cấu hình bố cục cho chế độ toàn màn hình thường (khi chế độ TV tắt)",
+      "showAlbumName": {
+        "desc": "Hiển thị Tên Album",
+        "info": "Hiển thị tên album bên dưới tiêu đề và nghệ sĩ",
+      },
+    },
+    "tvMode": {
+      "title": "Cài đặt Chế độ TV",
+      "subtitle": "Cấu hình tùy chọn hiển thị cho chế độ TV",
+      "showAlbumName": {
+        "desc": "Hiển thị Tên Album",
+        "info": "Hiển thị tên album bên dưới nghệ sĩ trong chế độ TV",
+      },
+      "showControls": {
+        "desc": "Hiển thị Nút Điều khiển",
+        "info": "Hiển thị nút phát/tạm dừng, bài trước/tiếp theo trong chế độ TV",
+      },
+      "showProgress": {
+        "desc": "Hiển thị Thanh Tiến trình",
+        "info": "Hiển thị tiến trình phát và thời gian trong chế độ TV",
+      },
+    },
+    "metadataDisplay": {
+      "title": "Hiển thị Tiêu đề/Nghệ sĩ",
+      "subtitle": "Cấu hình cách hiển thị tiêu đề và nghệ sĩ",
     },
     "fullscreenStyle": {
       "title": "Kiểu toàn màn hình",

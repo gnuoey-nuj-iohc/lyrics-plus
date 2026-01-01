@@ -274,440 +274,25 @@ if (typeof window.kuromoji === "undefined") {
 }
 
 // === ivLyrics-overlay 전송 모듈 ===
-// Sends lyrics data to the desktop overlay application
-const OverlaySender = {
-  DEFAULT_PORT: 15000,
-  progressInterval: null,
-  lastSentUri: null,
-  lastSentLyrics: null,
-  lastSentOffset: null,
-  _lastTrackInfo: null,
-  _lastLyrics: null,
-  lastConfigDelay: undefined,
+// LyricsService Extension에서 제공하는 OverlaySender를 사용
+// 이 파일에 있던 OverlaySender는 Extension으로 이동됨 (어떤 페이지에서든 작동)
 
-  // 연결 상태
-  _isConnected: false,
-  _connectionCheckInterval: null,
-  _lastConnectionAttempt: 0,
-
-  // 포트 설정 (localStorage에 저장)
-  get port() {
-    const savedPort = localStorage.getItem('ivLyrics:overlay-port');
-    return savedPort ? parseInt(savedPort, 10) : this.DEFAULT_PORT;
-  },
-  set port(value) {
-    const portNum = parseInt(value, 10);
-    if (portNum >= 1024 && portNum <= 65535) {
-      localStorage.setItem('ivLyrics:overlay-port', portNum.toString());
-      // 포트 변경 시 재연결 시도
-      this.isConnected = false;
-      this.checkConnection();
+// Extension에서 이미 OverlaySender가 로드되어 있으면 그것을 사용
+// OverlaySender는 window.OverlaySender로 전역 접근 가능
+if (!window.OverlaySender) {
+  console.warn("[ivLyrics] OverlaySender not found from Extension, waiting...");
+  const checkOverlaySender = setInterval(() => {
+    if (window.OverlaySender) {
+      clearInterval(checkOverlaySender);
+      console.log("[ivLyrics] OverlaySender loaded from Extension");
     }
-  },
+  }, 100);
+  setTimeout(() => clearInterval(checkOverlaySender), 5000);
+}
 
-  // 설정 (localStorage에 저장)
-  get enabled() {
-    return localStorage.getItem('ivLyrics:overlay-enabled') !== 'false';
-  },
-  set enabled(value) {
-    localStorage.setItem('ivLyrics:overlay-enabled', value ? 'true' : 'false');
-    if (value) {
-      this.startProgressSync();
-      this.checkConnection();
-    } else {
-      this.stopProgressSync();
-    }
-  },
+// 하위 호환성을 위해 OverlaySender 별칭 생성
+const OverlaySender = window.OverlaySender;
 
-  _isSettingsOpen: false,
-  _settingsTimer: null,
-
-  setSettingsOpen(isOpen) {
-    this._isSettingsOpen = isOpen;
-    if (this._settingsTimer) {
-      clearInterval(this._settingsTimer);
-      this._settingsTimer = null;
-    }
-
-    if (isOpen) {
-      console.log('[OverlaySender] 설정창 열림 - 연결 확인 폴링 시작');
-      this.checkConnection();
-      this._settingsTimer = setInterval(() => {
-        if (!this.isConnected) {
-          this.checkConnection();
-        }
-      }, 2000);
-    } else {
-      console.log('[OverlaySender] 설정창 닫힘 - 연결 확인 폴링 종료');
-    }
-  },
-
-  get isConnected() {
-    return this._isConnected;
-  },
-  set isConnected(value) {
-    const wasConnected = this._isConnected;
-    this._isConnected = value;
-
-    // 연결 상태 변경 이벤트 발송
-    window.dispatchEvent(new CustomEvent('ivLyrics:overlay-connection', {
-      detail: { connected: value }
-    }));
-
-    // 연결됨 상태로 변경될 때
-    if (value && !wasConnected) {
-      console.log('[OverlaySender] 오버레이 연결됨 ✓');
-      Toast?.success?.(I18n.t("notifications.overlayConnected"));
-      // 가사 재전송
-      setTimeout(() => this.resendWithNewOffset(), 100);
-    }
-    // 연결 끊김 상태로 변경될 때
-    else if (!value && wasConnected) {
-      console.log('[OverlaySender] 오버레이 연결 끊김');
-    }
-  },
-
-  // 연결 확인
-  async checkConnection() {
-    if (!this.enabled) return false;
-
-    try {
-      const response = await fetch(`http://localhost:${this.port}/progress`, {
-        method: 'POST',
-        mode: 'cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ position: 0, isPlaying: false }),
-        signal: AbortSignal.timeout(1000)
-      });
-      this.isConnected = response.ok;
-      return this.isConnected;
-    } catch (e) {
-      this.isConnected = false;
-      return false;
-    }
-  },
-
-  // 오버레이 앱 열기 (딥링크)
-  openOverlayApp() {
-    try {
-      window.open('ivLyrics://overlay', '_blank');
-      // 연결 확인 지연
-      setTimeout(() => this.checkConnection(), 2000);
-    } catch (e) {
-      console.error('[OverlaySender] 앱 열기 실패:', e);
-    }
-  },
-
-  // 오버레이 앱 다운로드 페이지
-  getDownloadUrl() {
-    return 'https://github.com/ivLis-Studio/ivLyrics-overlay/releases/latest';
-  },
-
-  async sendToEndpoint(endpoint, data) {
-    if (!this.enabled) return;
-
-    try {
-      const response = await fetch(`http://localhost:${this.port}${endpoint}`, {
-        method: 'POST',
-        mode: 'cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-        signal: AbortSignal.timeout(2000)
-      });
-
-      if (!this._isConnected && response.ok) {
-        this.isConnected = true;
-      }
-    } catch (e) {
-      if (this._isConnected) {
-        this.isConnected = false;
-      }
-    }
-  },
-
-  // 현재 트랙의 싱크 오프셋 가져오기
-  async getSyncOffset(uri) {
-    let offset = 0;
-
-    // 1. 전역 딜레이 설정
-    if (typeof CONFIG !== 'undefined' && CONFIG.visual && typeof CONFIG.visual.delay === 'number') {
-      offset += CONFIG.visual.delay;
-    }
-
-    // 2. TrackSyncDB에서 트랙별 오프셋
-    // 메모리 캐시 확인
-    if (this._offsetCache && this._offsetCache[uri] !== undefined) {
-      offset += this._offsetCache[uri];
-    } else {
-      try {
-        if (typeof TrackSyncDB !== 'undefined' && TrackSyncDB.getOffset) {
-          const dbOffset = await TrackSyncDB.getOffset(uri);
-          if (dbOffset) {
-            offset += dbOffset;
-            // 캐시 저장
-            if (!this._offsetCache) this._offsetCache = {};
-            this._offsetCache[uri] = dbOffset;
-          }
-        }
-      } catch (e) { }
-    }
-
-    // 3. localStorage 개별 트랙 딜레이
-    try {
-      const delayKey = `lyrics-delay:${uri}`;
-      const delay = localStorage.getItem(delayKey);
-      if (delay) offset += Number(delay);
-    } catch (e) { }
-
-    return -offset;
-  },
-
-  // 가사 전송 요청 순서 추적
-  _reqId: 0,
-  _lastReqId: 0,
-
-  // 가사 전송
-  async sendLyrics(trackInfo, lyrics, forceResend = false) {
-    if (!trackInfo || !lyrics || !Array.isArray(lyrics)) return;
-    if (!this.enabled) return;
-
-    // 요청 ID 발급 (동기적으로 실행되어 순서 보장)
-    const currentReqId = ++this._reqId;
-
-    this._lastTrackInfo = trackInfo;
-    this._lastLyrics = lyrics;
-
-    const offset = await this.getSyncOffset(trackInfo.uri);
-
-    // 비동기 작업 후, 더 최신 요청이 이미 처리되었는지 확인
-    if (currentReqId < this._lastReqId) {
-      console.log(`[OverlaySender] 오래된 요청 무시됨 (#${currentReqId} < #${this._lastReqId})`);
-      return;
-    }
-    this._lastReqId = currentReqId;
-
-    const lyricsHash = JSON.stringify(lyrics);
-
-    if (!forceResend &&
-      this.lastSentUri === trackInfo.uri &&
-      this.lastSentLyrics === lyricsHash &&
-      this.lastSentOffset === offset) {
-      return;
-    }
-
-    this.lastSentUri = trackInfo.uri;
-    this.lastSentLyrics = lyricsHash;
-    this.lastSentOffset = offset;
-
-    let albumArt = null;
-    try {
-      const imageUrl = Spicetify.Player.data?.item?.metadata?.image_xlarge_url;
-      if (imageUrl && imageUrl.indexOf('localfile') === -1) {
-        albumArt = `https://i.scdn.co/image/${imageUrl.substring(imageUrl.lastIndexOf(':') + 1)}`;
-      }
-    } catch (e) { }
-
-    const mappedLines = lyrics.map(l => {
-      // 원어 텍스트 (originalText가 있으면 사용, 없으면 text)
-      const originalText = l.originalText || l.text || '';
-
-      // 발음 텍스트 (text와 originalText가 다르면 text가 발음)
-      const pronText = (l.text && l.text !== l.originalText && l.text !== originalText) ? l.text : null;
-
-      // 번역 텍스트 - 여러 필드에서 찾기 (text2가 가장 우선)
-      let transText = l.text2 || l.translation || l.translationText || null;
-      // 빈 문자열이면 null로 처리
-      if (transText && typeof transText === 'string' && transText.trim() === '') {
-        transText = null;
-      }
-      // 원어와 같으면 표시할 필요 없음
-      if (transText && transText === originalText) {
-        transText = null;
-      }
-
-      return {
-        startTime: (l.startTime || 0) + offset,
-        endTime: l.endTime ? l.endTime + offset : null,
-        text: originalText,
-        pronText: pronText,
-        transText: transText
-      };
-    });
-
-    console.log('[OverlaySender] 가사 전송:', { lines: mappedLines.length, offset });
-
-    await this.sendToEndpoint('/lyrics', {
-      track: {
-        title: trackInfo.title || Spicetify.Player.data?.item?.metadata?.title || '',
-        artist: trackInfo.artist || Spicetify.Player.data?.item?.metadata?.artist_name || '',
-        album: Spicetify.Player.data?.item?.metadata?.album_title || '',
-        albumArt: albumArt,
-        duration: Spicetify.Player.getDuration() || 0
-      },
-      lyrics: mappedLines,
-      isSynced: lyrics.some(l => l.startTime !== undefined && l.startTime !== null)
-    });
-  },
-
-  async resendWithNewOffset() {
-    if (this._lastTrackInfo && this._lastLyrics) {
-      console.log('[OverlaySender] 가사 재전송');
-      await this.sendLyrics(this._lastTrackInfo, this._lastLyrics, true);
-    }
-  },
-
-  _worker: null,
-
-  startProgressSync() {
-    if (this._worker) return;
-    if (!this.enabled) return;
-
-    // Web Worker로 타이머 실행 (백그라운드 스로틀링 방지)
-    const blob = new Blob([`
-      let interval = null;
-      self.onmessage = function(e) {
-        if (e.data === 'start') {
-          if (interval) clearInterval(interval);
-          interval = setInterval(() => {
-            self.postMessage('tick');
-          }, 250);
-        } else if (e.data === 'stop') {
-          if (interval) clearInterval(interval);
-          interval = null;
-        }
-      };
-    `], { type: 'application/javascript' });
-
-    this._worker = new Worker(URL.createObjectURL(blob));
-
-    this._worker.onmessage = async () => {
-      if (!this.enabled) return;
-      if (this._isSendingProgress) return;
-
-      // 연결되지 않았고 설정창도 안 열려있으면 진행률 전송 중단 (네트워크 보호)
-      if (!this.isConnected && !this._isSettingsOpen) return;
-
-      // 전역 딜레이 변경 체크
-      if (typeof CONFIG !== 'undefined' && CONFIG.visual) {
-        if (this.lastConfigDelay === undefined) {
-          this.lastConfigDelay = CONFIG.visual.delay;
-        }
-        if (this.lastConfigDelay !== CONFIG.visual.delay) {
-          this.lastConfigDelay = CONFIG.visual.delay;
-          this.resendWithNewOffset();
-        }
-      }
-
-      this._isSendingProgress = true;
-      try {
-        const position = Spicetify.Player.getProgress() || 0;
-        const duration = Spicetify.Player.getDuration() || 0;
-        const remaining = (duration - position) / 1000; // seconds
-
-        // 다음 곡 정보 가져오기
-        let nextTrack = null;
-        try {
-          const queue = Spicetify.Queue;
-          if (queue?.nextTracks?.length > 0) {
-            const next = queue.nextTracks[0];
-            if (next?.contextTrack?.metadata) {
-              const imageUrl = next.contextTrack.metadata.image_url || next.contextTrack.metadata.image_xlarge_url;
-              let albumArt = null;
-              if (imageUrl && imageUrl.indexOf('localfile') === -1) {
-                if (imageUrl.startsWith('spotify:image:')) {
-                  albumArt = `https://i.scdn.co/image/${imageUrl.substring(imageUrl.lastIndexOf(':') + 1)}`;
-                } else if (imageUrl.startsWith('http')) {
-                  albumArt = imageUrl;
-                }
-              }
-              nextTrack = {
-                title: next.contextTrack.metadata.title || '',
-                artist: next.contextTrack.metadata.artist_name || '',
-                albumArt: albumArt
-              };
-            }
-          }
-        } catch (e) { }
-
-        await this.sendToEndpoint('/progress', {
-          position: position,
-          isPlaying: Spicetify.Player.isPlaying() || false,
-          duration: duration,
-          remaining: remaining,
-          nextTrack: nextTrack
-        });
-      } finally {
-        this._isSendingProgress = false;
-      }
-    };
-
-    this._worker.postMessage('start');
-  },
-
-  stopProgressSync() {
-    if (this._worker) {
-      this._worker.terminate(); // 워커 완전히 종료
-      this._worker = null;
-    }
-  },
-
-  setupOffsetListener() {
-    // localStorage 변경 감지
-    window.addEventListener('storage', (e) => {
-      if (e.key && e.key.startsWith('lyrics-delay:')) {
-        this.resendWithNewOffset();
-      }
-    });
-
-    // 커스텀 이벤트 리스너
-    window.addEventListener('ivLyrics:delay-changed', () => {
-      this.resendWithNewOffset();
-    });
-
-    window.addEventListener('ivLyrics:offset-changed', () => {
-      this.resendWithNewOffset();
-    });
-
-    // 페이지 가시성 변경 감지 (최소화 복구 시 재전송)
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible' && this.enabled) {
-        console.log('[OverlaySender] 페이지 활성화 - 가사 재전송');
-        setTimeout(() => this.resendWithNewOffset(), 200);
-      }
-    });
-
-    // 창 포커스 시에도 재전송 (최소화 복구 대응)
-    window.addEventListener('focus', () => {
-      if (this.enabled && this._lastTrackInfo) {
-        console.log('[OverlaySender] 창 포커스 - 가사 재전송');
-        setTimeout(() => this.resendWithNewOffset(), 300);
-      }
-    });
-
-    // 트랙 변경 감지 (Spicetify 이벤트)
-    Spicetify.Player.addEventListener('songchange', () => {
-      // 트랙 변경 시 캐시 초기화해서 새 트랙 가사 전송 준비
-      this.lastSentUri = null;
-      this.lastSentLyrics = null;
-      this.lastSentOffset = null;
-      this._offsetCache = {};
-    });
-  },
-
-  // 초기화
-  init() {
-    if (this.enabled) {
-      this.startProgressSync();
-      this.setupOffsetListener();
-      // 초기 연결 확인
-      setTimeout(() => this.checkConnection(), 1000);
-    }
-  }
-};
-
-// 오버레이 전송 초기화
-OverlaySender.init();
-window.OverlaySender = OverlaySender;
 
 /** @type {React} */
 const react = Spicetify.React;
@@ -1835,6 +1420,9 @@ CONFIG.visual["highlight-intensity"] = Number.parseInt(
   CONFIG.visual["highlight-intensity"]
 );
 
+// Extension에서 접근 가능하도록 window에 노출
+window.CONFIG = CONFIG;
+
 let CACHE = {};
 
 const emptyState = {
@@ -2139,16 +1727,16 @@ const Prefetcher = {
       try {
         console.log(`[Prefetcher] Fetching lyrics for: ${trackInfo.title}`);
 
-        // LyricsContainer의 tryServices 사용
-        if (this._lyricsContainer && typeof this._lyricsContainer.tryServices === 'function') {
-          const resp = await this._lyricsContainer.tryServices(trackInfo, mode);
+        // LyricsService Extension을 통해 가사 로드
+        const providerOrder = CONFIG.providersOrder.filter(id => CONFIG.providers[id]?.on);
+        const resp = await window.LyricsService.getLyricsFromProviders(trackInfo, providerOrder, mode);
+        if (!resp.uri) resp.uri = trackInfo.uri;
 
-          if (resp.provider) {
-            // 가사 캐시에 저장
-            CACHE[resp.uri] = resp;
-            console.log(`[Prefetcher] Lyrics cached for: ${trackInfo.title} (provider: ${resp.provider})`);
-            return resp;
-          }
+        if (resp?.provider) {
+          // 가사 캐시에 저장
+          CACHE[resp.uri] = resp;
+          console.log(`[Prefetcher] Lyrics cached for: ${trackInfo.title} (provider: ${resp.provider})`);
+          return resp;
         }
 
         return null;
@@ -2272,7 +1860,7 @@ const Prefetcher = {
         // 발음 요청 (wantSmartPhonetic = true)
         if (needPhonetic) {
           try {
-            const phoneticResponse = await Translator.callGemini({
+            const phoneticResponse = await window.Translator.callGemini({
               trackId,
               artist: trackInfo.artist,
               title: trackInfo.title,
@@ -2285,8 +1873,8 @@ const Prefetcher = {
             if (phoneticResponse.phonetic) {
               const mapped = processTranslationResult(phoneticResponse.phonetic);
               if (mapped) {
-                CacheManager.set(`${uri}:gemini_romaji`, mapped);
-                console.log(`[Prefetcher] Phonetic cached for: ${trackInfo.title}`);
+                CacheManager.set(`${uri}:${lyrics.provider}:gemini_romaji`, mapped);
+                console.log(`[Prefetcher] Phonetic cached for: ${trackInfo.title} (provider: ${lyrics.provider})`);
               }
             }
           } catch (error) {
@@ -2297,7 +1885,7 @@ const Prefetcher = {
         // 번역 요청 (wantSmartPhonetic = false)
         if (needTranslation) {
           try {
-            const translationResponse = await Translator.callGemini({
+            const translationResponse = await window.Translator.callGemini({
               trackId,
               artist: trackInfo.artist,
               title: trackInfo.title,
@@ -2312,12 +1900,12 @@ const Prefetcher = {
               if (mapped) {
                 // mode1, mode2 중 번역이 필요한 것에 캐시 저장
                 if (displayMode1 && displayMode1 !== "none" && displayMode1 !== "gemini_romaji") {
-                  CacheManager.set(`${uri}:${displayMode1}`, mapped);
+                  CacheManager.set(`${uri}:${lyrics.provider}:${displayMode1}`, mapped);
                 }
                 if (displayMode2 && displayMode2 !== "none" && displayMode2 !== "gemini_romaji") {
-                  CacheManager.set(`${uri}:${displayMode2}`, mapped);
+                  CacheManager.set(`${uri}:${lyrics.provider}:${displayMode2}`, mapped);
                 }
-                console.log(`[Prefetcher] Translation cached for: ${trackInfo.title}`);
+                console.log(`[Prefetcher] Translation cached for: ${trackInfo.title} (provider: ${lyrics.provider})`);
               }
             }
           } catch (error) {
@@ -2567,7 +2155,7 @@ class LyricsContainer extends react.Component {
     }
 
     try {
-      const result = await Translator.translateMetadata({
+      const result = await window.Translator.translateMetadata({
         trackId,
         title,
         artist,
@@ -2714,8 +2302,8 @@ class LyricsContainer extends react.Component {
           LyricsCache.clearTranslationForTrack(trackId),
         ]);
         // 메모리 캐시도 초기화
-        Translator.clearMemoryCache(trackId);
-        Translator.clearInflightRequests(trackId);
+        window.Translator.clearMemoryCache(trackId);
+        window.Translator.clearInflightRequests(trackId);
         console.log(`[regenerateTranslation] Cleared local cache for ${trackId}`);
       } catch (e) {
         console.warn('[regenerateTranslation] Failed to clear cache:', e);
@@ -2751,7 +2339,7 @@ class LyricsContainer extends react.Component {
 
       // 발음 요청 (gemini_romaji)
       if (needPhonetic) {
-        phoneticResponse = await Translator.callGemini({
+        phoneticResponse = await window.Translator.callGemini({
           trackId,
           artist: this.state.artist || lyricsState.artist,
           title: this.state.title || lyricsState.title,
@@ -2764,7 +2352,7 @@ class LyricsContainer extends react.Component {
 
       // 번역 요청 (gemini_ko)
       if (needTranslation) {
-        translationResponse = await Translator.callGemini({
+        translationResponse = await window.Translator.callGemini({
           trackId,
           artist: this.state.artist || lyricsState.artist,
           title: this.state.title || lyricsState.title,
@@ -2882,11 +2470,12 @@ class LyricsContainer extends react.Component {
       this._dmResults[currentUri].lastMode2 = mode2;
 
       // CacheManager에도 새 결과 저장 (getGeminiTranslation에서 캐시 히트하도록)
+      const currentProvider = lyricsState.provider || '';
       if (translatedLyrics1 && mode1) {
-        CacheManager.set(`${currentUri}:${mode1}`, translatedLyrics1);
+        CacheManager.set(`${currentUri}:${currentProvider}:${mode1}`, translatedLyrics1);
       }
       if (translatedLyrics2 && mode2) {
-        CacheManager.set(`${currentUri}:${mode2}`, translatedLyrics2);
+        CacheManager.set(`${currentUri}:${currentProvider}:${mode2}`, translatedLyrics2);
       }
 
       // lyricsSource를 다시 호출하여 기존 로직으로 화면 업데이트
@@ -2970,58 +2559,22 @@ class LyricsContainer extends react.Component {
     });
   }
 
+  /**
+   * @deprecated LyricsService.getLyricsFromProviders 사용 권장
+   * 가사 로드는 Extension(LyricsService)을 통해 처리됨
+   */
   async tryServices(trackInfo, mode = -1) {
-    const currentMode = CONFIG.modes[mode] || "";
-    let finalData = { ...emptyState, uri: trackInfo.uri };
-    for (const id of CONFIG.providersOrder) {
-      const service = CONFIG.providers[id];
-      if (!service.on) continue;
-      if (mode !== -1 && !service.modes.includes(mode)) continue;
-
-      let data;
-      try {
-        data = await Providers[id](trackInfo);
-      } catch (e) {
-        continue;
-      }
-
-      if (data.error || (!data.karaoke && !data.synced && !data.unsynced))
-        continue;
-      if (mode === -1) {
-        finalData = data;
-        return finalData;
-      }
-
-      if (!data[currentMode]) {
-        for (const key in data) {
-          if (!finalData[key]) {
-            finalData[key] = data[key];
-          }
-        }
-        continue;
-      }
-
-      for (const key in data) {
-        if (!finalData[key]) {
-          finalData[key] = data[key];
-        }
-      }
-
-      if (
-        data.provider !== "local" &&
-        finalData.provider &&
-        finalData.provider !== data.provider
-      ) {
-        const styledMode =
-          currentMode.charAt(0).toUpperCase() + currentMode.slice(1);
-        finalData.copyright = `${styledMode} lyrics provided by ${data.provider
-          }\n${finalData.copyright || ""}`.trim();
-      }
-
-      return finalData;
+    // LyricsService Extension을 통해 가사 로드
+    if (window.LyricsService?.getLyricsFromProviders) {
+      const providerOrder = CONFIG.providersOrder.filter(id => CONFIG.providers[id]?.on);
+      const result = await window.LyricsService.getLyricsFromProviders(trackInfo, providerOrder, mode);
+      if (!result.uri) result.uri = trackInfo.uri;
+      return result;
     }
 
-    return finalData;
+    // LyricsService가 없으면 에러
+    console.error('[LyricsContainer] LyricsService Extension이 로드되지 않았습니다.');
+    return { ...emptyState, uri: trackInfo.uri, error: 'LyricsService not loaded' };
   }
 
   async fetchLyrics(track, mode = -1, refresh = false) {
@@ -3064,7 +2617,11 @@ class LyricsContainer extends react.Component {
         this.lastModeBeforeLoading = currentMode !== -1 ? currentMode : SYNCED;
         this.setState({ ...emptyState, isLoading: true, isCached: false });
 
-        const resp = await this.tryServices(info, mode);
+        // LyricsService Extension을 통해 가사 로드
+        const providerOrder = CONFIG.providersOrder.filter(id => CONFIG.providers[id]?.on);
+        const resp = await window.LyricsService.getLyricsFromProviders(info, providerOrder, mode);
+        if (!resp.uri) resp.uri = info.uri;
+
         if (resp.provider) {
           // Cache lyrics
           CACHE[resp.uri] = resp;
@@ -3195,12 +2752,12 @@ class LyricsContainer extends react.Component {
       if (!lyrics) {
         this.setState({ currentLyrics: [] });
         // 오버레이에 가사 없음 상태 전송 (트랙 정보 업데이트용)
-        if (typeof OverlaySender !== 'undefined') {
-          OverlaySender.sendLyrics(
-            { uri: lyricsState.uri, title: this.state.title, artist: this.state.artist },
-            []
-          );
-        }
+        window.dispatchEvent(new CustomEvent('ivLyrics:lyrics-ready', {
+          detail: {
+            trackInfo: { uri: lyricsState.uri, title: this.state.title, artist: this.state.artist },
+            lyrics: []
+          }
+        }));
         return;
       }
     }
@@ -3300,12 +2857,12 @@ class LyricsContainer extends react.Component {
         currentLyrics: finalLyrics,
       });
       // 🔹 ivLyrics-overlay 앱으로 원문 가사 전송 (번역 모드 미사용)
-      if (typeof OverlaySender !== 'undefined') {
-        OverlaySender.sendLyrics(
-          { uri, title: this.state.title, artist: this.state.artist },
-          finalLyrics
-        );
-      }
+      window.dispatchEvent(new CustomEvent('ivLyrics:lyrics-ready', {
+        detail: {
+          trackInfo: { uri, title: this.state.title, artist: this.state.artist },
+          lyrics: finalLyrics
+        }
+      }));
       return;
     }
 
@@ -3327,11 +2884,13 @@ class LyricsContainer extends react.Component {
       // 단, 번역 모드가 켜져 있다면 번역이 준비될 때까지 기다림 (UI 깜빡임/레이아웃 변경 방지)
       const isTranslationEnabled = (displayMode1 && displayMode1 !== 'none') || (displayMode2 && displayMode2 !== 'none');
 
-      if (typeof OverlaySender !== 'undefined' && !isTranslationEnabled) {
-        OverlaySender.sendLyrics(
-          { uri, title: this.state.title, artist: this.state.artist },
-          originalLyrics
-        );
+      if (!isTranslationEnabled) {
+        window.dispatchEvent(new CustomEvent('ivLyrics:lyrics-ready', {
+          detail: {
+            trackInfo: { uri, title: this.state.title, artist: this.state.artist },
+            lyrics: originalLyrics
+          }
+        }));
       }
     }
 
@@ -3388,12 +2947,12 @@ class LyricsContainer extends react.Component {
       });
 
       // 🔹 ivLyrics-overlay 앱으로 가사 전송
-      if (typeof OverlaySender !== 'undefined') {
-        OverlaySender.sendLyrics(
-          { uri, title: this.state.title, artist: this.state.artist },
-          finalLyrics
-        );
-      }
+      window.dispatchEvent(new CustomEvent('ivLyrics:lyrics-ready', {
+        detail: {
+          trackInfo: { uri, title: this.state.title, artist: this.state.artist },
+          lyrics: finalLyrics
+        }
+      }));
     };
 
     // 스마트 로딩 전략: 두 모드 모두 활성화된 경우 둘 다 완료될 때까지 기다림
@@ -3713,7 +3272,8 @@ class LyricsContainer extends react.Component {
       }
 
       const cacheKey = mode;
-      const cacheKey2 = `${lyricsState.uri}:${cacheKey}`;
+      const providerKey = lyricsState.provider || '';
+      const cacheKey2 = `${lyricsState.uri}:${providerKey}:${cacheKey}`;
       const cached = CacheManager.get(cacheKey2);
 
       if (cached) {
@@ -3744,7 +3304,7 @@ class LyricsContainer extends react.Component {
       }
 
       // De-duplicate concurrent calls per (uri, type). Share the same promise for callers
-      const inflightKey = `${lyricsState.uri}:${cacheKey}`;
+      const inflightKey = `${lyricsState.uri}:${providerKey}:${cacheKey}`;
       if (this._inflightGemini?.has(inflightKey)) {
         return this._inflightGemini
           .get(inflightKey)
@@ -3778,7 +3338,7 @@ class LyricsContainer extends react.Component {
         this.startTranslationLoading();
       }
 
-      const inflightPromise = Translator.callGemini({
+      const inflightPromise = window.Translator.callGemini({
         apiKey,
         artist: this.state.artist || lyricsState.artist,
         title: this.state.title || lyricsState.title,
@@ -3997,7 +3557,7 @@ class LyricsContainer extends react.Component {
     }
 
     if (!this.translator) {
-      this.translator = new Translator(language);
+      this.translator = new window.Translator(language);
     }
     await this.translator.awaitFinished(language);
 
@@ -4390,7 +3950,7 @@ class LyricsContainer extends react.Component {
       // 이전 트랙의 진행 중인 번역 요청 정리
       const previousTrackId = this.currentTrackUri?.split(':')[2];
       if (previousTrackId) {
-        Translator.clearInflightRequests(previousTrackId);
+        window.Translator.clearInflightRequests(previousTrackId);
       }
 
       this.state.explicitMode = this.state.lockMode;
@@ -4452,8 +4012,8 @@ class LyricsContainer extends react.Component {
       // clearCache가 true이고 트랙 정보가 있으면 로컬 캐시도 삭제
       if (clearCache && trackId) {
         await LyricsCache.clearTrack(trackId);
-        Translator.clearMemoryCache(trackId);
-        Translator.clearInflightRequests(trackId);
+        window.Translator.clearMemoryCache(trackId);
+        window.Translator.clearInflightRequests(trackId);
       }
 
       this.updateVisualOnConfigChange();
@@ -4566,7 +4126,7 @@ class LyricsContainer extends react.Component {
       });
     };
     this.mousetrap.reset();
-    this.mousetrap.bind(CONFIG.visual["fullscreen-key"], this.toggleFullscreen);
+    // 전체화면 단축키는 GlobalShortcuts.js에서 전역으로 처리
     window.addEventListener("fad-request", lyricContainerUpdate);
 
     // 설정 변경 리스너 - 노래방 모드 토글 처리
@@ -4712,8 +4272,8 @@ class LyricsContainer extends react.Component {
       "--fullscreen-tmi-font-size": (CONFIG.visual["fullscreen-tmi-font-size"] || 100) / 100,
     };
 
-    this.mousetrap.reset();
-    this.mousetrap.bind(CONFIG.visual["fullscreen-key"], this.toggleFullscreen);
+    // mousetrap은 ESC 키 등 전체화면 내 단축키용으로만 사용
+    // 전체화면 단축키는 GlobalShortcuts.js에서 전역으로 처리
   }
 
   getCurrentMode() {

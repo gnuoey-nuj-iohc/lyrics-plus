@@ -870,7 +870,32 @@ const FullscreenOverlay = (() => {
         const [tmiMode, setTmiMode] = useState(false);
         const [tmiData, setTmiData] = useState(null);
         const [tmiLoading, setTmiLoading] = useState(false);
+        const [isPlaying, setIsPlaying] = useState(false);
+        const [position, setPosition] = useState(0);
+        const [duration, setDuration] = useState(0);
         const hideTimerRef = useRef(null);
+
+        // Track playback state for TV mode controls
+        useEffect(() => {
+            const updatePlaybackState = () => {
+                const isPaused = Spicetify.Player?.data?.isPaused ?? true;
+                setIsPlaying(!isPaused);
+                setPosition(Spicetify.Player?.getProgress?.() || 0);
+                setDuration(Spicetify.Player?.data?.item?.metadata?.duration_ms || Spicetify.Player?.getDuration?.() || 0);
+            };
+
+            updatePlaybackState();
+
+            const interval = setInterval(updatePlaybackState, 500);
+            Spicetify.Player?.addEventListener?.("songchange", updatePlaybackState);
+            Spicetify.Player?.addEventListener?.("onplaypause", updatePlaybackState);
+
+            return () => {
+                clearInterval(interval);
+                Spicetify.Player?.removeEventListener?.("songchange", updatePlaybackState);
+                Spicetify.Player?.removeEventListener?.("onplaypause", updatePlaybackState);
+            };
+        }, []);
 
         // Get settings from CONFIG
         const showAlbum = CONFIG?.visual?.["fullscreen-show-album"] !== false;
@@ -915,6 +940,14 @@ const FullscreenOverlay = (() => {
         const tvModeEnabled = CONFIG?.visual?.["fullscreen-tv-mode"] === true;
         const tvAlbumSize = Number(CONFIG?.visual?.["fullscreen-tv-album-size"]) || 140;
         const trimTitleEnabled = CONFIG?.visual?.["fullscreen-trim-title"] === true;
+        
+        // Normal mode settings
+        const normalShowAlbumName = CONFIG?.visual?.["fullscreen-show-album-name"] !== false;
+        
+        // TV Mode specific settings
+        const tvShowAlbumName = CONFIG?.visual?.["fullscreen-tv-show-album-name"] !== false;
+        const tvShowControls = CONFIG?.visual?.["fullscreen-tv-show-controls"] !== false;
+        const tvShowProgress = CONFIG?.visual?.["fullscreen-tv-show-progress"] !== false;
 
         // Auto-hide UI on mouse inactivity
         useEffect(() => {
@@ -1056,7 +1089,7 @@ const FullscreenOverlay = (() => {
                         borderRadius: `${albumRadius}px`
                     }
                 }),
-                // Track info
+                // Track info (Title, Artist, Album)
                 react.createElement("div", { className: "fullscreen-tv-track-info" },
                     // Title
                     react.createElement("div", {
@@ -1095,7 +1128,7 @@ const FullscreenOverlay = (() => {
                         })()
                     ),
                     // Album name (from context)
-                    react.createElement("div", { className: "fullscreen-tv-album-name" },
+                    tvShowAlbumName && react.createElement("div", { className: "fullscreen-tv-album-name" },
                         (() => {
                             try {
                                 const albumName = Spicetify.Player.data?.item?.metadata?.album_title;
@@ -1106,6 +1139,79 @@ const FullscreenOverlay = (() => {
                             } catch (e) { return ''; }
                         })()
                     )
+                ),
+                // TV Mode Controls & Progress (right side)
+                (tvShowControls || tvShowProgress) && react.createElement("div", { 
+                    className: "fullscreen-tv-controls-wrapper"
+                },
+                    // TV Mode Controls
+                    tvShowControls && react.createElement("div", { 
+                        className: "fullscreen-tv-controls"
+                    },
+                        // Previous button
+                        react.createElement("button", {
+                            className: "fullscreen-tv-control-btn",
+                            onClick: () => Spicetify.Player.back(),
+                            title: "Previous"
+                        }, 
+                            react.createElement("svg", {
+                                width: "24", height: "24", viewBox: "0 0 16 16", fill: "currentColor"
+                            }, 
+                                react.createElement("path", { d: "M3.3 1a.7.7 0 0 1 .7.7v5.15l9.95-5.744a.7.7 0 0 1 1.05.606v12.575a.7.7 0 0 1-1.05.607L4 9.149V14.3a.7.7 0 0 1-.7.7H1.7a.7.7 0 0 1-.7-.7V1.7a.7.7 0 0 1 .7-.7h1.6z" })
+                            )
+                        ),
+                        // Play/Pause button
+                        react.createElement("button", {
+                            className: "fullscreen-tv-control-btn play-pause",
+                            onClick: () => Spicetify.Player.togglePlay()
+                        },
+                            isPlaying
+                                ? react.createElement("svg", {
+                                    width: "32", height: "32", viewBox: "0 0 16 16", fill: "currentColor"
+                                },
+                                    react.createElement("path", { d: "M2.7 1a.7.7 0 0 0-.7.7v12.6a.7.7 0 0 0 .7.7h2.6a.7.7 0 0 0 .7-.7V1.7a.7.7 0 0 0-.7-.7H2.7zm8 0a.7.7 0 0 0-.7.7v12.6a.7.7 0 0 0 .7.7h2.6a.7.7 0 0 0 .7-.7V1.7a.7.7 0 0 0-.7-.7h-2.6z" })
+                                )
+                                : react.createElement("svg", {
+                                    width: "32", height: "32", viewBox: "0 0 16 16", fill: "currentColor"
+                                },
+                                    react.createElement("path", { d: "M3 1.713a.7.7 0 0 1 1.05-.607l10.89 6.288a.7.7 0 0 1 0 1.212L4.05 14.894A.7.7 0 0 1 3 14.288V1.713z" })
+                                )
+                        ),
+                        // Next button
+                        react.createElement("button", {
+                            className: "fullscreen-tv-control-btn",
+                            onClick: () => Spicetify.Player.next(),
+                            title: "Next"
+                        },
+                            react.createElement("svg", {
+                                width: "24", height: "24", viewBox: "0 0 16 16", fill: "currentColor"
+                            },
+                                react.createElement("path", { d: "M12.7 1a.7.7 0 0 0-.7.7v5.15L2.05 1.107A.7.7 0 0 0 1 1.712v12.575a.7.7 0 0 0 1.05.607L12 9.149V14.3a.7.7 0 0 0 .7.7h1.6a.7.7 0 0 0 .7-.7V1.7a.7.7 0 0 0-.7-.7h-1.6z" })
+                            )
+                        )
+                    ),
+                    // TV Mode Progress bar
+                    tvShowProgress && react.createElement("div", { 
+                        className: "fullscreen-tv-progress"
+                    },
+                        react.createElement("span", { className: "fullscreen-tv-time current" }, formatTime(position)),
+                        react.createElement("div", { 
+                            className: "fullscreen-tv-progress-bar",
+                            onClick: (e) => {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const clickX = e.clientX - rect.left;
+                                const percentage = clickX / rect.width;
+                                const seekPosition = Math.floor(duration * percentage);
+                                Spicetify.Player.seek(seekPosition);
+                            }
+                        },
+                            react.createElement("div", {
+                                className: "fullscreen-tv-progress-fill",
+                                style: { width: `${duration > 0 ? (position / duration) * 100 : 0}%` }
+                            })
+                        ),
+                        react.createElement("span", { className: "fullscreen-tv-time total" }, formatTime(duration))
+                    )
                 )
             ) : react.createElement("div", {
                 className: `fullscreen-bottom-left ${!uiVisible ? 'hidden' : ''}`
@@ -1114,13 +1220,18 @@ const FullscreenOverlay = (() => {
             ),
             // Top-right: Clock & Next track
             react.createElement("div", {
-                className: `fullscreen-top-right ${!uiVisible ? 'hidden' : ''}`
+                className: "fullscreen-top-right"
             },
-                react.createElement(Clock, {
-                    show: showClock,
-                    showSeconds: clockShowSeconds,
-                    size: clockSize
-                }),
+                react.createElement("div", {
+                    className: `fullscreen-clock-wrapper ${!uiVisible ? 'hidden' : ''}`
+                },
+                    react.createElement(Clock, {
+                        show: showClock,
+                        showSeconds: clockShowSeconds,
+                        size: clockSize
+                    })
+                ),
+                // NextTrackPreview는 UI 숨김과 관계없이 항상 표시
                 react.createElement(NextTrackPreview, {
                     show: showNextTrack,
                     secondsBeforeEnd: nextTrackSeconds
@@ -1223,6 +1334,9 @@ const FullscreenOverlay = (() => {
                                     const romanizedTitle = translatedMetadata?.romanized?.title;
                                     const elements = [];
 
+                                    // Apply trimTitle if enabled
+                                    const applyTrim = (text) => trimTitleEnabled ? trimTitle(text) : text;
+
                                     switch (mode) {
                                         case "translated":
                                             // 번역만 표시 (없으면 원어)
@@ -1230,7 +1344,7 @@ const FullscreenOverlay = (() => {
                                                 key: "title-main",
                                                 className: "lyrics-fullscreen-title",
                                                 style: { fontSize: `${titleSize}px` }
-                                            }, translatedTitle || originalTitle));
+                                            }, applyTrim(translatedTitle || originalTitle)));
                                             break;
 
                                         case "romanized":
@@ -1239,7 +1353,7 @@ const FullscreenOverlay = (() => {
                                                 key: "title-main",
                                                 className: "lyrics-fullscreen-title",
                                                 style: { fontSize: `${titleSize}px` }
-                                            }, romanizedTitle || originalTitle));
+                                            }, applyTrim(romanizedTitle || originalTitle)));
                                             break;
 
                                         case "original-translated":
@@ -1248,13 +1362,13 @@ const FullscreenOverlay = (() => {
                                                 key: "title-original",
                                                 className: "lyrics-fullscreen-title",
                                                 style: { fontSize: `${titleSize}px` }
-                                            }, originalTitle));
+                                            }, applyTrim(originalTitle)));
                                             if (translatedTitle && translatedTitle !== originalTitle) {
                                                 elements.push(react.createElement("div", {
                                                     key: "title-translated",
                                                     className: "lyrics-fullscreen-title-translated",
                                                     style: { fontSize: `${Math.round(titleSize * 0.6)}px` }
-                                                }, translatedTitle));
+                                                }, applyTrim(translatedTitle)));
                                             }
                                             break;
 
@@ -1264,13 +1378,13 @@ const FullscreenOverlay = (() => {
                                                 key: "title-original",
                                                 className: "lyrics-fullscreen-title",
                                                 style: { fontSize: `${titleSize}px` }
-                                            }, originalTitle));
+                                            }, applyTrim(originalTitle)));
                                             if (romanizedTitle && romanizedTitle !== originalTitle) {
                                                 elements.push(react.createElement("div", {
                                                     key: "title-romanized",
                                                     className: "lyrics-fullscreen-title-romanized",
                                                     style: { fontSize: `${Math.round(titleSize * 0.5)}px` }
-                                                }, romanizedTitle));
+                                                }, applyTrim(romanizedTitle)));
                                             }
                                             break;
 
@@ -1281,20 +1395,20 @@ const FullscreenOverlay = (() => {
                                                 key: "title-original",
                                                 className: "lyrics-fullscreen-title",
                                                 style: { fontSize: `${titleSize}px` }
-                                            }, originalTitle));
+                                            }, applyTrim(originalTitle)));
                                             if (translatedTitle && translatedTitle !== originalTitle) {
                                                 elements.push(react.createElement("div", {
                                                     key: "title-translated",
                                                     className: "lyrics-fullscreen-title-translated",
                                                     style: { fontSize: `${Math.round(titleSize * 0.6)}px` }
-                                                }, translatedTitle));
+                                                }, applyTrim(translatedTitle)));
                                             }
                                             if (romanizedTitle && romanizedTitle !== originalTitle && romanizedTitle !== translatedTitle) {
                                                 elements.push(react.createElement("div", {
                                                     key: "title-romanized",
                                                     className: "lyrics-fullscreen-title-romanized",
                                                     style: { fontSize: `${Math.round(titleSize * 0.5)}px` }
-                                                }, romanizedTitle));
+                                                }, applyTrim(romanizedTitle)));
                                             }
                                             break;
                                     }
@@ -1311,13 +1425,16 @@ const FullscreenOverlay = (() => {
                                     const romanizedArtist = translatedMetadata?.romanized?.artist;
                                     const elements = [];
 
+                                    // Apply trimTitle if enabled
+                                    const applyTrim = (text) => trimTitleEnabled ? trimTitle(text) : text;
+
                                     switch (mode) {
                                         case "translated":
                                             elements.push(react.createElement("div", {
                                                 key: "artist-main",
                                                 className: "lyrics-fullscreen-artist",
                                                 style: { fontSize: `${artistSize}px` }
-                                            }, translatedArtist || originalArtist));
+                                            }, applyTrim(translatedArtist || originalArtist)));
                                             break;
 
                                         case "romanized":
@@ -1325,7 +1442,7 @@ const FullscreenOverlay = (() => {
                                                 key: "artist-main",
                                                 className: "lyrics-fullscreen-artist",
                                                 style: { fontSize: `${artistSize}px` }
-                                            }, romanizedArtist || originalArtist));
+                                            }, applyTrim(romanizedArtist || originalArtist)));
                                             break;
 
                                         case "original-translated":
@@ -1333,13 +1450,13 @@ const FullscreenOverlay = (() => {
                                                 key: "artist-original",
                                                 className: "lyrics-fullscreen-artist",
                                                 style: { fontSize: `${artistSize}px` }
-                                            }, originalArtist));
+                                            }, applyTrim(originalArtist)));
                                             if (translatedArtist && translatedArtist !== originalArtist) {
                                                 elements.push(react.createElement("div", {
                                                     key: "artist-translated",
                                                     className: "lyrics-fullscreen-artist-translated",
                                                     style: { fontSize: `${Math.round(artistSize * 0.8)}px` }
-                                                }, translatedArtist));
+                                                }, applyTrim(translatedArtist)));
                                             }
                                             break;
 
@@ -1348,13 +1465,13 @@ const FullscreenOverlay = (() => {
                                                 key: "artist-original",
                                                 className: "lyrics-fullscreen-artist",
                                                 style: { fontSize: `${artistSize}px` }
-                                            }, originalArtist));
+                                            }, applyTrim(originalArtist)));
                                             if (romanizedArtist && romanizedArtist !== originalArtist) {
                                                 elements.push(react.createElement("div", {
                                                     key: "artist-romanized",
                                                     className: "lyrics-fullscreen-artist-romanized",
                                                     style: { fontSize: `${Math.round(artistSize * 0.8)}px` }
-                                                }, romanizedArtist));
+                                                }, applyTrim(romanizedArtist)));
                                             }
                                             break;
 
@@ -1364,18 +1481,30 @@ const FullscreenOverlay = (() => {
                                                 key: "artist-original",
                                                 className: "lyrics-fullscreen-artist",
                                                 style: { fontSize: `${artistSize}px` }
-                                            }, originalArtist));
+                                            }, applyTrim(originalArtist)));
                                             if (translatedArtist && translatedArtist !== originalArtist) {
                                                 elements.push(react.createElement("div", {
                                                     key: "artist-translated",
                                                     className: "lyrics-fullscreen-artist-translated",
                                                     style: { fontSize: `${Math.round(artistSize * 0.8)}px` }
-                                                }, translatedArtist));
+                                                }, applyTrim(translatedArtist)));
                                             }
                                             break;
                                     }
 
                                     return elements;
+                                })()
+                            ),
+                            // Album name (optional)
+                            normalShowAlbumName && react.createElement("div", {
+                                className: "lyrics-fullscreen-album-name",
+                                style: { fontSize: `${Math.round(artistSize * 0.85)}px` }
+                            },
+                                (() => {
+                                    try {
+                                        const albumName = Spicetify.Player.data?.item?.metadata?.album_title;
+                                        return albumName || '';
+                                    } catch (e) { return ''; }
                                 })()
                             )
                         ),

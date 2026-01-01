@@ -835,6 +835,10 @@ window.LANG_IT = {
         "desc": "Scorciatoia Schermo Intero",
         "info": "Imposta scorciatoia da tastiera per attivare modalità schermo intero"
       },
+      "toggleTvModeKey": {
+        "desc": "Scorciatoia modalità TV",
+        "info": "Solo in modalità schermo intero. Passa dalla modalità TV a quella normale"
+      },
       "tvMode": {
         "desc": "Modalità TV",
         "info": "Mostra copertina album e info traccia in basso a sinistra, il testo usa tutto lo schermo"
@@ -893,6 +897,34 @@ window.LANG_IT = {
         "desc": "Usa Schermo Intero Spotify",
         "info": "Quando si entra in modalità schermo intero, Spotify passa a schermo intero per riempire l'intero monitor"
       }
+    },
+    "normalMode": {
+      "title": "Layout Modalità Normale",
+      "subtitle": "Configura il layout della modalità schermo intero normale (quando la modalità TV è disattivata)",
+      "showAlbumName": {
+        "desc": "Mostra Nome Album",
+        "info": "Mostra il nome dell'album sotto il titolo e l'artista",
+      },
+    },
+    "tvMode": {
+      "title": "Impostazioni Modalità TV",
+      "subtitle": "Configura le opzioni di visualizzazione della modalità TV",
+      "showAlbumName": {
+        "desc": "Mostra Nome Album",
+        "info": "Mostra il nome dell'album sotto l'artista in modalità TV",
+      },
+      "showControls": {
+        "desc": "Mostra Pulsanti di Controllo",
+        "info": "Mostra i pulsanti riproduci/pausa, traccia precedente/successiva in modalità TV",
+      },
+      "showProgress": {
+        "desc": "Mostra Barra di Avanzamento",
+        "info": "Mostra l'avanzamento e il tempo di riproduzione in modalità TV",
+      },
+    },
+    "metadataDisplay": {
+      "title": "Visualizzazione Titolo/Artista",
+      "subtitle": "Configura come vengono visualizzati titolo e artista",
     },
     "fullscreenStyle": {
       "title": "Stile Schermo Intero",

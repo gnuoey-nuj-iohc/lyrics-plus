@@ -835,6 +835,10 @@ window.LANG_PT = {
         "desc": "Atalho de Tela Cheia",
         "info": "Definir atalho de teclado para alternar o modo tela cheia"
       },
+      "toggleTvModeKey": {
+        "desc": "Atalho alternar modo TV",
+        "info": "Apenas em tela cheia. Alterna entre modo TV e normal"
+      },
       "tvMode": {
         "desc": "Modo TV",
         "info": "Exibir capa do álbum e informações da faixa no canto inferior esquerdo, letras usam tela cheia"
@@ -893,6 +897,34 @@ window.LANG_PT = {
         "desc": "Usar Tela Cheia do Spotify",
         "info": "Ao entrar no modo tela cheia, o Spotify entra em tela cheia para preencher todo o monitor"
       }
+    },
+    "normalMode": {
+      "title": "Layout do Modo Normal",
+      "subtitle": "Configurar o layout do modo tela cheia normal (quando o modo TV está desativado)",
+      "showAlbumName": {
+        "desc": "Mostrar Nome do Álbum",
+        "info": "Mostrar o nome do álbum abaixo do título e artista",
+      },
+    },
+    "tvMode": {
+      "title": "Configurações do Modo TV",
+      "subtitle": "Configurar opções de exibição do modo TV",
+      "showAlbumName": {
+        "desc": "Mostrar Nome do Álbum",
+        "info": "Mostrar o nome do álbum abaixo do artista no modo TV",
+      },
+      "showControls": {
+        "desc": "Mostrar Botões de Controle",
+        "info": "Mostrar botões de reproduzir/pausar, faixa anterior/próxima no modo TV",
+      },
+      "showProgress": {
+        "desc": "Mostrar Barra de Progresso",
+        "info": "Mostrar o progresso e tempo de reprodução no modo TV",
+      },
+    },
+    "metadataDisplay": {
+      "title": "Exibição de Título/Artista",
+      "subtitle": "Configurar como o título e artista são exibidos",
     },
     "fullscreenStyle": {
       "title": "Estilo de Tela Cheia",

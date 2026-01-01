@@ -829,18 +829,22 @@ window.LANG_KO = {
       }
     },
     "fullscreenMode": {
-      "title": "전체화면 모드",
-      "subtitle": "전체화면 모드의 레이아웃과 표시 설정",
+      "title": "전체화면 기본 설정",
+      "subtitle": "전체화면 모드의 기본 동작을 설정합니다",
       "shortcut": {
         "desc": "전체화면 단축키",
         "info": "전체화면 모드를 토글하는 키보드 단축키를 설정합니다"
       },
+      "toggleTvModeKey": {
+        "desc": "TV 모드 전환 단축키",
+        "info": "전체화면 모드에서만 작동합니다. TV 모드와 일반 모드를 전환합니다"
+      },
       "tvMode": {
-        "desc": "TV 모드",
+        "desc": "TV 모드 사용",
         "info": "좌측 하단에 앨범 아트와 곡 정보를 표시하고 가사는 전체 화면을 사용합니다"
       },
       "tvModeAlbumSize": {
-        "desc": "TV 모드 앨범 크기",
+        "desc": "앨범 크기",
         "info": "TV 모드에서 앨범 아트의 크기를 설정합니다 (픽셀)"
       },
       "splitView": {
@@ -893,6 +897,34 @@ window.LANG_KO = {
         "desc": "Spotify 전체화면 사용",
         "info": "전체화면 모드 진입 시 Spotify를 전체화면으로 전환하여 모니터를 꽉 채웁니다"
       }
+    },
+    "normalMode": {
+      "title": "일반 모드 레이아웃",
+      "subtitle": "일반 전체화면 모드의 레이아웃을 설정합니다 (TV 모드가 아닐 때)",
+      "showAlbumName": {
+        "desc": "앨범명 표시",
+        "info": "곡 제목과 아티스트 아래에 앨범 이름을 표시합니다"
+      }
+    },
+    "tvMode": {
+      "title": "TV 모드 설정",
+      "subtitle": "TV 모드에서의 표시 옵션을 설정합니다",
+      "showAlbumName": {
+        "desc": "앨범명 표시",
+        "info": "TV 모드에서 아티스트 아래에 앨범 이름을 표시합니다"
+      },
+      "showControls": {
+        "desc": "컨트롤 버튼 표시",
+        "info": "TV 모드에서 재생/일시정지, 이전/다음곡 등 컨트롤 버튼을 표시합니다"
+      },
+      "showProgress": {
+        "desc": "재생 진행바 표시",
+        "info": "TV 모드에서 곡의 재생 위치와 시간을 표시하는 진행바를 표시합니다"
+      }
+    },
+    "metadataDisplay": {
+      "title": "제목/아티스트 표시",
+      "subtitle": "곡 제목과 아티스트 표시 방식을 설정합니다"
     },
     "fullscreenStyle": {
       "title": "전체화면 스타일",

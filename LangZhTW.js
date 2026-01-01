@@ -1,4 +1,4 @@
-// Traditional Chinese language file for ivLyrics
+﻿// Traditional Chinese language file for ivLyrics
 window.LANG_ZH_TW = {
   "meta": {
     "language": "繁體中文",
@@ -835,6 +835,10 @@ window.LANG_ZH_TW = {
         "desc": "全螢幕快速鍵",
         "info": "設定切換全螢幕模式的鍵盤快速鍵"
       },
+      "toggleTvModeKey": {
+        "desc": "切換TV模式快捷鍵",
+        "info": "僅在全螢幕模式下有效。在TV模式和普通模式之間切換"
+      },
       "tvMode": {
         "desc": "TV模式",
         "info": "在左下角顯示專輯封面和曲目資訊，歌詞使用全螢幕"
@@ -893,6 +897,34 @@ window.LANG_ZH_TW = {
         "desc": "使用 Spotify 全螢幕",
         "info": "進入全螢幕模式時將 Spotify 切換為全螢幕以填滿整個螢幕"
       }
+    },
+    "normalMode": {
+      "title": "一般模式版面",
+      "subtitle": "設定一般全螢幕模式的版面配置（TV模式關閉時）",
+      "showAlbumName": {
+        "desc": "顯示專輯名稱",
+        "info": "在歌曲標題和藝人下方顯示專輯名稱",
+      },
+    },
+    "tvMode": {
+      "title": "TV模式設定",
+      "subtitle": "設定TV模式的顯示選項",
+      "showAlbumName": {
+        "desc": "顯示專輯名稱",
+        "info": "在TV模式下於藝人下方顯示專輯名稱",
+      },
+      "showControls": {
+        "desc": "顯示控制按鈕",
+        "info": "在TV模式下顯示播放/暫停、上一曲/下一曲按鈕",
+      },
+      "showProgress": {
+        "desc": "顯示進度條",
+        "info": "在TV模式下顯示播放進度和時間",
+      },
+    },
+    "metadataDisplay": {
+      "title": "標題/藝人顯示",
+      "subtitle": "設定歌曲標題和藝人的顯示方式",
     },
     "fullscreenStyle": {
       "title": "全螢幕樣式",

@@ -835,6 +835,10 @@ window.LANG_ES = {
         "desc": "Atajo de pantalla completa",
         "info": "Establece el atajo de teclado para alternar el modo pantalla completa"
       },
+      "toggleTvModeKey": {
+        "desc": "Atajo alternar modo TV",
+        "info": "Solo en modo pantalla completa. Alterna entre modo TV y normal"
+      },
       "tvMode": {
         "desc": "Modo TV",
         "info": "Muestra la carátula del álbum e información de la pista en la parte inferior izquierda, las letras usan la pantalla completa"
@@ -893,6 +897,34 @@ window.LANG_ES = {
         "desc": "Usar pantalla completa de Spotify",
         "info": "Al entrar en modo pantalla completa, Spotify pasa a pantalla completa para llenar todo el monitor"
       }
+    },
+    "normalMode": {
+      "title": "Diseño del Modo Normal",
+      "subtitle": "Configurar el diseño del modo pantalla completa normal (cuando el modo TV está desactivado)",
+      "showAlbumName": {
+        "desc": "Mostrar Nombre del Álbum",
+        "info": "Mostrar el nombre del álbum debajo del título y artista",
+      },
+    },
+    "tvMode": {
+      "title": "Configuración del Modo TV",
+      "subtitle": "Configurar las opciones de visualización del modo TV",
+      "showAlbumName": {
+        "desc": "Mostrar Nombre del Álbum",
+        "info": "Mostrar el nombre del álbum debajo del artista en modo TV",
+      },
+      "showControls": {
+        "desc": "Mostrar Botones de Control",
+        "info": "Mostrar botones de reproducir/pausar, pista anterior/siguiente en modo TV",
+      },
+      "showProgress": {
+        "desc": "Mostrar Barra de Progreso",
+        "info": "Mostrar el progreso de reproducción y tiempo en modo TV",
+      },
+    },
+    "metadataDisplay": {
+      "title": "Visualización de Título/Artista",
+      "subtitle": "Configurar cómo se muestran el título y artista de la canción",
     },
     "fullscreenStyle": {
       "title": "Estilo de pantalla completa",

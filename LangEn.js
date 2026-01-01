@@ -829,18 +829,22 @@ window.LANG_EN = {
       }
     },
     "fullscreenMode": {
-      "title": "Fullscreen Mode",
-      "subtitle": "Layout and display settings for fullscreen mode",
+      "title": "Fullscreen Basic Settings",
+      "subtitle": "Configure basic behavior of fullscreen mode",
       "shortcut": {
         "desc": "Fullscreen Shortcut",
         "info": "Set keyboard shortcut to toggle fullscreen mode"
       },
+      "toggleTvModeKey": {
+        "desc": "Toggle TV Mode Shortcut",
+        "info": "Works only in fullscreen mode. Switches between TV mode and normal mode"
+      },
       "tvMode": {
-        "desc": "TV Mode",
+        "desc": "Use TV Mode",
         "info": "Display album art and track info at bottom-left, lyrics use full screen"
       },
       "tvModeAlbumSize": {
-        "desc": "TV Mode Album Size",
+        "desc": "Album Size",
         "info": "Set album art size in TV mode (pixels)"
       },
       "splitView": {
@@ -893,6 +897,34 @@ window.LANG_EN = {
         "desc": "Use Spotify Fullscreen",
         "info": "Enter Spotify fullscreen when entering fullscreen mode to fill the entire monitor"
       }
+    },
+    "normalMode": {
+      "title": "Normal Mode Layout",
+      "subtitle": "Configure layout for normal fullscreen mode (when TV mode is off)",
+      "showAlbumName": {
+        "desc": "Show Album Name",
+        "info": "Display album name below song title and artist"
+      }
+    },
+    "tvMode": {
+      "title": "TV Mode Settings",
+      "subtitle": "Configure display options for TV mode",
+      "showAlbumName": {
+        "desc": "Show Album Name",
+        "info": "Display album name below artist in TV mode"
+      },
+      "showControls": {
+        "desc": "Show Control Buttons",
+        "info": "Display play/pause, previous/next track buttons in TV mode"
+      },
+      "showProgress": {
+        "desc": "Show Progress Bar",
+        "info": "Display playback progress and time in TV mode"
+      }
+    },
+    "metadataDisplay": {
+      "title": "Title/Artist Display",
+      "subtitle": "Configure how song title and artist are displayed"
     },
     "fullscreenStyle": {
       "title": "Fullscreen Style",

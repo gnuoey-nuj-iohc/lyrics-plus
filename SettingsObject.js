@@ -147,6 +147,10 @@ const SettingKeys = [
   "ivLyrics:visual:fullscreen-tv-mode",
   "ivLyrics:visual:fullscreen-tv-album-size",
   "ivLyrics:visual:fullscreen-trim-title",
+  "ivLyrics:visual:fullscreen-show-album-name",
+  "ivLyrics:visual:fullscreen-tv-show-album-name",
+  "ivLyrics:visual:fullscreen-tv-show-controls",
+  "ivLyrics:visual:fullscreen-tv-show-progress",
 ];
 
 const BYTES_FOR_INDEX = Math.ceil(SettingKeys.length / 255);

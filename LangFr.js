@@ -835,6 +835,10 @@ window.LANG_FR = {
         "desc": "Raccourci plein écran",
         "info": "Définit le raccourci clavier pour basculer en mode plein écran"
       },
+      "toggleTvModeKey": {
+        "desc": "Raccourci mode TV",
+        "info": "Fonctionne uniquement en plein écran. Bascule entre mode TV et normal"
+      },
       "tvMode": {
         "desc": "Mode TV",
         "info": "Affiche la pochette et les informations de la piste en bas à gauche, les paroles utilisent tout l'écran"
@@ -893,6 +897,34 @@ window.LANG_FR = {
         "desc": "Utiliser le plein écran Spotify",
         "info": "En mode plein écran, Spotify passe en plein écran pour remplir tout l'écran"
       }
+    },
+    "normalMode": {
+      "title": "Disposition du Mode Normal",
+      "subtitle": "Configurer la disposition du mode plein écran normal (quand le mode TV est désactivé)",
+      "showAlbumName": {
+        "desc": "Afficher le Nom de l'Album",
+        "info": "Afficher le nom de l'album sous le titre et l'artiste",
+      },
+    },
+    "tvMode": {
+      "title": "Paramètres du Mode TV",
+      "subtitle": "Configurer les options d'affichage du mode TV",
+      "showAlbumName": {
+        "desc": "Afficher le Nom de l'Album",
+        "info": "Afficher le nom de l'album sous l'artiste en mode TV",
+      },
+      "showControls": {
+        "desc": "Afficher les Boutons de Contrôle",
+        "info": "Afficher les boutons lecture/pause, piste précédente/suivante en mode TV",
+      },
+      "showProgress": {
+        "desc": "Afficher la Barre de Progression",
+        "info": "Afficher la progression et le temps de lecture en mode TV",
+      },
+    },
+    "metadataDisplay": {
+      "title": "Affichage Titre/Artiste",
+      "subtitle": "Configurer l'affichage du titre et de l'artiste",
     },
     "fullscreenStyle": {
       "title": "Style plein écran",

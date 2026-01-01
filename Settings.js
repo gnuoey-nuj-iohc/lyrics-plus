@@ -283,8 +283,8 @@ const LocalCacheManager = () => {
   const handleClearAll = async () => {
     try {
       // 메모리 캐시도 함께 초기화
-      Translator.clearAllMemoryCache();
-      Translator.clearAllInflightRequests();
+      window.Translator.clearAllMemoryCache();
+      window.Translator.clearAllInflightRequests();
 
       // CacheManager (Gemini 번역 메모리 캐시)도 함께 초기화
       if (typeof CacheManager !== 'undefined' && CacheManager.clear) {
@@ -313,8 +313,8 @@ const LocalCacheManager = () => {
 
     try {
       // 번역 메모리 캐시도 함께 초기화
-      Translator.clearMemoryCache(trackId);
-      Translator.clearInflightRequests(trackId);
+      window.Translator.clearMemoryCache(trackId);
+      window.Translator.clearInflightRequests(trackId);
 
       // CacheManager (Gemini 번역 메모리 캐시)도 함께 초기화
       if (typeof CacheManager !== 'undefined' && CacheManager.clearByUri) {
@@ -5213,6 +5213,7 @@ const ConfigModal = () => {
         {
           className: `tab-content ${activeTab === "fullscreen" ? "active" : ""}`,
         },
+        // ===== 기본 설정 섹션 =====
         react.createElement(SectionTitle, {
           title: I18n.t("settingsAdvanced.fullscreenMode.title"),
           subtitle: I18n.t("settingsAdvanced.fullscreenMode.subtitle"),
@@ -5226,6 +5227,13 @@ const ConfigModal = () => {
               type: ConfigHotkey,
             },
             {
+              desc: I18n.t("settingsAdvanced.fullscreenMode.browserFullscreen.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenMode.browserFullscreen.info"),
+              key: "fullscreen-browser-fullscreen",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-browser-fullscreen"] ?? false,
+            },
+            {
               desc: I18n.t("settingsAdvanced.fullscreenMode.tvMode.desc"),
               info: I18n.t("settingsAdvanced.fullscreenMode.tvMode.info"),
               key: "fullscreen-tv-mode",
@@ -5233,21 +5241,38 @@ const ConfigModal = () => {
               defaultValue: CONFIG.visual["fullscreen-tv-mode"] ?? false,
             },
             {
-              desc: I18n.t("settingsAdvanced.fullscreenMode.tvModeAlbumSize.desc"),
-              info: I18n.t("settingsAdvanced.fullscreenMode.tvModeAlbumSize.info"),
-              key: "fullscreen-tv-album-size",
-              type: ConfigInput,
-              inputType: "number",
-              defaultValue: CONFIG.visual["fullscreen-tv-album-size"] || "140",
-              when: () => CONFIG.visual["fullscreen-tv-mode"] === true,
+              desc: I18n.t("settingsAdvanced.fullscreenMode.toggleTvModeKey.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenMode.toggleTvModeKey.info"),
+              key: "toggle-tv-mode-key",
+              type: ConfigHotkey,
+              defaultValue: "t",
             },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            StorageManager.saveConfig(name, value);
+            lyricContainerUpdate?.();
+            window.dispatchEvent(
+              new CustomEvent("ivLyrics", {
+                detail: { type: "config", name, value },
+              })
+            );
+          },
+        }),
+
+        // ===== 일반 모드 레이아웃 섹션 =====
+        react.createElement(SectionTitle, {
+          title: I18n.t("settingsAdvanced.normalMode.title"),
+          subtitle: I18n.t("settingsAdvanced.normalMode.subtitle"),
+        }),
+        react.createElement(OptionList, {
+          items: [
             {
               desc: I18n.t("settingsAdvanced.fullscreenMode.twoColumnLayout.desc"),
               info: I18n.t("settingsAdvanced.fullscreenMode.splitView.info"),
               key: "fullscreen-two-column",
               type: ConfigSlider,
               defaultValue: CONFIG.visual["fullscreen-two-column"] ?? true,
-              when: () => CONFIG.visual["fullscreen-tv-mode"] !== true,
             },
             {
               desc: I18n.t("settingsAdvanced.fullscreenMode.invertPosition.desc"),
@@ -5274,6 +5299,93 @@ const ConfigModal = () => {
               when: () => CONFIG.visual["fullscreen-two-column"] !== false,
             },
             {
+              desc: I18n.t("settingsAdvanced.normalMode.showAlbumName.desc"),
+              info: I18n.t("settingsAdvanced.normalMode.showAlbumName.info"),
+              key: "fullscreen-show-album-name",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-show-album-name"] ?? false,
+              when: () => CONFIG.visual["fullscreen-two-column"] !== false && CONFIG.visual["fullscreen-show-info"] !== false,
+            },
+            {
+              desc: I18n.t("settingsAdvanced.fullscreenMode.centerWhenNoLyrics.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenMode.centerWhenNoLyrics.info"),
+              key: "fullscreen-center-when-no-lyrics",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-center-when-no-lyrics"] ?? true,
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            StorageManager.saveConfig(name, value);
+            lyricContainerUpdate?.();
+            window.dispatchEvent(
+              new CustomEvent("ivLyrics", {
+                detail: { type: "config", name, value },
+              })
+            );
+          },
+        }),
+
+        // ===== TV 모드 섹션 =====
+        react.createElement(SectionTitle, {
+          title: I18n.t("settingsAdvanced.tvMode.title"),
+          subtitle: I18n.t("settingsAdvanced.tvMode.subtitle"),
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: I18n.t("settingsAdvanced.fullscreenMode.tvModeAlbumSize.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenMode.tvModeAlbumSize.info"),
+              key: "fullscreen-tv-album-size",
+              type: ConfigSliderRange,
+              min: 80,
+              max: 200,
+              step: 10,
+              unit: "px",
+              defaultValue: CONFIG.visual["fullscreen-tv-album-size"] || 140,
+            },
+            {
+              desc: I18n.t("settingsAdvanced.tvMode.showAlbumName.desc"),
+              info: I18n.t("settingsAdvanced.tvMode.showAlbumName.info"),
+              key: "fullscreen-tv-show-album-name",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-tv-show-album-name"] ?? true,
+            },
+            {
+              desc: I18n.t("settingsAdvanced.tvMode.showControls.desc"),
+              info: I18n.t("settingsAdvanced.tvMode.showControls.info"),
+              key: "fullscreen-tv-show-controls",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-tv-show-controls"] ?? false,
+            },
+            {
+              desc: I18n.t("settingsAdvanced.tvMode.showProgress.desc"),
+              info: I18n.t("settingsAdvanced.tvMode.showProgress.info"),
+              key: "fullscreen-tv-show-progress",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-tv-show-progress"] ?? false,
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            StorageManager.saveConfig(name, value);
+            lyricContainerUpdate?.();
+            window.dispatchEvent(
+              new CustomEvent("ivLyrics", {
+                detail: { type: "config", name, value },
+              })
+            );
+          },
+        }),
+
+        // ===== 제목/아티스트 설정 섹션 =====
+        react.createElement(SectionTitle, {
+          title: I18n.t("settingsAdvanced.metadataDisplay.title"),
+          subtitle: I18n.t("settingsAdvanced.metadataDisplay.subtitle"),
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
               desc: I18n.t("settingsAdvanced.fullscreenMode.trimTitle.desc"),
               info: I18n.t("settingsAdvanced.fullscreenMode.trimTitle.info"),
               key: "fullscreen-trim-title",
@@ -5286,7 +5398,6 @@ const ConfigModal = () => {
               key: "translate-metadata",
               type: ConfigSlider,
               defaultValue: CONFIG.visual["translate-metadata"] ?? false,
-              when: () => CONFIG.visual["fullscreen-two-column"] !== false && CONFIG.visual["fullscreen-show-info"] !== false,
             },
             {
               desc: I18n.t("settingsAdvanced.fullscreenMode.translateMetadataMode.desc"),
@@ -5301,21 +5412,7 @@ const ConfigModal = () => {
                 "all": I18n.t("settingsAdvanced.fullscreenMode.translateMetadataMode.options.all")
               },
               defaultValue: CONFIG.visual["translate-metadata-mode"] || "translated",
-              when: () => CONFIG.visual["fullscreen-two-column"] !== false && CONFIG.visual["fullscreen-show-info"] !== false && CONFIG.visual["translate-metadata"] === true,
-            },
-            {
-              desc: I18n.t("settingsAdvanced.fullscreenMode.centerWhenNoLyrics.desc"),
-              info: I18n.t("settingsAdvanced.fullscreenMode.centerWhenNoLyrics.info"),
-              key: "fullscreen-center-when-no-lyrics",
-              type: ConfigSlider,
-              defaultValue: CONFIG.visual["fullscreen-center-when-no-lyrics"] ?? true,
-            },
-            {
-              desc: I18n.t("settingsAdvanced.fullscreenMode.browserFullscreen.desc"),
-              info: I18n.t("settingsAdvanced.fullscreenMode.browserFullscreen.info"),
-              key: "fullscreen-browser-fullscreen",
-              type: ConfigSlider,
-              defaultValue: CONFIG.visual["fullscreen-browser-fullscreen"] ?? false,
+              when: () => CONFIG.visual["translate-metadata"] === true,
             },
           ],
           onChange: (name, value) => {

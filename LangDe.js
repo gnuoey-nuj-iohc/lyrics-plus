@@ -835,6 +835,10 @@ window.LANG_DE = {
         "desc": "Vollbild-Tastenkürzel",
         "info": "Legt das Tastenkürzel zum Umschalten des Vollbildmodus fest"
       },
+      "toggleTvModeKey": {
+        "desc": "TV-Modus umschalten Taste",
+        "info": "Nur im Vollbildmodus. Wechselt zwischen TV-Modus und normal"
+      },
       "tvMode": {
         "desc": "TV-Modus",
         "info": "Zeigt Albumcover und Titelinformationen unten links an, Liedtexte nutzen den gesamten Bildschirm"
@@ -893,6 +897,34 @@ window.LANG_DE = {
         "desc": "Spotify Vollbild verwenden",
         "info": "Beim Wechsel in den Vollbildmodus wird Spotify in den Vollbildmodus geschaltet, um den gesamten Monitor auszufüllen"
       }
+    },
+    "normalMode": {
+      "title": "Normalmodus-Layout",
+      "subtitle": "Layout für den normalen Vollbildmodus konfigurieren (wenn TV-Modus aus ist)",
+      "showAlbumName": {
+        "desc": "Albumname anzeigen",
+        "info": "Albumname unter Titel und Künstler anzeigen",
+      },
+    },
+    "tvMode": {
+      "title": "TV-Modus-Einstellungen",
+      "subtitle": "Anzeigeoptionen für den TV-Modus konfigurieren",
+      "showAlbumName": {
+        "desc": "Albumname anzeigen",
+        "info": "Albumname unter dem Künstler im TV-Modus anzeigen",
+      },
+      "showControls": {
+        "desc": "Steuerungstasten anzeigen",
+        "info": "Wiedergabe/Pause, vorheriger/nächster Track-Tasten im TV-Modus anzeigen",
+      },
+      "showProgress": {
+        "desc": "Fortschrittsbalken anzeigen",
+        "info": "Wiedergabefortschritt und Zeit im TV-Modus anzeigen",
+      },
+    },
+    "metadataDisplay": {
+      "title": "Titel/Künstler-Anzeige",
+      "subtitle": "Konfigurieren, wie Titel und Künstler angezeigt werden",
     },
     "fullscreenStyle": {
       "title": "Vollbildstil",

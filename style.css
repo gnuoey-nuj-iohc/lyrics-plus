@@ -1791,6 +1791,15 @@ ruby .lyrics-karaoke-char.sung {
   opacity: 0.9;
 }
 
+/* Normal Fullscreen Album Name */
+.lyrics-fullscreen-album-name {
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--spice-subtext);
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
 /* Right Panel (Lyrics) Adjustments */
 .lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyricsPage {
   grid-area: auto;
@@ -2013,6 +2022,17 @@ ruby .lyrics-karaoke-char.sung {
 }
 
 .fullscreen-top-right.hidden {
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+}
+
+/* Clock wrapper for auto-hide */
+.fullscreen-clock-wrapper {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fullscreen-clock-wrapper.hidden {
   opacity: 0;
   transform: translateY(-10px);
   pointer-events: none;
@@ -4692,6 +4712,24 @@ ruby .lyrics-karaoke-char.sung {
   padding-bottom: 200px;
 }
 
+/* TV Mode - Scrolling mode fixes (no left/right padding, full width) */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active.tv-mode-active .lyrics-lyricsContainer-SyncedLyricsPage.scrolling-active,
+#lyrics-fullscreen-container .lyrics-lyricsContainer-LyricsContainer.tv-mode-active .lyrics-lyricsContainer-SyncedLyricsPage.scrolling-active {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+/* TV Mode - SyncedLyrics inner container full width */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active.tv-mode-active .lyrics-lyricsContainer-SyncedLyricsPage.scrolling-active .lyrics-lyricsContainer-SyncedLyrics,
+#lyrics-fullscreen-container .lyrics-lyricsContainer-LyricsContainer.tv-mode-active .lyrics-lyricsContainer-SyncedLyricsPage.scrolling-active .lyrics-lyricsContainer-SyncedLyrics {
+  padding-left: clamp(24px, 4vw, 64px) !important;
+  padding-right: clamp(24px, 4vw, 64px) !important;
+  align-items: flex-start !important;
+}
+
 /* TV Mode - Responsive adjustments */
 @media (max-width: 1200px) {
   .fullscreen-tv-song-info {
@@ -4736,4 +4774,95 @@ ruby .lyrics-karaoke-char.sung {
     bottom: 24px;
     left: 24px;
   }
+}
+
+/* TV Mode Controls */
+/* TV Mode Controls Wrapper (right side) */
+.fullscreen-tv-controls-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-left: auto;
+  padding-left: 24px;
+  pointer-events: auto;
+}
+
+/* TV Mode Controls */
+.fullscreen-tv-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fullscreen-tv-control-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: color 0.2s, background 0.2s, transform 0.1s;
+}
+
+.fullscreen-tv-control-btn:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.fullscreen-tv-control-btn:active {
+  transform: scale(0.95);
+}
+
+.fullscreen-tv-control-btn.play-pause {
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0 4px;
+}
+
+.fullscreen-tv-control-btn.play-pause:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* TV Mode Progress bar */
+.fullscreen-tv-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 200px;
+}
+
+.fullscreen-tv-time {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  min-width: 36px;
+  font-variant-numeric: tabular-nums;
+}
+
+.fullscreen-tv-time.total {
+  text-align: right;
+}
+
+.fullscreen-tv-progress-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.fullscreen-tv-progress-bar:hover {
+  height: 6px;
+}
+
+.fullscreen-tv-progress-fill {
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 2px;
+  transition: width 0.1s linear;
 }

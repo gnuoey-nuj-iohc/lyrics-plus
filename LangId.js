@@ -807,6 +807,10 @@ window.LANG_ID = {
         "desc": "Pintasan Layar Penuh",
         "info": "Atur pintasan keyboard untuk beralih mode layar penuh"
       },
+      "toggleTvModeKey": {
+        "desc": "Pintasan alihkan mode TV",
+        "info": "Hanya berfungsi dalam mode layar penuh. Beralih antara mode TV dan normal"
+      },
       "tvMode": {
         "desc": "Mode TV",
         "info": "Tampilkan sampul album dan info lagu di kiri bawah, lirik menggunakan layar penuh"
@@ -869,6 +873,34 @@ window.LANG_ID = {
         "desc": "Gunakan Spotify Layar Penuh",
         "info": "Ubah Spotify ke layar penuh monitor saat masuk mode layar penuh"
       }
+    },
+    "normalMode": {
+      "title": "Tata Letak Mode Normal",
+      "subtitle": "Konfigurasi tata letak untuk mode layar penuh normal (saat mode TV nonaktif)",
+      "showAlbumName": {
+        "desc": "Tampilkan Nama Album",
+        "info": "Tampilkan nama album di bawah judul dan artis",
+      },
+    },
+    "tvMode": {
+      "title": "Pengaturan Mode TV",
+      "subtitle": "Konfigurasi opsi tampilan untuk mode TV",
+      "showAlbumName": {
+        "desc": "Tampilkan Nama Album",
+        "info": "Tampilkan nama album di bawah artis dalam mode TV",
+      },
+      "showControls": {
+        "desc": "Tampilkan Tombol Kontrol",
+        "info": "Tampilkan tombol putar/jeda, trek sebelumnya/berikutnya dalam mode TV",
+      },
+      "showProgress": {
+        "desc": "Tampilkan Bilah Kemajuan",
+        "info": "Tampilkan kemajuan dan waktu pemutaran dalam mode TV",
+      },
+    },
+    "metadataDisplay": {
+      "title": "Tampilan Judul/Artis",
+      "subtitle": "Konfigurasi bagaimana judul dan artis ditampilkan",
     },
     "fullscreenStyle": {
       "title": "Gaya Layar Penuh",

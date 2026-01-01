@@ -36,9 +36,6 @@
 		"LangTh.js",
 		"LangVi.js",
 		"I18n.js",
-		"ProviderLRCLIB.js",
-		"ProviderIvLyrics.js",
-		"Providers.js",
 		"Pages.js",
 		"SettingsObject.js",
 		"Settings.js",
@@ -46,13 +43,13 @@
 		"TabBar.js",
 		"Utils.js",
 		"LyricsShareImage.js",
-		"Translator.js",
 		"CommunityVideoSelector.js",
 		"VideoBackground.js",
 		"FullscreenOverlay.js",
 		"SongInfoTicker.js"
 	],
 	"subfiles_extension": [
+		"LyricsService.js",
 		"PlaybarButton.js",
 		"VideoBackgroundDepend.js",
 		"GlobalShortcuts.js"
