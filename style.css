@@ -2655,9 +2655,9 @@ ruby .lyrics-karaoke-char.sung {
   /* REMOVED: The block that collapsed gaps and centered content. 
      Now it maintains the standard flex-end alignment and 24px gap defined in .lyrics-fullscreen-left-content */
 
-  /* 3. Bottom Panel (Lyrics) */
-  .lyrics-lyricsContainer-SyncedLyricsPage,
-  .lyrics-lyricsContainer-UnsyncedLyricsPage {
+  /* 3. Bottom Panel (Lyrics) - Only in fullscreen mode */
+  .lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyricsPage,
+  .lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-UnsyncedLyricsPage {
     grid-row: 2;
     grid-column: 1;
     width: 100% !important;
@@ -2669,7 +2669,7 @@ ruby .lyrics-karaoke-char.sung {
 
     /* Layout */
     display: block;
-    text-align: center;
+    /* text-align removed - use user settings */
 
     /* Reset transforms/masks */
     transform: none !important;
@@ -2680,14 +2680,14 @@ ruby .lyrics-karaoke-char.sung {
     z-index: 10;
   }
 
-  /* Ensure Synced Lyrics Container is clean */
-  .lyrics-lyricsContainer-SyncedLyrics {
+  /* Ensure Synced Lyrics Container is clean - Only in fullscreen mode */
+  .lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyrics {
     transform: none !important;
     margin-top: 0 !important;
   }
 
-  /* Scrolling active state */
-  .lyrics-lyricsContainer-SyncedLyricsPage.scrolling-active {
+  /* Scrolling active state - Only in fullscreen mode */
+  .lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyricsPage.scrolling-active {
     padding: 16px 8vw 40px 8vw !important;
   }
 
@@ -2732,8 +2732,9 @@ ruby .lyrics-karaoke-char.sung {
 /* Tablet / Large Portrait Optimizations */
 @media (orientation: portrait) and (min-width: 768px) {
 
-  .lyrics-lyricsContainer-SyncedLyricsPage,
-  .lyrics-lyricsContainer-UnsyncedLyricsPage {
+  /* Tablet padding - Only in fullscreen mode */
+  .lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyricsPage,
+  .lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-UnsyncedLyricsPage {
     padding-left: 12vw !important;
     padding-right: 12vw !important;
   }
