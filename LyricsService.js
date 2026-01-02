@@ -1448,7 +1448,7 @@
             const lines = lyrics.lines;
             if (lyrics.syncType === "LINE_SYNCED") {
                 result.synced = lines.map((line) => ({
-                    startTime: line.startTimeMs,
+                    startTime: parseInt(line.startTimeMs, 10) || 0,
                     text: line.words,
                 }));
                 result.unsynced = result.synced;
@@ -3024,9 +3024,13 @@
                     transText = null;
                 }
 
+                // startTime과 endTime을 숫자로 안전하게 변환
+                const startTimeNum = typeof l.startTime === 'number' ? l.startTime : (parseInt(l.startTime, 10) || 0);
+                const endTimeNum = l.endTime != null ? (typeof l.endTime === 'number' ? l.endTime : (parseInt(l.endTime, 10) || null)) : null;
+
                 return {
-                    startTime: (l.startTime || 0) + offset,
-                    endTime: l.endTime ? l.endTime + offset : null,
+                    startTime: startTimeNum + offset,
+                    endTime: endTimeNum !== null ? endTimeNum + offset : null,
                     text: originalText,
                     pronText: pronText,
                     transText: transText
@@ -3284,11 +3288,19 @@
 
                     console.log('[OverlaySender] 트랙 정보:', { title, artist });
 
+                    // 사용자 설정의 provider 순서 사용 (활성화된 것만 필터)
+                    const defaultOrder = ['ivlyrics', 'spotify', 'lrclib', 'local'];
+                    const configOrder = window.CONFIG?.providersOrder;
+                    const providers = window.CONFIG?.providers || {};
+                    const providerOrder = Array.isArray(configOrder) && configOrder.length > 0
+                        ? configOrder.filter(id => providers[id]?.on !== false)
+                        : defaultOrder;
+
                     // LyricsService.getFullLyrics 통합 API 사용
                     // (가사 로드 + endTime 계산 + 발음/번역 + 오버레이 전송까지 한 번에 처리)
                     await LyricsService.getFullLyrics(
                         { uri, title, artist, duration },
-                        { sendToOverlay: true }
+                        { sendToOverlay: true, providerOrder }
                     );
                 } catch (e) {
                     console.error('[OverlaySender] 가사 가져오기 실패:', e);

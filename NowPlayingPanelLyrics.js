@@ -514,7 +514,13 @@ body:has([data-testid="ivlyrics-page"]) .ivlyrics-panel-lyrics-section {
                 // ==========================================
                 // 1단계: 가사만 먼저 로드 (빠르게 표시)
                 // ==========================================
-                const providerOrder = ['ivlyrics', 'spotify', 'lrclib', 'local'];
+                // 사용자 설정의 provider 순서 사용 (활성화된 것만 필터)
+                const defaultOrder = ['ivlyrics', 'spotify', 'lrclib', 'local'];
+                const configOrder = window.CONFIG?.providersOrder;
+                const providers = window.CONFIG?.providers || {};
+                const providerOrder = Array.isArray(configOrder) && configOrder.length > 0
+                    ? configOrder.filter(id => providers[id]?.on !== false)
+                    : defaultOrder;
                 const result = await window.LyricsService.getLyricsFromProviders(trackInfo, providerOrder, 0); // mode 0 = karaoke 우선
 
                 if (result && !result.error) {
