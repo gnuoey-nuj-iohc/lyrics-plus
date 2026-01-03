@@ -13,7 +13,16 @@ window.LANG_JA = {
     "advanced": "詳細",
     "fullscreen": "フルスクリーン",
     "debug": "デバッグ",
-    "about": "情報"
+    "about": "情報",
+    "searchResults": "検索結果"
+  },
+  "search": {
+    "placeholder": "設定を検索...",
+    "noResults": "結果が見つかりません",
+    "noResultsDesc": "別の検索ワードをお試しください",
+    "resultCount": "{count}件の結果",
+    "clear": "クリア",
+    "inSection": "{section}内"
   },
   "sections": {
     "language": "言語",

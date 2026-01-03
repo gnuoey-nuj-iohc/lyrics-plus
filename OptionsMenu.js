@@ -440,7 +440,10 @@ function openOptionsModal(title, items, onChange, eventType = null) {
 	margin: 0;
 	font-size: 22px;
 	font-weight: 700;
-	color: #ffffff;
+	background: linear-gradient(135deg, #ec4899 0%, #d946ef 50%, #a855f7 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
 	letter-spacing: -0.02em;
 }
 
@@ -1350,10 +1353,13 @@ const SyncAdjustButton = react.memo(
               "div",
               {
                 style: {
-                  fontSize: "16px",
-                  fontWeight: "600",
-                  color: "#ffffff",
-                  letterSpacing: "-0.01em",
+                  fontSize: "20px",
+                  fontWeight: "700",
+                  background: "linear-gradient(135deg, #0ea5e9 0%, #06b6d4 50%, #14b8a6 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  letterSpacing: "-0.02em",
                 },
               },
               I18n.t("menu.syncAdjustTitle")
@@ -1950,7 +1956,7 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
       const pronText = (line.text && line.text !== line.originalText && line.originalText) ? line.text : null;
       // 번역 텍스트
       const transText = line.text2 || line.translation || line.transText || null;
-      
+
       return {
         idx,
         originalText: originalText.trim(),
@@ -2014,7 +2020,7 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
     setShowCopyrightModal(false);
     const action = pendingAction;
     setPendingAction(null);
-    
+
     if (action === 'copy') {
       await executeCopy();
     } else if (action === 'download') {
@@ -2147,7 +2153,16 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
       }
     },
       react.createElement("h2", {
-        style: { margin: 0, fontSize: '20px', fontWeight: '600' }
+        style: {
+          margin: 0,
+          fontSize: '22px',
+          fontWeight: '700',
+          background: "linear-gradient(135deg, #22c55e 0%, #10b981 50%, #14b8a6 100%)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+          letterSpacing: "-0.02em",
+        }
       }, I18n.t("shareImage.title")),
       react.createElement("p", {
         style: { margin: '8px 0 0', fontSize: '13px', color: 'rgba(255,255,255,0.6)' }
@@ -2188,7 +2203,7 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
             padding: '8px',
           }
         },
-          normalizedLyrics.map((line) => 
+          normalizedLyrics.map((line) =>
             react.createElement("div", {
               key: line.idx,
               onClick: () => toggleLine(line.idx),
@@ -2239,7 +2254,7 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
           react.createElement("div", {
             style: { display: 'flex', gap: '6px', flexWrap: 'wrap' }
           },
-            presets.map(t => 
+            presets.map(t =>
               react.createElement("button", {
                 key: t.key,
                 onClick: () => handleTemplateChange(t.key),
@@ -2275,7 +2290,7 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
           }
         },
           react.createElement("span", {
-            style: { 
+            style: {
               transform: showAdvanced ? 'rotate(90deg)' : 'rotate(0deg)',
               transition: 'transform 0.2s ease',
             }
@@ -2301,12 +2316,12 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
           }
         },
           // === 배경 설정 섹션 ===
-          react.createElement("div", { 
-            style: { 
-              gridColumn: 'span 2', 
-              fontSize: '12px', 
-              fontWeight: '600', 
-              color: '#1db954', 
+          react.createElement("div", {
+            style: {
+              gridColumn: 'span 2',
+              fontSize: '12px',
+              fontWeight: '600',
+              color: '#1db954',
               marginBottom: '4px',
               borderBottom: '1px solid rgba(29,185,84,0.2)',
               paddingBottom: '8px',
@@ -2315,16 +2330,16 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
               gap: '8px',
               letterSpacing: '0.5px',
               textTransform: 'uppercase'
-            } 
+            }
           }, I18n.t("shareImage.sections.background") || "배경"),
 
           // 배경 타입
           react.createElement("div", { style: { gridColumn: 'span 2' } },
-            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } },
               I18n.t("shareImage.settings.backgroundType") || "배경 스타일"
             ),
             react.createElement("div", { style: { display: 'flex', gap: '4px' } },
-              ['coverBlur', 'gradient', 'solid'].map(type => 
+              ['coverBlur', 'gradient', 'solid'].map(type =>
                 react.createElement("button", {
                   key: type,
                   onClick: () => updateSetting('backgroundType', type),
@@ -2338,16 +2353,16 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
                     fontSize: '10px',
                     cursor: 'pointer',
                   }
-                }, type === 'coverBlur' ? (I18n.t("shareImage.settings.coverBlur") || '블러') : 
-                   type === 'gradient' ? (I18n.t("shareImage.settings.gradient") || '그라디언트') : 
-                   (I18n.t("shareImage.settings.solid") || '단색'))
+                }, type === 'coverBlur' ? (I18n.t("shareImage.settings.coverBlur") || '블러') :
+                  type === 'gradient' ? (I18n.t("shareImage.settings.gradient") || '그라디언트') :
+                    (I18n.t("shareImage.settings.solid") || '단색'))
               )
             )
           ),
 
           // 배경 블러 강도 (coverBlur일 때만)
           currentSettings.backgroundType === 'coverBlur' && react.createElement("div", { style: { gridColumn: 'span 2' } },
-            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } },
               `${I18n.t("shareImage.settings.backgroundBlur") || "배경 블러"}: ${currentSettings.backgroundBlur ?? 30}px`
             ),
             react.createElement("input", {
@@ -2362,7 +2377,7 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
 
           // 배경 어둡기
           react.createElement("div", { style: { gridColumn: 'span 2' } },
-            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } },
               `${I18n.t("shareImage.settings.backgroundOpacity") || "배경 어둡기"}: ${Math.round((currentSettings.backgroundOpacity ?? 0.6) * 100)}%`
             ),
             react.createElement("input", {
@@ -2376,12 +2391,12 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
           ),
 
           // === 앨범 커버 설정 섹션 ===
-          react.createElement("div", { 
-            style: { 
-              gridColumn: 'span 2', 
-              fontSize: '12px', 
-              fontWeight: '600', 
-              color: '#1db954', 
+          react.createElement("div", {
+            style: {
+              gridColumn: 'span 2',
+              fontSize: '12px',
+              fontWeight: '600',
+              color: '#1db954',
               marginTop: '12px',
               marginBottom: '4px',
               borderBottom: '1px solid rgba(29,185,84,0.2)',
@@ -2391,15 +2406,15 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
               gap: '8px',
               letterSpacing: '0.5px',
               textTransform: 'uppercase'
-            } 
+            }
           }, I18n.t("shareImage.sections.cover") || "앨범 커버"),
 
           // 커버 표시
           react.createElement("div", null,
-            react.createElement("label", { 
-              style: { 
-                display: 'flex', 
-                alignItems: 'center', 
+            react.createElement("label", {
+              style: {
+                display: 'flex',
+                alignItems: 'center',
                 gap: '6px',
                 color: 'rgba(255,255,255,0.7)',
                 cursor: 'pointer',
@@ -2417,10 +2432,10 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
 
           // 곡 정보 표시
           react.createElement("div", null,
-            react.createElement("label", { 
-              style: { 
-                display: 'flex', 
-                alignItems: 'center', 
+            react.createElement("label", {
+              style: {
+                display: 'flex',
+                alignItems: 'center',
                 gap: '6px',
                 color: 'rgba(255,255,255,0.7)',
                 cursor: 'pointer',
@@ -2438,11 +2453,11 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
 
           // 커버 위치
           currentSettings.showCover && react.createElement("div", { style: { gridColumn: 'span 2' } },
-            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } },
               I18n.t("shareImage.settings.coverPosition") || "커버 위치"
             ),
             react.createElement("div", { style: { display: 'flex', gap: '4px' } },
-              ['left', 'center'].map(pos => 
+              ['left', 'center'].map(pos =>
                 react.createElement("button", {
                   key: pos,
                   onClick: () => updateSetting('coverPosition', pos),
@@ -2463,7 +2478,7 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
 
           // 커버 크기
           currentSettings.showCover && react.createElement("div", { style: { gridColumn: 'span 2' } },
-            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } },
               `${I18n.t("shareImage.settings.coverSize") || "커버 크기"}: ${currentSettings.coverSize ?? 120}px`
             ),
             react.createElement("input", {
@@ -2478,7 +2493,7 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
 
           // 커버 둥글기
           currentSettings.showCover && react.createElement("div", { style: { gridColumn: 'span 2' } },
-            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } },
               `${I18n.t("shareImage.settings.coverRadius") || "커버 둥글기"}: ${currentSettings.coverRadius ?? 16}px`
             ),
             react.createElement("input", {
@@ -2493,7 +2508,7 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
 
           // 커버 블러
           currentSettings.showCover && react.createElement("div", { style: { gridColumn: 'span 2' } },
-            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } },
               `${I18n.t("shareImage.settings.coverBlur") || "커버 블러"}: ${currentSettings.coverBlur ?? 0}px`
             ),
             react.createElement("input", {
@@ -2507,12 +2522,12 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
           ),
 
           // === 가사 설정 섹션 ===
-          react.createElement("div", { 
-            style: { 
-              gridColumn: 'span 2', 
-              fontSize: '12px', 
-              fontWeight: '600', 
-              color: '#1db954', 
+          react.createElement("div", {
+            style: {
+              gridColumn: 'span 2',
+              fontSize: '12px',
+              fontWeight: '600',
+              color: '#1db954',
               marginTop: '12px',
               marginBottom: '4px',
               borderBottom: '1px solid rgba(29,185,84,0.2)',
@@ -2522,15 +2537,15 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
               gap: '8px',
               letterSpacing: '0.5px',
               textTransform: 'uppercase'
-            } 
+            }
           }, I18n.t("shareImage.sections.lyrics") || "가사"),
 
           // 발음 표시
           react.createElement("div", null,
-            react.createElement("label", { 
-              style: { 
-                display: 'flex', 
-                alignItems: 'center', 
+            react.createElement("label", {
+              style: {
+                display: 'flex',
+                alignItems: 'center',
                 gap: '6px',
                 color: 'rgba(255,255,255,0.7)',
                 cursor: 'pointer',
@@ -2548,10 +2563,10 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
 
           // 번역 표시
           react.createElement("div", null,
-            react.createElement("label", { 
-              style: { 
-                display: 'flex', 
-                alignItems: 'center', 
+            react.createElement("label", {
+              style: {
+                display: 'flex',
+                alignItems: 'center',
                 gap: '6px',
                 color: 'rgba(255,255,255,0.7)',
                 cursor: 'pointer',
@@ -2569,11 +2584,11 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
 
           // 가사 정렬
           react.createElement("div", { style: { gridColumn: 'span 2' } },
-            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } },
               I18n.t("shareImage.settings.lyricsAlign") || "가사 정렬"
             ),
             react.createElement("div", { style: { display: 'flex', gap: '4px' } },
-              ['left', 'center'].map(align => 
+              ['left', 'center'].map(align =>
                 react.createElement("button", {
                   key: align,
                   onClick: () => updateSetting('lyricsAlign', align),
@@ -2594,7 +2609,7 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
 
           // 글꼴 크기
           react.createElement("div", { style: { gridColumn: 'span 2' } },
-            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } },
               `${I18n.t("shareImage.settings.fontSize") || "글꼴 크기"}: ${currentSettings.fontSize ?? 32}px`
             ),
             react.createElement("input", {
@@ -2609,7 +2624,7 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
 
           // 블록 간격
           react.createElement("div", { style: { gridColumn: 'span 2' } },
-            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } },
               `${I18n.t("shareImage.settings.blockGap") || "줄 간격"}: ${currentSettings.blockGap ?? 32}px`
             ),
             react.createElement("input", {
@@ -2623,12 +2638,12 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
           ),
 
           // === 레이아웃 설정 섹션 ===
-          react.createElement("div", { 
-            style: { 
-              gridColumn: 'span 2', 
-              fontSize: '12px', 
-              fontWeight: '600', 
-              color: '#1db954', 
+          react.createElement("div", {
+            style: {
+              gridColumn: 'span 2',
+              fontSize: '12px',
+              fontWeight: '600',
+              color: '#1db954',
               marginTop: '12px',
               marginBottom: '4px',
               borderBottom: '1px solid rgba(29,185,84,0.2)',
@@ -2638,21 +2653,21 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
               gap: '8px',
               letterSpacing: '0.5px',
               textTransform: 'uppercase'
-            } 
+            }
           }, I18n.t("shareImage.sections.layout") || "레이아웃"),
 
           // 이미지 비율
           react.createElement("div", { style: { gridColumn: 'span 2' } },
-            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } },
               I18n.t("shareImage.settings.aspectRatio") || "이미지 비율"
             ),
             react.createElement("div", { style: { display: 'flex', gap: '4px' } },
               [
                 { key: null, label: '자동' },
                 { key: 1, label: '1:1' },
-                { key: 9/16, label: '9:16' },
-                { key: 16/9, label: '16:9' },
-              ].map(ratio => 
+                { key: 9 / 16, label: '9:16' },
+                { key: 16 / 9, label: '16:9' },
+              ].map(ratio =>
                 react.createElement("button", {
                   key: ratio.key === null ? 'auto' : ratio.key,
                   onClick: () => updateSetting('aspectRatio', ratio.key),
@@ -2673,7 +2688,7 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
 
           // 이미지 너비
           react.createElement("div", { style: { gridColumn: 'span 2' } },
-            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } },
               `${I18n.t("shareImage.settings.imageWidth") || "이미지 너비"}: ${currentSettings.imageWidth ?? 1080}px`
             ),
             react.createElement("input", {
@@ -2689,7 +2704,7 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
 
           // 여백
           react.createElement("div", { style: { gridColumn: 'span 2' } },
-            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } }, 
+            react.createElement("label", { style: { color: 'rgba(255,255,255,0.7)', marginBottom: '4px', display: 'block' } },
               `${I18n.t("shareImage.settings.padding") || "여백"}: ${currentSettings.padding ?? 60}px`
             ),
             react.createElement("input", {
@@ -2703,12 +2718,12 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
           ),
 
           // === 기타 설정 ===
-          react.createElement("div", { 
-            style: { 
-              gridColumn: 'span 2', 
-              fontSize: '12px', 
-              fontWeight: '600', 
-              color: '#1db954', 
+          react.createElement("div", {
+            style: {
+              gridColumn: 'span 2',
+              fontSize: '12px',
+              fontWeight: '600',
+              color: '#1db954',
               marginTop: '12px',
               marginBottom: '4px',
               borderBottom: '1px solid rgba(29,185,84,0.2)',
@@ -2718,15 +2733,15 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
               gap: '8px',
               letterSpacing: '0.5px',
               textTransform: 'uppercase'
-            } 
+            }
           }, I18n.t("shareImage.sections.other") || "기타"),
 
           // 워터마크
           react.createElement("div", { style: { gridColumn: 'span 2' } },
-            react.createElement("label", { 
-              style: { 
-                display: 'flex', 
-                alignItems: 'center', 
+            react.createElement("label", {
+              style: {
+                display: 'flex',
+                alignItems: 'center',
                 gap: '6px',
                 color: 'rgba(255,255,255,0.7)',
                 cursor: 'pointer',
@@ -2759,17 +2774,17 @@ const ShareImageModal = ({ lyrics, trackInfo, onClose }) => {
           isGenerating ? react.createElement("div", {
             style: { color: 'rgba(255,255,255,0.5)', fontSize: '14px' }
           }, "...") :
-          previewUrl ? react.createElement("img", {
-            src: previewUrl,
-            style: {
-              maxWidth: '100%',
-              maxHeight: '100%',
-              objectFit: 'contain',
-              borderRadius: '8px',
-            }
-          }) : react.createElement("div", {
-            style: { color: 'rgba(255,255,255,0.4)', fontSize: '14px', textAlign: 'center' }
-          }, I18n.t("shareImage.selectLyricsHint"))
+            previewUrl ? react.createElement("img", {
+              src: previewUrl,
+              style: {
+                maxWidth: '100%',
+                maxHeight: '100%',
+                objectFit: 'contain',
+                borderRadius: '8px',
+              }
+            }) : react.createElement("div", {
+              style: { color: 'rgba(255,255,255,0.4)', fontSize: '14px', textAlign: 'center' }
+            }, I18n.t("shareImage.selectLyricsHint"))
         )
       )
     ),

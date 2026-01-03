@@ -13,7 +13,16 @@ window.LANG_IT = {
     "advanced": "Avanzate",
     "fullscreen": "Schermo Intero",
     "debug": "Debug",
-    "about": "Info"
+    "about": "Info",
+    "searchResults": "Risultati della ricerca"
+  },
+  "search": {
+    "placeholder": "Cerca impostazioni...",
+    "noResults": "Nessun risultato trovato",
+    "noResultsDesc": "Prova con un altro termine di ricerca",
+    "resultCount": "{count} risultati",
+    "clear": "Cancella",
+    "inSection": "In {section}"
   },
   "sections": {
     "language": "Lingua",

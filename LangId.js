@@ -13,7 +13,16 @@ window.LANG_ID = {
     "advanced": "Lanjutan",
     "fullscreen": "Layar Penuh",
     "debug": "Debug",
-    "about": "Tentang"
+    "about": "Tentang",
+    "searchResults": "Hasil Pencarian"
+  },
+  "search": {
+    "placeholder": "Cari pengaturan...",
+    "noResults": "Tidak ada hasil yang ditemukan",
+    "noResultsDesc": "Coba kata pencarian lain",
+    "resultCount": "{count} hasil",
+    "clear": "Hapus",
+    "inSection": "Di {section}"
   },
   "sections": {
     "language": "Bahasa",

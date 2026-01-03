@@ -13,7 +13,16 @@ window.LANG_FA = {
     "advanced": "پیشرفته",
     "fullscreen": "تمام صفحه",
     "debug": "دیباگ",
-    "about": "درباره"
+    "about": "درباره",
+    "searchResults": "نتایج جستجو"
+  },
+  "search": {
+    "placeholder": "جستجوی تنظیمات...",
+    "noResults": "نتیجه‌ای یافت نشد",
+    "noResultsDesc": "لطفاً کلمه دیگری را امتحان کنید",
+    "resultCount": "{count} نتیجه",
+    "clear": "پاک کردن",
+    "inSection": "در {section}"
   },
   "sections": {
     "language": "زبان",

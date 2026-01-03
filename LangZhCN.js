@@ -13,7 +13,16 @@ window.LANG_ZH_CN = {
     "advanced": "高级",
     "fullscreen": "全屏",
     "debug": "调试",
-    "about": "关于"
+    "about": "关于",
+    "searchResults": "搜索结果"
+  },
+  "search": {
+    "placeholder": "搜索设置...",
+    "noResults": "未找到结果",
+    "noResultsDesc": "请尝试其他搜索词",
+    "resultCount": "{count}个结果",
+    "clear": "清除",
+    "inSection": "在{section}中"
   },
   "sections": {
     "language": "语言",

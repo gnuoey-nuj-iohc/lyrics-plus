@@ -13,7 +13,16 @@ window.LANG_KO = {
     "advanced": "고급",
     "fullscreen": "전체화면",
     "debug": "디버그",
-    "about": "정보"
+    "about": "정보",
+    "searchResults": "검색 결과"
+  },
+  "search": {
+    "placeholder": "설정 검색...",
+    "noResults": "검색 결과가 없습니다",
+    "noResultsDesc": "다른 검색어를 입력해 보세요",
+    "resultCount": "{count}개의 결과",
+    "clear": "지우기",
+    "inSection": "{section}에서"
   },
   "sections": {
     "language": "언어",

@@ -13,7 +13,16 @@ window.LANG_PT = {
     "advanced": "Avançado",
     "fullscreen": "Tela Cheia",
     "debug": "Depuração",
-    "about": "Sobre"
+    "about": "Sobre",
+    "searchResults": "Resultados da pesquisa"
+  },
+  "search": {
+    "placeholder": "Pesquisar configurações...",
+    "noResults": "Nenhum resultado encontrado",
+    "noResultsDesc": "Tente uma palavra de busca diferente",
+    "resultCount": "{count} resultados",
+    "clear": "Limpar",
+    "inSection": "Em {section}"
   },
   "sections": {
     "language": "Idioma",

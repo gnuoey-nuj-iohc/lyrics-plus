@@ -13,7 +13,16 @@ window.LANG_RU = {
     "advanced": "Дополнительно",
     "fullscreen": "Полноэкранный режим",
     "debug": "Отладка",
-    "about": "О программе"
+    "about": "О программе",
+    "searchResults": "Результаты поиска"
+  },
+  "search": {
+    "placeholder": "Поиск настроек...",
+    "noResults": "Результаты не найдены",
+    "noResultsDesc": "Попробуйте другой поисковый запрос",
+    "resultCount": "{count} результатов",
+    "clear": "Очистить",
+    "inSection": "В разделе {section}"
   },
   "sections": {
     "language": "Язык",

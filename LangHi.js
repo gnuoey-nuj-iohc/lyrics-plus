@@ -13,7 +13,16 @@ window.LANG_HI = {
     "advanced": "उन्नत",
     "fullscreen": "फुल स्क्रीन",
     "debug": "डीबग",
-    "about": "के बारे में"
+    "about": "के बारे में",
+    "searchResults": "खोज परिणाम"
+  },
+  "search": {
+    "placeholder": "सेटिंग्स खोजें...",
+    "noResults": "कोई परिणाम नहीं मिला",
+    "noResultsDesc": "कृपया अन्य खोज शब्द आज़माएं",
+    "resultCount": "{count} परिणाम",
+    "clear": "साफ़ करें",
+    "inSection": "{section} में"
   },
   "sections": {
     "language": "भाषा",

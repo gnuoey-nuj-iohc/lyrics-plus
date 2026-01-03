@@ -13,7 +13,16 @@ window.LANG_AR = {
     "advanced": "متقدم",
     "fullscreen": "ملء الشاشة",
     "debug": "تصحيح الأخطاء",
-    "about": "حول"
+    "about": "حول",
+    "searchResults": "نتائج البحث"
+  },
+  "search": {
+    "placeholder": "البحث في الإعدادات...",
+    "noResults": "لم يتم العثور على نتائج",
+    "noResultsDesc": "يرجى تجربة كلمة بحث مختلفة",
+    "resultCount": "{count} نتيجة",
+    "clear": "مسح",
+    "inSection": "في {section}"
   },
   "sections": {
     "language": "اللغة",

@@ -13,7 +13,16 @@ window.LANG_BN = {
     "advanced": "উন্নত",
     "fullscreen": "পূর্ণ পর্দা",
     "debug": "ডিবাগ",
-    "about": "সম্পর্কে"
+    "about": "সম্পর্কে",
+    "searchResults": "অনুসন্ধান ফলাফল"
+  },
+  "search": {
+    "placeholder": "সেটিংস খুঁজুন...",
+    "noResults": "কোনো ফলাফল পাওয়া যায়নি",
+    "noResultsDesc": "অন্য শব্দ দিয়ে খুঁজুন",
+    "resultCount": "{count}টি ফলাফল",
+    "clear": "মুছুন",
+    "inSection": "{section} এ"
   },
   "sections": {
     "language": "ভাষা",

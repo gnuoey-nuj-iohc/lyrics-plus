@@ -141,8 +141,8 @@ const OverlaySettings = () => {
   };
 
   return react.createElement(
-    react.Fragment,
-    null,
+    "div",
+    { className: "option-list-wrapper" },
     // Enable/Disable Row
     react.createElement(
       "div",
@@ -2005,6 +2005,7 @@ const OptionList = ({ type, items, onChange }) => {
         {
           key: index,
           className: "setting-row",
+          "data-setting-key": item.key,
         },
         react.createElement(
           "div",
@@ -2051,6 +2052,7 @@ const OptionList = ({ type, items, onChange }) => {
       {
         key: index,
         className: "setting-row",
+        "data-setting-key": item.key,
         style: isDisabled ? { opacity: 0.5, pointerEvents: "none" } : {},
       },
       react.createElement(
@@ -2118,6 +2120,476 @@ const MODAL_STYLES = {
 
 const ConfigModal = () => {
   const [activeTab, setActiveTab] = react.useState("general");
+  const [searchQuery, setSearchQuery] = react.useState("");
+
+  // 검색어 변경 시 검색 결과 탭으로 자동 전환
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    if (query.length > 0) {
+      setActiveTab("search");
+    } else {
+      setActiveTab("general");
+    }
+  };
+
+  // 검색 지우기
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    setActiveTab("general");
+  };
+
+  // 스크롤 대상 설정 ID (ref 사용하여 리렌더링 방지)
+  const scrollToSettingIdRef = react.useRef(null);
+  const isNavigatingFromSearchRef = react.useRef(false);
+
+  // 텍스트 하이라이트 헬퍼 함수
+  const highlightText = (text, query) => {
+    if (!query.trim() || !text) return text;
+
+    const lowerText = text.toLowerCase();
+    const lowerQuery = query.toLowerCase().trim();
+    const index = lowerText.indexOf(lowerQuery);
+
+    if (index === -1) return text;
+
+    const before = text.substring(0, index);
+    const match = text.substring(index, index + query.trim().length);
+    const after = text.substring(index + query.trim().length);
+
+    return react.createElement(
+      react.Fragment,
+      null,
+      before,
+      react.createElement("mark", { className: "search-highlight" }, match),
+      after
+    );
+  };
+
+  // 검색 가능한 설정 항목 정의
+  const searchableSettings = react.useMemo(() => [
+    // 일반 탭 - 언어
+    {
+      section: I18n.t("tabs.general"),
+      sectionKey: "general",
+      settingKey: "language",
+      name: I18n.t("settings.language.label"),
+      desc: I18n.t("settings.language.desc"),
+      keywords: ["언어", "language", "lang", "언어 설정", "한국어", "english", "日本語", "中文"]
+    },
+    // 일반 탭 - 시각 효과
+    {
+      section: I18n.t("tabs.general"),
+      sectionKey: "general",
+      settingKey: "alignment",
+      name: I18n.t("settings.alignment.label"),
+      desc: I18n.t("settings.alignment.desc"),
+      keywords: ["정렬", "alignment", "왼쪽", "가운데", "오른쪽", "left", "center", "right"]
+    },
+    {
+      section: I18n.t("tabs.general"),
+      sectionKey: "general",
+      settingKey: "noise",
+      name: I18n.t("settings.noise.label"),
+      desc: I18n.t("settings.noise.desc"),
+      keywords: ["노이즈", "noise", "그레인", "grain", "필름", "film"]
+    },
+    {
+      section: I18n.t("tabs.general"),
+      sectionKey: "general",
+      settingKey: "colorful",
+      name: I18n.t("settings.colorful.label"),
+      desc: I18n.t("settings.colorful.desc"),
+      keywords: ["컬러풀", "colorful", "배경", "background", "동적", "dynamic", "앨범 색상"]
+    },
+    {
+      section: I18n.t("tabs.general"),
+      sectionKey: "general",
+      settingKey: "gradient-background",
+      name: I18n.t("settings.gradientBackground.label"),
+      desc: I18n.t("settings.gradientBackground.desc"),
+      keywords: ["앨범", "album", "커버", "cover", "배경", "background", "gradient"]
+    },
+    {
+      section: I18n.t("tabs.general"),
+      sectionKey: "general",
+      settingKey: "solid-background",
+      name: I18n.t("settings.solidBackground.label"),
+      desc: I18n.t("settings.solidBackground.desc"),
+      keywords: ["단색", "solid", "배경", "background", "색상"]
+    },
+    {
+      section: I18n.t("tabs.general"),
+      sectionKey: "general",
+      settingKey: "video-background",
+      name: I18n.t("settings.videoBackground.label"),
+      desc: I18n.t("settings.videoBackground.desc"),
+      keywords: ["동영상", "video", "유튜브", "youtube", "배경", "background"]
+    },
+    {
+      section: I18n.t("tabs.general"),
+      sectionKey: "general",
+      settingKey: "backgroundBrightness",
+      name: I18n.t("settings.backgroundBrightness.label"),
+      desc: I18n.t("settings.backgroundBrightness.desc"),
+      keywords: ["밝기", "brightness", "배경", "background", "어둡게", "밝게"]
+    },
+    // 일반 탭 - 데스크탑 오버레이
+    {
+      section: I18n.t("tabs.general"),
+      sectionKey: "general",
+      settingKey: "overlay-enabled",
+      name: I18n.t("overlay.enabled.label"),
+      desc: I18n.t("overlay.enabled.desc"),
+      keywords: ["오버레이", "overlay", "데스크탑", "desktop", "외부 앱"]
+    },
+
+    // 외관 탭
+    {
+      section: I18n.t("tabs.appearance"),
+      sectionKey: "appearance",
+      settingKey: "original-style",
+      name: I18n.t("settingsAdvanced.originalStyle.title"),
+      desc: I18n.t("settingsAdvanced.originalStyle.subtitle"),
+      keywords: ["폰트", "font", "글꼴", "원문", "original", "스타일", "style", "크기", "size", "두께", "weight"]
+    },
+    {
+      section: I18n.t("tabs.appearance"),
+      sectionKey: "appearance",
+      settingKey: "pronunciation-style",
+      name: I18n.t("settingsAdvanced.pronunciationStyle.title"),
+      desc: I18n.t("settingsAdvanced.pronunciationStyle.subtitle"),
+      keywords: ["발음", "pronunciation", "폰트", "font", "로마자", "romaji", "phonetic", "스타일"]
+    },
+    {
+      section: I18n.t("tabs.appearance"),
+      sectionKey: "appearance",
+      settingKey: "translation-style",
+      name: I18n.t("settingsAdvanced.translationStyle.title"),
+      desc: I18n.t("settingsAdvanced.translationStyle.subtitle"),
+      keywords: ["번역", "translation", "폰트", "font", "스타일", "style"]
+    },
+    {
+      section: I18n.t("tabs.appearance"),
+      sectionKey: "appearance",
+      settingKey: "furigana-style",
+      name: I18n.t("settingsAdvanced.furiganaStyle.title"),
+      desc: I18n.t("settingsAdvanced.furiganaStyle.subtitle"),
+      keywords: ["후리가나", "furigana", "히라가나", "hiragana", "일본어", "japanese", "한자"]
+    },
+    {
+      section: I18n.t("tabs.appearance"),
+      sectionKey: "appearance",
+      settingKey: "text-shadow",
+      name: I18n.t("settingsAdvanced.textShadow.title"),
+      desc: I18n.t("settingsAdvanced.textShadow.subtitle"),
+      keywords: ["그림자", "shadow", "텍스트", "text", "가독성"]
+    },
+
+    // 동작 탭
+    {
+      section: I18n.t("tabs.behavior"),
+      sectionKey: "lyrics",
+      settingKey: "auto-scroll",
+      name: I18n.t("settings.autoScroll.label"),
+      desc: I18n.t("settings.autoScroll.desc"),
+      keywords: ["자동", "auto", "스크롤", "scroll"]
+    },
+    {
+      section: I18n.t("tabs.behavior"),
+      sectionKey: "lyrics",
+      settingKey: "animation",
+      name: I18n.t("settings.animation.label"),
+      desc: I18n.t("settings.animation.desc"),
+      keywords: ["애니메이션", "animation", "효과", "effect"]
+    },
+    {
+      section: I18n.t("tabs.behavior"),
+      sectionKey: "lyrics",
+      settingKey: "karaoke",
+      name: I18n.t("settings.karaoke.label"),
+      desc: I18n.t("settings.karaoke.desc"),
+      keywords: ["가라오케", "karaoke", "노래방", "리드", "카운트다운"]
+    },
+    {
+      section: I18n.t("tabs.behavior"),
+      sectionKey: "lyrics",
+      settingKey: "blur-inactive",
+      name: I18n.t("settings.blurInactive.label"),
+      desc: I18n.t("settings.blurInactive.desc"),
+      keywords: ["블러", "blur", "비활성", "inactive", "흐림"]
+    },
+    {
+      section: I18n.t("tabs.behavior"),
+      sectionKey: "lyrics",
+      settingKey: "synced-fallback",
+      name: I18n.t("settings.syncedAsFallback.label"),
+      desc: I18n.t("settings.syncedAsFallback.desc"),
+      keywords: ["싱크", "sync", "대체", "fallback", "싱크 가사"]
+    },
+    {
+      section: I18n.t("tabs.behavior"),
+      sectionKey: "lyrics",
+      settingKey: "unsynced-fallback",
+      name: I18n.t("settings.unsyncedAsFallback.label"),
+      desc: I18n.t("settings.unsyncedAsFallback.desc"),
+      keywords: ["비싱크", "unsynced", "대체", "fallback"]
+    },
+
+    // 고급 탭
+    {
+      section: I18n.t("tabs.advanced"),
+      sectionKey: "advanced",
+      settingKey: "playback",
+      name: I18n.t("settingsAdvanced.playback.title"),
+      desc: I18n.t("settingsAdvanced.playback.subtitle"),
+      keywords: ["재생", "playback", "플레이바", "playbar", "버튼", "button"]
+    },
+    {
+      section: I18n.t("tabs.advanced"),
+      sectionKey: "advanced",
+      settingKey: "karaoke-mode",
+      name: I18n.t("settingsAdvanced.karaokeMode.title"),
+      desc: I18n.t("settingsAdvanced.karaokeMode.subtitle"),
+      keywords: ["가라오케", "karaoke", "노래방", "바운스", "bounce"]
+    },
+    {
+      section: I18n.t("tabs.advanced"),
+      sectionKey: "advanced",
+      settingKey: "prefetch",
+      name: I18n.t("settingsAdvanced.prefetch.title"),
+      desc: I18n.t("settingsAdvanced.prefetch.subtitle"),
+      keywords: ["미리", "prefetch", "로드", "load", "다음 곡", "next"]
+    },
+    {
+      section: I18n.t("tabs.advanced"),
+      sectionKey: "advanced",
+      settingKey: "community-sync",
+      name: I18n.t("settingsAdvanced.communitySync.title"),
+      desc: I18n.t("settingsAdvanced.communitySync.subtitle"),
+      keywords: ["커뮤니티", "community", "싱크", "sync", "오프셋", "offset", "공유"]
+    },
+    {
+      section: I18n.t("tabs.advanced"),
+      sectionKey: "advanced",
+      settingKey: "cache-management",
+      name: I18n.t("settingsAdvanced.cacheManagement.title"),
+      desc: I18n.t("settingsAdvanced.cacheManagement.subtitle"),
+      keywords: ["캐시", "cache", "저장", "storage", "삭제", "clear", "메모리", "memory"]
+    },
+    {
+      section: I18n.t("tabs.advanced"),
+      sectionKey: "advanced",
+      settingKey: "export-import",
+      name: I18n.t("settingsAdvanced.exportImport.title"),
+      desc: I18n.t("settingsAdvanced.exportImport.subtitle"),
+      keywords: ["내보내기", "export", "가져오기", "import", "백업", "backup"]
+    },
+    {
+      section: I18n.t("tabs.advanced"),
+      sectionKey: "advanced",
+      settingKey: "reset-settings",
+      name: I18n.t("settingsAdvanced.resetSettings.title"),
+      desc: I18n.t("settingsAdvanced.resetSettings.subtitle"),
+      keywords: ["초기화", "reset", "기본값", "default"]
+    },
+
+    // 제공자 탭
+    {
+      section: I18n.t("tabs.providers"),
+      sectionKey: "translation",
+      settingKey: "lyrics-providers",
+      name: I18n.t("settingsAdvanced.lyricsProviders.title"),
+      desc: I18n.t("settingsAdvanced.lyricsProviders.subtitle"),
+      keywords: ["제공자", "provider", "가사", "lyrics", "소스", "source", "spotify", "lrclib", "musixmatch"]
+    },
+    {
+      section: I18n.t("tabs.providers"),
+      sectionKey: "translation",
+      settingKey: "gemini-api",
+      name: "Gemini API",
+      desc: I18n.t("menu.apiSettings"),
+      keywords: ["gemini", "api", "키", "key", "번역", "translation", "ai"]
+    },
+
+    // 전체화면 탭
+    {
+      section: I18n.t("tabs.fullscreen"),
+      sectionKey: "fullscreen",
+      settingKey: "fullscreen-mode",
+      name: I18n.t("settingsAdvanced.fullscreenMode.title"),
+      desc: I18n.t("settingsAdvanced.fullscreenMode.subtitle"),
+      keywords: ["전체화면", "fullscreen", "단축키", "shortcut", "레이아웃", "layout"]
+    },
+    {
+      section: I18n.t("tabs.fullscreen"),
+      sectionKey: "fullscreen",
+      settingKey: "fullscreen-style",
+      name: I18n.t("settingsAdvanced.fullscreenStyle.title"),
+      desc: I18n.t("settingsAdvanced.fullscreenStyle.subtitle"),
+      keywords: ["전체화면", "fullscreen", "앨범", "album", "크기", "size", "스타일", "style"]
+    },
+    {
+      section: I18n.t("tabs.fullscreen"),
+      sectionKey: "fullscreen",
+      settingKey: "fullscreen-ui",
+      name: I18n.t("settingsAdvanced.fullscreenUI.title"),
+      desc: I18n.t("settingsAdvanced.fullscreenUI.subtitle"),
+      keywords: ["전체화면", "fullscreen", "시계", "clock", "컨트롤", "control", "볼륨", "volume"]
+    },
+  ], []);
+
+  // 검색 결과 필터링
+  const searchResults = react.useMemo(() => {
+    if (!searchQuery.trim()) return [];
+
+    const query = searchQuery.toLowerCase().trim();
+    return searchableSettings.filter(setting => {
+      const searchIn = [
+        setting.name,
+        setting.desc,
+        ...setting.keywords
+      ].join(" ").toLowerCase();
+
+      return searchIn.includes(query);
+    });
+  }, [searchQuery, searchableSettings]);
+
+  // 검색 결과 컴포넌트
+  const SearchResults = () => {
+    if (!searchQuery.trim()) {
+      return null;
+    }
+
+    if (searchResults.length === 0) {
+      return react.createElement(
+        "div",
+        { className: "search-no-results" },
+        react.createElement(
+          "svg",
+          {
+            className: "search-no-results-icon",
+            viewBox: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor",
+            strokeWidth: "2",
+          },
+          react.createElement("circle", { cx: "11", cy: "11", r: "8" }),
+          react.createElement("path", { d: "m21 21-4.35-4.35" })
+        ),
+        react.createElement("h3", { className: "search-no-results-title" }, I18n.t("search.noResults")),
+        react.createElement("p", { className: "search-no-results-desc" }, I18n.t("search.noResultsDesc"))
+      );
+    }
+
+    // 섹션별로 그룹화
+    const groupedResults = {};
+    searchResults.forEach(result => {
+      if (!groupedResults[result.section]) {
+        groupedResults[result.section] = [];
+      }
+      groupedResults[result.section].push(result);
+    });
+
+    return react.createElement(
+      react.Fragment,
+      null,
+      react.createElement(
+        "div",
+        { className: "search-results-header" },
+        react.createElement(
+          "span",
+          { className: "search-results-count" },
+          I18n.t("search.resultCount").replace("{count}", searchResults.length)
+        )
+      ),
+      Object.entries(groupedResults).map(([section, items]) =>
+        react.createElement(
+          "div",
+          { key: section, className: "search-result-group" },
+          react.createElement(
+            "div",
+            { className: "section-title" },
+            react.createElement(
+              "div",
+              { className: "section-title-content" },
+              react.createElement(
+                "div",
+                { className: "section-text" },
+                react.createElement("h3", null, section)
+              )
+            )
+          ),
+          react.createElement(
+            "div",
+            { className: "option-list-wrapper" },
+            items.map((item, index) =>
+              react.createElement(
+                "div",
+                {
+                  key: `${section}-${item.name}-${index}`,
+                  className: "setting-row search-result-item",
+                  onMouseDown: (e) => {
+                    // blur 이벤트가 발생하기 전에 클릭을 처리하기 위해 preventDefault
+                    e.preventDefault();
+                  },
+                  onClick: (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const targetTab = item.sectionKey;
+                    const targetSettingKey = item.settingKey;
+                    // 스크롤 대상 설정 (ref 사용)
+                    if (targetSettingKey) {
+                      scrollToSettingIdRef.current = targetSettingKey;
+                      isNavigatingFromSearchRef.current = true;
+                    }
+                    // 바로 탭 이동
+                    setActiveTab(targetTab);
+                    setSearchQuery("");
+                  },
+                  style: { cursor: "pointer" }
+                },
+                react.createElement(
+                  "div",
+                  { className: "setting-row-content" },
+                  react.createElement(
+                    "div",
+                    { className: "setting-row-left" },
+                    react.createElement(
+                      "div",
+                      { className: "setting-name" },
+                      highlightText(item.name, searchQuery)
+                    ),
+                    react.createElement(
+                      "div",
+                      { className: "setting-description" },
+                      highlightText(item.desc, searchQuery)
+                    )
+                  ),
+                  react.createElement(
+                    "div",
+                    { className: "setting-row-right" },
+                    react.createElement(
+                      "svg",
+                      {
+                        width: "16",
+                        height: "16",
+                        viewBox: "0 0 24 24",
+                        fill: "none",
+                        stroke: "#8e8e93",
+                        strokeWidth: "2",
+                      },
+                      react.createElement("path", { d: "m9 18 6-6-6-6" })
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    );
+  };
 
   // Initialize line-spacing if not set
   if (CONFIG.visual["line-spacing"] === undefined) {
@@ -2128,6 +2600,58 @@ const ConfigModal = () => {
   const isFadActive = react.useMemo(() => {
     return !!document.getElementById("fad-ivLyrics-container");
   }, []);
+
+  // 탭 변경 시 콘텐츠 상단으로 스크롤 또는 특정 설정으로 스크롤
+  react.useEffect(() => {
+    if (activeTab && activeTab !== "search") {
+      // 약간의 지연 후 스크롤 (DOM 업데이트 후)
+      setTimeout(() => {
+        const contentArea = document.querySelector(`#${APP_NAME}-config-container .settings-content`);
+        const scrollToSettingId = scrollToSettingIdRef.current;
+        const isFromSearch = isNavigatingFromSearchRef.current;
+
+        if (scrollToSettingId && isFromSearch) {
+          console.log("[ivLyrics Search] Looking for setting:", scrollToSettingId);
+          // 특정 설정으로 스크롤
+          const targetElement = document.querySelector(`[data-setting-key="${scrollToSettingId}"]`);
+          console.log("[ivLyrics Search] Found element:", targetElement);
+
+          if (targetElement && contentArea) {
+            // 컨테이너 내에서의 상대적 위치 계산
+            const containerRect = contentArea.getBoundingClientRect();
+            const elementRect = targetElement.getBoundingClientRect();
+            const scrollTop = contentArea.scrollTop + elementRect.top - containerRect.top - (containerRect.height / 2) + (elementRect.height / 2);
+
+            // 부드럽게 스크롤
+            contentArea.scrollTo({
+              top: Math.max(0, scrollTop),
+              behavior: "smooth"
+            });
+
+            // 빛나는 효과 적용
+            targetElement.classList.add("setting-highlight-flash");
+            // 2초 후 효과 제거
+            setTimeout(() => {
+              targetElement.classList.remove("setting-highlight-flash");
+            }, 2000);
+          } else {
+            console.log("[ivLyrics Search] Element not found, scrolling to top");
+            if (contentArea) {
+              contentArea.scrollTop = 0;
+            }
+          }
+          // ref 초기화
+          scrollToSettingIdRef.current = null;
+          isNavigatingFromSearchRef.current = false;
+        } else if (!isFromSearch) {
+          // 일반 탭 전환시 상단으로 스크롤
+          if (contentArea) {
+            contentArea.scrollTop = 0;
+          }
+        }
+      }, 200);
+    }
+  }, [activeTab]);
 
   // 컴포넌트 마운트 시 저장된 폰트 설정 로드 및 Google Font 링크 추가
   react.useEffect(() => {
@@ -2547,25 +3071,70 @@ const ConfigModal = () => {
     react.createElement("style", {
       dangerouslySetInnerHTML: {
         __html: `
-/* 전체 컨테이너 - iOS 18 스타일 */
+/* ========================================
+   Glassmorphism UI - Modern Design System
+   ======================================== */
+
+/* CSS Variables */
+#${APP_NAME}-config-container {
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-bg-hover: rgba(255, 255, 255, 0.06);
+    --glass-bg-active: rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-border-light: rgba(255, 255, 255, 0.12);
+    --glass-blur: blur(40px);
+    --accent-primary: #7c3aed;
+    --accent-primary-light: rgba(124, 58, 237, 0.15);
+    --accent-gradient: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%);
+    --accent-glow: rgba(124, 58, 237, 0.4);
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.6);
+    --text-tertiary: rgba(255, 255, 255, 0.4);
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.2);
+    --shadow-glow: 0 0 20px var(--accent-glow);
+    --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 전체 컨테이너 */
 #${APP_NAME}-config-container {
     padding: 0;
     height: 80vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: transparent;
+    background: linear-gradient(180deg, rgba(15, 15, 20, 0.95) 0%, rgba(10, 10, 15, 0.98) 100%);
     font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
 }
 
-/* 헤더 영역 - iOS 스타일 */
+/* 헤더 영역 */
 #${APP_NAME}-config-container .settings-header {
-    background: rgba(0, 0, 0, 0.15);
-    border-bottom: 0.5px solid rgba(255, 255, 255, 0.15);
-    padding: 20px 32px 16px;
+    background: var(--glass-bg);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 24px 32px 20px;
     flex-shrink: 0;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    position: relative;
+}
+
+#${APP_NAME}-config-container .settings-header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
 }
 
 #${APP_NAME}-config-container .settings-header-content {
@@ -2576,120 +3145,110 @@ const ConfigModal = () => {
 
 #${APP_NAME}-config-container .settings-title-section {
     display: flex;
-    align-items: baseline;
-    gap: 12px;
+    align-items: center;
+    gap: 14px;
 }
 
 #${APP_NAME}-config-container .settings-buttons {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
 #${APP_NAME}-config-container .settings-title-section h1 {
-    font-size: 34px;
+    font-size: 28px;
     font-weight: 700;
     margin: 0;
-    color: #ffffff;
-    letter-spacing: -0.02em;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.03em;
 }
 
 #${APP_NAME}-config-container .settings-version {
     font-size: 11px;
-    color: #8e8e93;
+    color: var(--text-secondary);
     font-weight: 600;
-    padding: 3px 8px;
-    background: #1c1c1e;
-    border-radius: 6px;
+    padding: 4px 10px;
+    background: var(--glass-bg-hover);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    backdrop-filter: blur(10px);
 }
 
 #${APP_NAME}-config-container .settings-github-btn {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
-    background: #1c1c1e;
-    border: none;
-    border-radius: 10px;
-    color: #ffffffff;
+    gap: 8px;
+    padding: 10px 16px;
+    background: var(--glass-bg-hover);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 14px;
+    transition: all var(--transition-normal);
+    font-size: 13px;
     font-weight: 600;
+    backdrop-filter: blur(10px);
 }
 
 #${APP_NAME}-config-container .settings-github-btn:hover {
-    background: #2c2c2e;
-    transform: scale(1.02);
+    background: var(--glass-bg-active);
+    border-color: var(--glass-border-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
 #${APP_NAME}-config-container .settings-github-btn:active {
-    background: #3a3a3c;
-    transform: scale(0.98);
+    transform: translateY(0) scale(0.98);
 }
 
 #${APP_NAME}-config-container .settings-coffee-btn {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
+    gap: 8px;
+    padding: 10px 16px;
     background: linear-gradient(135deg, #FFDD00 0%, #FBB034 100%);
     border: none;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     color: #000000;
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 14px;
-    font-weight: 600;
-    box-shadow: 0 2px 8px rgba(255, 221, 0, 0.3);
+    transition: all var(--transition-normal);
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 4px 16px rgba(255, 221, 0, 0.25);
 }
 
 #${APP_NAME}-config-container .settings-coffee-btn:hover {
-    background: linear-gradient(135deg, #FFE84D 0%, #FFBE5B 100%);
-    transform: scale(1.02);
-    box-shadow: 0 4px 12px rgba(255, 221, 0, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(255, 221, 0, 0.35);
 }
 
 #${APP_NAME}-config-container .settings-coffee-btn:active {
-    background: linear-gradient(135deg, #E6C700 0%, #E29F2E 100%);
-    transform: scale(0.98);
+    transform: translateY(0) scale(0.98);
 }
 
-/* 탭 영역 - iOS 세그먼트 컨트롤 스타일 */
+/* 탭 영역 */
 #${APP_NAME}-config-container .settings-tabs {
     display: flex;
-    gap: 8px;
-    padding: 12px 32px;
-    background: rgba(0, 0, 0, 0.15);
-    border-bottom: 0.5px solid rgba(255, 255, 255, 0.15);
+    gap: 6px;
+    padding: 16px 32px;
+    background: var(--glass-bg);
+    border-bottom: 1px solid var(--glass-border);
     flex-shrink: 0;
     overflow-x: auto;
     overflow-y: hidden;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    /* 가로 스크롤 시 탭이 줄어들지 않도록 */
+    scrollbar-width: none;
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     flex-wrap: nowrap;
 }
 
 #${APP_NAME}-config-container .settings-tabs::-webkit-scrollbar {
-    height: 4px;
-}
-
-#${APP_NAME}-config-container .settings-tabs::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-#${APP_NAME}-config-container .settings-tabs::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 2px;
-}
-
-#${APP_NAME}-config-container .settings-tabs::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.4);
+    display: none;
 }
 
 #${APP_NAME}-config-container .settings-tab-btn {
@@ -2697,45 +3256,266 @@ const ConfigModal = () => {
     align-items: center;
     justify-content: center;
     gap: 6px;
-    padding: 8px 16px;
-    background: #1c1c1e;
-    border: none;
-    border-radius: 10px;
-    color: #8e8e93;
+    padding: 10px 18px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    font-weight: 600;
+    transition: all var(--transition-normal);
+    font-weight: 500;
     font-size: 13px;
     white-space: nowrap;
     min-width: fit-content;
     flex-shrink: 0;
+    position: relative;
 }
 
 #${APP_NAME}-config-container .settings-tab-btn:hover {
-    background: #2c2c2e;
-    color: #ffffff;
+    background: var(--glass-bg-hover);
+    color: var(--text-primary);
+    border-color: var(--glass-border);
 }
 
 #${APP_NAME}-config-container .settings-tab-btn.active {
-    background: #007aff;
-    color: #ffffff;
-    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+    background: var(--accent-primary-light);
+    color: var(--text-primary);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.2);
+}
+
+#${APP_NAME}-config-container .settings-tab-btn.active::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: var(--radius-md);
+    padding: 1px;
+    background: var(--accent-gradient);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.5;
 }
 
 #${APP_NAME}-config-container .tab-icon {
     font-size: 14px;
 }
 
-/* 콘텐츠 영역 - iOS 스타일 */
+/* 검색 영역 */
+#${APP_NAME}-config-container .settings-search-container {
+    padding: 16px 32px 16px;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+}
+
+#${APP_NAME}-config-container .settings-search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+#${APP_NAME}-config-container .settings-search-wrapper .settings-search-input {
+    width: 100% !important;
+    height: 44px !important;
+    padding: 0 44px 0 44px !important;
+    background: var(--glass-bg-hover) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: var(--radius-md) !important;
+    color: var(--text-primary) !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    outline: none !important;
+    transition: all var(--transition-normal) !important;
+    box-sizing: border-box !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+#${APP_NAME}-config-container .settings-search-input:focus {
+    background: var(--glass-bg-active) !important;
+    border-color: var(--accent-primary) !important;
+    box-shadow: 0 0 0 3px var(--accent-primary-light), var(--shadow-glow) !important;
+}
+
+#${APP_NAME}-config-container .settings-search-input::placeholder {
+    color: var(--text-tertiary) !important;
+}
+
+#${APP_NAME}-config-container .settings-search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: var(--text-tertiary);
+    pointer-events: none;
+    transition: color var(--transition-fast);
+}
+
+#${APP_NAME}-config-container .settings-search-wrapper:focus-within .settings-search-icon {
+    color: var(--accent-primary);
+}
+
+#${APP_NAME}-config-container .settings-search-clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: var(--glass-bg-active);
+    border: 1px solid var(--glass-border);
+    border-radius: 50%;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all var(--transition-fast);
+}
+
+#${APP_NAME}-config-container .settings-search-wrapper:has(.settings-search-input:not(:placeholder-shown)) .settings-search-clear {
+    opacity: 1;
+}
+
+#${APP_NAME}-config-container .settings-search-clear:hover {
+    background: var(--accent-primary-light);
+    border-color: var(--accent-primary);
+    color: var(--text-primary);
+}
+
+/* 검색 결과 영역 */
+#${APP_NAME}-config-container .search-results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding: 14px 18px;
+    background: var(--glass-bg);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px);
+}
+
+#${APP_NAME}-config-container .search-results-count {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+#${APP_NAME}-config-container .search-results-highlight {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 600;
+}
+
+#${APP_NAME}-config-container .search-no-results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    text-align: center;
+}
+
+#${APP_NAME}-config-container .search-no-results-icon {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 20px;
+    color: var(--text-tertiary);
+    opacity: 0.5;
+}
+
+#${APP_NAME}-config-container .search-no-results-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+}
+
+#${APP_NAME}-config-container .search-no-results-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* 검색 결과 아이템 */
+#${APP_NAME}-config-container .search-result-item {
+    margin-bottom: 0;
+}
+
+#${APP_NAME}-config-container .search-result-group {
+    margin-bottom: 24px;
+}
+
+#${APP_NAME}-config-container .search-result-group .option-list-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+#${APP_NAME}-config-container .search-result-section-label {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent-primary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 5px 10px;
+    background: var(--accent-primary-light);
+    border: 1px solid rgba(124, 58, 237, 0.2);
+    border-radius: var(--radius-sm);
+    margin-bottom: 10px;
+}
+
+/* 검색 결과 하이라이트 */
+#${APP_NAME}-config-container .search-highlight,
+#${APP_NAME}-config-container mark.search-highlight {
+    background: var(--accent-primary-light);
+    color: var(--text-primary);
+    border-radius: 4px;
+    padding: 2px 4px;
+    border: 1px solid rgba(124, 58, 237, 0.3);
+}
+
+/* 설정 항목 빛나는 효과 애니메이션 */
+@keyframes settingFlash {
+    0% {
+        background-color: var(--accent-primary-light);
+        box-shadow: var(--shadow-glow);
+    }
+    50% {
+        background-color: rgba(124, 58, 237, 0.1);
+        box-shadow: 0 0 10px rgba(124, 58, 237, 0.2);
+    }
+    100% {
+        background-color: transparent;
+        box-shadow: none;
+    }
+}
+
+#${APP_NAME}-config-container .setting-row.setting-highlight-flash {
+    animation: settingFlash 2s ease-out;
+    border-radius: var(--radius-md);
+}
+
+/* 콘텐츠 영역 */
 #${APP_NAME}-config-container .settings-content {
     flex: 1;
     overflow-y: auto;
-    padding: 20px 32px 32px;
+    padding: 24px 32px 40px;
     background: transparent;
 }
 
 #${APP_NAME}-config-container .settings-content::-webkit-scrollbar {
-    width: 12px;
+    width: 8px;
 }
 
 #${APP_NAME}-config-container .settings-content::-webkit-scrollbar-track {
@@ -2743,14 +3523,13 @@ const ConfigModal = () => {
 }
 
 #${APP_NAME}-config-container .settings-content::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border: 3px solid transparent;
-    border-radius: 6px;
-    background-clip: padding-box;
+    background: var(--glass-border);
+    border-radius: 4px;
+    transition: background var(--transition-fast);
 }
 
 #${APP_NAME}-config-container .settings-content::-webkit-scrollbar-thumb:hover {
-    background: #48484a;
+    background: var(--glass-border-light);
 }
 
 #${APP_NAME}-config-container .tab-content {
@@ -2759,13 +3538,13 @@ const ConfigModal = () => {
 
 #${APP_NAME}-config-container .tab-content.active {
     display: block;
-    animation: fadeIn 0.3s ease;
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes fadeIn {
+@keyframes slideUp {
     from {
         opacity: 0;
-        transform: translateY(8px);
+        transform: translateY(16px);
     }
     to {
         opacity: 1;
@@ -2773,18 +3552,29 @@ const ConfigModal = () => {
     }
 }
 
-/* 섹션 타이틀 - iOS 스타일 카드 */
+/* 섹션 타이틀 - Glassmorphism 카드 */
 #${APP_NAME}-config-container .section-title {
-    margin: 24px 0 0;
-    padding: 16px 16px 12px;
-    border: none;
-    background: rgba(28, 28, 30, 0.5);
-    backdrop-filter: blur(30px) saturate(150%);
-    -webkit-backdrop-filter: blur(30px) saturate(150%);
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    margin: 28px 0 0;
+    padding: 18px 20px 14px;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-top-left-radius: var(--radius-lg);
+    border-top-right-radius: var(--radius-lg);
+    border: 1px solid var(--glass-border);
     border-bottom: none;
+    position: relative;
+    overflow: hidden;
+}
+
+#${APP_NAME}-config-container .section-title::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--glass-border-light), transparent);
 }
 
 #${APP_NAME}-config-container .section-title:first-child {
@@ -2794,7 +3584,7 @@ const ConfigModal = () => {
 #${APP_NAME}-config-container .section-title-content {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
 }
 
 #${APP_NAME}-config-container .section-icon {
@@ -2803,32 +3593,32 @@ const ConfigModal = () => {
 
 #${APP_NAME}-config-container .section-text h3 {
     margin: 0;
-    font-size: 17px;
+    font-size: 15px;
     font-weight: 600;
-    color: #ffffff;
-    letter-spacing: -0.02em;
-}
-
-#${APP_NAME}-config-container .section-text p {
-    margin: 2px 0 0;
-    font-size: 13px;
-    color: #8e8e93;
-    line-height: 1.4;
+    color: var(--text-primary);
     letter-spacing: -0.01em;
 }
 
-/* 설정 행 - iOS 그룹화된 리스트 스타일 */
+#${APP_NAME}-config-container .section-text p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* 설정 행 - Glassmorphism */
 #${APP_NAME}-config-container .setting-row {
     padding: 0;
     margin: 0;
-    background: rgba(28, 28, 30, 0.5);
-    backdrop-filter: blur(30px) saturate(150%);
-    -webkit-backdrop-filter: blur(30px) saturate(150%);
-    border-left: 1px solid rgba(255, 255, 255, 0.08);
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-left: 1px solid var(--glass-border);
+    border-right: 1px solid var(--glass-border);
     border-radius: 0;
-    border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
-    transition: background 0.15s ease;
+    border-bottom: 1px solid var(--glass-border);
+    transition: all var(--transition-fast);
+    position: relative;
 }
 
 /* Wrapper를 통한 그룹화 */
@@ -2837,7 +3627,7 @@ const ConfigModal = () => {
     display: contents;
 }
 
-/* 섹션 타이틀 바로 다음의 wrapper의 첫 번째 항목 - 위쪽은 직선으로 */
+/* 섹션 타이틀 바로 다음의 wrapper의 첫 번째 항목 */
 #${APP_NAME}-config-container .section-title + .option-list-wrapper > .setting-row:first-child,
 #${APP_NAME}-config-container .section-title + .service-list-wrapper > .setting-row:first-child {
     border-top: none;
@@ -2848,25 +3638,23 @@ const ConfigModal = () => {
 /* wrapper 내의 마지막 항목 */
 #${APP_NAME}-config-container .option-list-wrapper > .setting-row:last-child,
 #${APP_NAME}-config-container .service-list-wrapper > .setting-row:last-child {
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom-left-radius: var(--radius-lg);
+    border-bottom-right-radius: var(--radius-lg);
+    border-bottom: 1px solid var(--glass-border);
 }
 
-/* service-token-input-wrapper가 있는 경우 setting-row의 하단 둥글기 제거 */
+/* service-token-input-wrapper가 있는 경우 */
 #${APP_NAME}-config-container .service-list-wrapper > .setting-row:has(+ .service-token-input-wrapper) {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
 }
 
-/* service-token-input-wrapper의 마지막 항목에 하단 둥글기 적용 */
 #${APP_NAME}-config-container .service-list-wrapper > .service-token-input-wrapper:last-child {
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom-left-radius: var(--radius-lg);
+    border-bottom-right-radius: var(--radius-lg);
+    border-bottom: 1px solid var(--glass-border);
 }
 
-/* service-token-input-wrapper 다음에 setting-row가 오는 경우 */
 #${APP_NAME}-config-container .service-list-wrapper > .service-token-input-wrapper + .setting-row {
     border-top: none;
 }
@@ -2874,35 +3662,35 @@ const ConfigModal = () => {
 /* wrapper 내에 항목이 하나만 있을 때 */
 #${APP_NAME}-config-container .option-list-wrapper > .setting-row:only-child,
 #${APP_NAME}-config-container .service-list-wrapper > .setting-row:only-child {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    border-bottom: 1px solid var(--glass-border);
 }
 
-/* update-result-container가 있을 때 setting-row의 하단 둥글기 제거 */
+/* update-result-container가 있을 때 */
 #${APP_NAME}-config-container .setting-row:has(+ #update-result-container) {
     border-bottom-left-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
-    border-bottom: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+    border-bottom: 1px solid var(--glass-border) !important;
 }
 
-/* font-preview-container를 카드 그룹으로 스타일링 */
+/* font-preview-container */
 #${APP_NAME}-config-container .font-preview-container {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 0 0 12px 12px;
-    backdrop-filter: blur(30px) saturate(150%);
-    -webkit-backdrop-filter: blur(30px) saturate(150%);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     padding: 0;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
 }
 
 #${APP_NAME}-config-container .setting-row:hover {
-    background: rgba(44, 44, 46, 0.6);
+    background: var(--glass-bg-hover);
 }
 
 #${APP_NAME}-config-container .setting-row:active {
-    background: rgba(58, 58, 60, 0.7);
+    background: var(--glass-bg-active);
 }
 
 #${APP_NAME}-config-container .setting-row-content {
@@ -2910,8 +3698,8 @@ const ConfigModal = () => {
     justify-content: space-between;
     align-items: center;
     gap: 24px;
-    padding: 12px 16px;
-    min-height: 44px;
+    padding: 14px 20px;
+    min-height: 52px;
 }
 
 #${APP_NAME}-config-container .setting-row-left {
@@ -2919,43 +3707,42 @@ const ConfigModal = () => {
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 4px;
 }
 
 #${APP_NAME}-config-container .setting-name {
-    font-weight: 400;
-    font-size: 15px;
-    color: #ffffff;
-    line-height: 1.3;
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--text-primary);
+    line-height: 1.4;
     letter-spacing: -0.01em;
 }
 
 #${APP_NAME}-config-container .setting-description {
-    font-size: 13px;
-    color: #8e8e93;
-    line-height: 1.35;
-    letter-spacing: -0.01em;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
 }
 
 #${APP_NAME}-config-container .setting-row-right {
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
-/* 슬라이더 컨트롤 - 개선된 iOS 스타일 */
+/* 슬라이더 컨트롤 */
 #${APP_NAME}-config-container .slider-container {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     width: 280px;
     position: relative;
 }
 
 #${APP_NAME}-config-container .config-slider {
     flex: 1;
-    height: 28px; /* Increased height for easier interaction */
+    height: 28px;
     background: transparent;
     outline: none;
     -webkit-appearance: none;
@@ -2967,66 +3754,66 @@ const ConfigModal = () => {
 #${APP_NAME}-config-container .config-slider::-webkit-slider-runnable-track {
     width: 100%;
     height: 6px;
-    background: #3a3a3c;
+    background: var(--glass-bg-active);
     border-radius: 3px;
-    transition: background 0.1s ease;
+    transition: background var(--transition-fast);
 }
 
 #${APP_NAME}-config-container .config-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 28px;
-    height: 28px;
-    background: #ffffff;
+    width: 20px;
+    height: 20px;
+    background: var(--accent-gradient);
     border-radius: 50%;
     cursor: pointer;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2), 0 0 1px rgba(0, 0, 0, 0.1);
-    margin-top: -11px; /* (track_height - thumb_height) / 2 */
-    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
+    margin-top: -7px;
+    transition: all var(--transition-fast);
 }
 
 #${APP_NAME}-config-container .config-slider:hover::-webkit-slider-thumb {
-    transform: scale(1.05);
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.5);
 }
 
 #${APP_NAME}-config-container .config-slider:active::-webkit-slider-thumb {
-    transform: scale(0.98);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    transform: scale(1.05);
 }
 
 /* Firefox Styles */
 #${APP_NAME}-config-container .config-slider::-moz-range-track {
     width: 100%;
     height: 6px;
-    background: #3a3a3c;
+    background: var(--glass-bg-active);
     border-radius: 3px;
     border: none;
 }
 
 #${APP_NAME}-config-container .config-slider::-moz-range-thumb {
-    width: 28px;
-    height: 28px;
-    background: #ffffff;
+    width: 20px;
+    height: 20px;
+    background: var(--accent-gradient);
     border: none;
     border-radius: 50%;
     cursor: pointer;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2), 0 0 1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
 }
 
 #${APP_NAME}-config-container .slider-value {
-    min-width: 60px;
-    text-align: right;
-    font-size: 15px;
-    color: #ffffff;
+    min-width: 56px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-primary);
     font-weight: 600;
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.01em;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 4px 10px;
-    border-radius: 6px;
+    background: var(--glass-bg-hover);
+    border: 1px solid var(--glass-border);
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
 }
 
-/* 조정 버튼 (+ -) - iOS 스타일 */
+/* 조정 버튼 (+ -) */
 #${APP_NAME}-config-container .adjust-container {
     display: flex;
     align-items: center;
@@ -3039,65 +3826,63 @@ const ConfigModal = () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #2c2c2e;
-    border: none;
-    border-radius: 10px;
-    color: #007aff;
-    font-size: 20px;
-    font-weight: 400;
+    background: var(--glass-bg-hover);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    color: var(--accent-primary);
+    font-size: 18px;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast);
     user-select: none;
 }
 
 #${APP_NAME}-config-container .adjust-button:hover {
-    background: #3a3a3c;
+    background: var(--accent-primary-light);
+    border-color: var(--accent-primary);
     transform: scale(1.05);
 }
 
 #${APP_NAME}-config-container .adjust-button:active {
-    background: #48484a;
     transform: scale(0.95);
 }
 
 #${APP_NAME}-config-container .adjust-value {
     min-width: 56px;
     text-align: center;
-    font-size: 15px;
-    color: #ffffff;
+    font-size: 14px;
+    color: var(--text-primary);
     font-weight: 600;
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.01em;
 }
 
-/* 스왑 버튼 (위 아래 화살표) */
+/* 스왑 버튼 */
 #${APP_NAME}-config-container .swap-button {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #2b2b2b;
-    border: 1px solid #3d3d3d;
-    border-radius: 2px;
+    background: var(--glass-bg-hover);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
     cursor: pointer;
-    transition: all 0.1s ease;
+    transition: all var(--transition-fast);
 }
 
 #${APP_NAME}-config-container .swap-button:hover {
-    background: #323232;
-    border-color: #0078d4;
+    background: var(--accent-primary-light);
+    border-color: var(--accent-primary);
 }
 
 #${APP_NAME}-config-container .swap-button:active {
-    background: #1f1f1f;
     transform: scale(0.95);
 }
 
 #${APP_NAME}-config-container .swap-button svg {
-    width: 12px;
-    height: 12px;
-    fill: #ffffff;
+    width: 14px;
+    height: 14px;
+    fill: var(--text-primary);
 }
 
 /* 컬러피커 */
@@ -3108,155 +3893,151 @@ const ConfigModal = () => {
 }
 
 #${APP_NAME}-config-container .config-color-picker {
-    width: 48px;
+    width: 44px;
     height: 36px;
-    padding: 2px;
-    background: #2b2b2b;
-    border: 1px solid #3d3d3d;
-    border-radius: 2px;
+    padding: 3px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
     cursor: pointer;
-    transition: border-color 0.1s ease;
+    transition: all var(--transition-fast);
 }
 
 #${APP_NAME}-config-container .config-color-picker:hover {
-    border-color: #505050;
+    border-color: var(--glass-border-light);
+    transform: scale(1.05);
 }
 
 #${APP_NAME}-config-container .config-color-picker:focus {
-    border-color: #0078d4;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px var(--accent-primary-light);
     outline: none;
 }
 
 #${APP_NAME}-config-container .config-color-input {
-    width: 120px !important;
-    background: #2b2b2b !important;
-    border: 1px solid #3d3d3d !important;
-    border-radius: 2px !important;
+    width: 100px !important;
+    background: var(--glass-bg-hover) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: var(--radius-sm) !important;
     padding: 8px 12px !important;
-    font-size: 13px !important;
-    color: #ffffff !important;
-    font-family: 'Courier New', monospace !important;
+    font-size: 12px !important;
+    color: var(--text-primary) !important;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
     text-transform: uppercase !important;
 }
 
-/* 입력 필드 - iOS 스타일 */
-#${APP_NAME}-config-container input[type="text"],
-#${APP_NAME}-config-container input[type="password"],
-#${APP_NAME}-config-container input[type="number"],
-#${APP_NAME}-config-container input[type="url"],
-#${APP_NAME}-config-container input,
+/* 입력 필드 - Glassmorphism */
+#${APP_NAME}-config-container input[type="text"]:not(.settings-search-input),
+#${APP_NAME}-config-container input[type="password"]:not(.settings-search-input),
+#${APP_NAME}-config-container input[type="number"]:not(.settings-search-input),
+#${APP_NAME}-config-container input[type="url"]:not(.settings-search-input),
+#${APP_NAME}-config-container input:not(.settings-search-input),
 #${APP_NAME}-config-container textarea {
-	background: #2c2c2e !important;
-	border: none !important;
-	border-radius: 8px !important;
-	padding: 8px 12px !important;
-    width: min(320px, 100%) !important;
+    background: var(--glass-bg-hover) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 10px 14px !important;
+    width: min(280px, 100%) !important;
     outline: none !important;
-    color: #ffffff !important;
-    transition: background 0.2s ease, box-shadow 0.2s ease !important;
-    font-size: 15px !important;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
-    min-height: 36px !important;
+    color: var(--text-primary) !important;
+    transition: all var(--transition-normal) !important;
+    font-size: 14px !important;
+    font-family: inherit !important;
+    min-height: 40px !important;
     box-sizing: border-box !important;
     font-weight: 400 !important;
-    letter-spacing: -0.01em !important;
+    backdrop-filter: blur(10px) !important;
 }
 
 #${APP_NAME}-config-container select {
-	background: #2c2c2e !important;
-	border: none !important;
-	border-radius: 8px !important;
-	padding: 8px 32px 8px 12px !important;
-    width: 200px !important;
+    background: var(--glass-bg-hover) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 10px 36px 10px 14px !important;
+    width: 180px !important;
     outline: none !important;
-    color: #ffffff !important;
-    transition: background 0.2s ease !important;
-    font-size: 15px !important;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
-    min-height: 36px !important;
+    color: var(--text-primary) !important;
+    transition: all var(--transition-normal) !important;
+    font-size: 14px !important;
+    font-family: inherit !important;
+    min-height: 40px !important;
     height: auto !important;
     box-sizing: border-box !important;
     appearance: none !important;
-    background-image: url('data:image/svg+xml;utf8,<svg fill="%238e8e93" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M3 6l5 5.794L13 6z"/></svg>') !important;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%237c3aed" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M3 6l5 5.794L13 6z"/></svg>') !important;
     background-repeat: no-repeat !important;
-    background-position: right 10px center !important;
+    background-position: right 12px center !important;
     cursor: pointer !important;
-    font-weight: 400 !important;
-    letter-spacing: -0.01em !important;
+    font-weight: 500 !important;
+    backdrop-filter: blur(10px) !important;
 }
 
-#${APP_NAME}-config-container input[type="text"]:hover,
-#${APP_NAME}-config-container input[type="password"]:hover,
-#${APP_NAME}-config-container input[type="number"]:hover,
-#${APP_NAME}-config-container input[type="url"]:hover,
-#${APP_NAME}-config-container input:hover,
+#${APP_NAME}-config-container input[type="text"]:not(.settings-search-input):hover,
+#${APP_NAME}-config-container input[type="password"]:not(.settings-search-input):hover,
+#${APP_NAME}-config-container input[type="number"]:not(.settings-search-input):hover,
+#${APP_NAME}-config-container input[type="url"]:not(.settings-search-input):hover,
+#${APP_NAME}-config-container input:not(.settings-search-input):hover,
 #${APP_NAME}-config-container select:hover,
 #${APP_NAME}-config-container textarea:hover {
-    background: #3a3a3c !important;
+    background: var(--glass-bg-active) !important;
+    border-color: var(--glass-border-light) !important;
 }
 
-#${APP_NAME}-config-container input[type="text"]:focus,
-#${APP_NAME}-config-container input[type="password"]:focus,
-#${APP_NAME}-config-container input[type="number"]:focus,
-#${APP_NAME}-config-container input[type="url"]:focus,
-#${APP_NAME}-config-container input:focus,
+#${APP_NAME}-config-container input[type="text"]:not(.settings-search-input):focus,
+#${APP_NAME}-config-container input[type="password"]:not(.settings-search-input):focus,
+#${APP_NAME}-config-container input[type="number"]:not(.settings-search-input):focus,
+#${APP_NAME}-config-container input[type="url"]:not(.settings-search-input):focus,
+#${APP_NAME}-config-container input:not(.settings-search-input):focus,
 #${APP_NAME}-config-container select:focus,
 #${APP_NAME}-config-container textarea:focus {
-    background: #2c2c2e !important;
-    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3) !important;
+    background: var(--glass-bg-active) !important;
+    border-color: var(--accent-primary) !important;
+    box-shadow: 0 0 0 3px var(--accent-primary-light), var(--shadow-glow) !important;
 }
 
 #${APP_NAME}-config-container input::placeholder,
 #${APP_NAME}-config-container textarea::placeholder {
-    color: #6d6d6d !important;
+    color: var(--text-tertiary) !important;
     opacity: 1 !important;
 }
 
 #${APP_NAME}-config-container select option {
-    background-color: #2b2b2b;
-    color: #ffffff;
-    padding: 8px 12px;
+    background-color: #1a1a1f;
+    color: var(--text-primary);
+    padding: 10px 14px;
 }
 
-/* 버튼 스타일 */
-#${APP_NAME}-config-container .adjust-value {
-    min-width: 48px;
-    text-align: center;
-    font-weight: 400;
-    font-size: 14px;
-    color: #ffffff;
-}
-
+/* 버튼 스타일 - Glassmorphism */
 #${APP_NAME}-config-container .switch,
 #${APP_NAME}-config-container .btn {
-    height: 36px;
+    height: 40px;
     min-width: 80px;
-    border-radius: 10px;
-    background: #007aff;
-    border: none;
-    color: #ffffff;
+    border-radius: var(--radius-md);
+    background: var(--glass-bg-hover);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--transition-normal);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
-    font-size: 15px;
-    padding: 0 16px;
-    letter-spacing: -0.01em;
+    font-weight: 500;
+    font-size: 13px;
+    padding: 0 18px;
+    backdrop-filter: blur(10px);
 }
 
-/* iOS 토글 스위치 - 완전히 새로 작성 */
+/* 토글 스위치 - Glassmorphism */
 #${APP_NAME}-config-container .switch-checkbox {
-    width: 51px;
-    height: 31px;
-    border-radius: 15.5px;
-    background-color: #3a3a3c;
-    border: none;
+    width: 52px;
+    height: 28px;
+    border-radius: 14px;
+    background: var(--glass-bg-active);
+    border: 1px solid var(--glass-border);
     cursor: pointer;
     position: relative;
     flex-shrink: 0;
-    transition: background-color 0.2s ease;
+    transition: all var(--transition-normal);
     -webkit-tap-highlight-color: transparent;
     outline: none;
     overflow: hidden;
@@ -3267,23 +4048,28 @@ const ConfigModal = () => {
     position: absolute;
     top: 2px;
     left: 2px;
-    width: 27px;
-    height: 27px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
-    background-color: #ffffff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+    background: var(--text-primary);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-normal);
     will-change: transform;
     transform: translateX(0);
 }
 
+#${APP_NAME}-config-container .switch-checkbox:hover {
+    border-color: var(--glass-border-light);
+}
+
 #${APP_NAME}-config-container .switch-checkbox.active {
-    background-color: #34c759;
-    transition: background-color 0.2s ease;
+    background: var(--accent-gradient);
+    border-color: transparent;
+    box-shadow: 0 0 16px rgba(124, 58, 237, 0.4);
 }
 
 #${APP_NAME}-config-container .switch-checkbox.active::after {
-    transform: translateX(20px);
+    transform: translateX(24px);
 }
 
 #${APP_NAME}-config-container .switch-checkbox svg {
@@ -3294,36 +4080,52 @@ const ConfigModal = () => {
 }
 
 #${APP_NAME}-config-container .switch {
-    background: #2b2b2b;
-    border: 1px solid #3d3d3d;
+    background: var(--glass-bg-hover);
+    border: 1px solid var(--glass-border);
 }
 
 #${APP_NAME}-config-container .switch:hover {
-    background: #323232;
-    border-color: #505050;
+    background: var(--glass-bg-active);
+    border-color: var(--glass-border-light);
 }
 
 #${APP_NAME}-config-container .switch.disabled {
-    background: #2b2b2b;
-    border-color: #3d3d3d;
     opacity: 0.4;
+    cursor: not-allowed;
 }
 
 #${APP_NAME}-config-container .btn {
-    background: #2b2b2b;
-    border: 1px solid #3d3d3d;
-    color: #ffffff;
-    font-weight: 400;
-    padding: 0 16px;
+    background: var(--glass-bg-hover);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    font-weight: 500;
+    padding: 0 18px;
+    position: relative;
+    overflow: hidden;
+}
+
+#${APP_NAME}-config-container .btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--accent-gradient);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
 }
 
 #${APP_NAME}-config-container .btn:hover:not(:disabled) {
-    background: #323232;
-    border-color: #505050;
+    background: var(--glass-bg-active);
+    border-color: var(--accent-primary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+#${APP_NAME}-config-container .btn:hover:not(:disabled)::before {
+    opacity: 0.1;
 }
 
 #${APP_NAME}-config-container .btn:active:not(:disabled) {
-    background: #1f1f1f;
+    transform: translateY(0) scale(0.98);
 }
 
 #${APP_NAME}-config-container .btn:disabled {
@@ -3331,43 +4133,84 @@ const ConfigModal = () => {
     cursor: not-allowed;
 }
 
-/* 글꼴 미리보기 - iOS 스타일 (이미 CSS로 스타일링됨) */
+/* 프라이머리 버튼 */
+#${APP_NAME}-config-container .btn-primary {
+    background: var(--accent-gradient) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+}
+
+#${APP_NAME}-config-container .btn-primary:hover:not(:disabled) {
+    box-shadow: 0 6px 24px rgba(124, 58, 237, 0.4);
+    transform: translateY(-2px);
+}
+
+/* 글꼴 미리보기 */
 #${APP_NAME}-config-container .font-preview {
     background: transparent;
     border: none;
-    padding: 20px;
+    padding: 24px;
 }
 
 #${APP_NAME}-config-container #lyrics-preview,
 #${APP_NAME}-config-container #translation-preview {
-    transition: all 0.1s ease;
+    transition: all var(--transition-fast);
 }
 
 /* 정보 박스 */
 #${APP_NAME}-config-container .info-box {
     padding: 20px;
-    background: #202020;
-    border: 1px solid #2b2b2b;
-    border-radius: 2px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
     margin-bottom: 24px;
+    backdrop-filter: var(--glass-blur);
 }
 
 #${APP_NAME}-config-container .info-box h3 {
     margin: 0 0 12px;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--text-primary);
 }
 
 #${APP_NAME}-config-container .info-box p {
     margin: 0 0 8px;
-    color: #8a8a8a;
+    color: var(--text-secondary);
     line-height: 1.6;
     font-size: 13px;
 }
 
 #${APP_NAME}-config-container .info-box p:last-child {
     margin-bottom: 0;
+}
+
+/* 추가 애니메이션 */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* 호버 시 빛나는 효과 */
+#${APP_NAME}-config-container .setting-row::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.03), transparent);
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+    pointer-events: none;
+}
+
+#${APP_NAME}-config-container .setting-row:hover::after {
+    opacity: 1;
 }
 `,
       },
@@ -3433,9 +4276,55 @@ const ConfigModal = () => {
         onClick: setActiveTab,
       })
     ),
+    // 검색창
+    react.createElement(
+      "div",
+      { className: "settings-search-container" },
+      react.createElement(
+        "div",
+        { className: "settings-search-wrapper" },
+        react.createElement(
+          "svg",
+          {
+            className: "settings-search-icon",
+            viewBox: "0 0 20 20",
+            fill: "currentColor",
+          },
+          react.createElement("path", {
+            fillRule: "evenodd",
+            d: "M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z",
+            clipRule: "evenodd",
+          })
+        ),
+        react.createElement("input", {
+          type: "text",
+          className: "settings-search-input",
+          placeholder: I18n.t("search.placeholder"),
+          value: searchQuery,
+          onChange: handleSearchChange,
+        }),
+        searchQuery && react.createElement(
+          "button",
+          {
+            className: "settings-search-clear",
+            onClick: handleClearSearch,
+            title: I18n.t("search.clear"),
+          },
+          "×"
+        )
+      )
+    ),
     react.createElement(
       TabContainer,
       null,
+      // 검색 결과 탭
+      react.createElement(
+        "div",
+        {
+          className: `tab-content ${activeTab === "search" ? "active" : ""}`,
+        },
+        react.createElement(SearchResults)
+      ),
       // 일반 탭 (동작 관련 설정)
       react.createElement(
         "div",

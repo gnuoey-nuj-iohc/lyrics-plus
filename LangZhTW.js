@@ -13,7 +13,16 @@ window.LANG_ZH_TW = {
     "advanced": "進階",
     "fullscreen": "全螢幕",
     "debug": "除錯",
-    "about": "關於"
+    "about": "關於",
+    "searchResults": "搜尋結果"
+  },
+  "search": {
+    "placeholder": "搜尋設定...",
+    "noResults": "找不到結果",
+    "noResultsDesc": "請嘗試其他搜尋關鍵字",
+    "resultCount": "{count} 個結果",
+    "clear": "清除",
+    "inSection": "在 {section} 中"
   },
   "sections": {
     "language": "語言",

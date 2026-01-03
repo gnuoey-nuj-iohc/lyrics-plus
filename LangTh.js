@@ -13,7 +13,16 @@ window.LANG_TH = {
     "advanced": "ขั้นสูง",
     "fullscreen": "เต็มหน้าจอ",
     "debug": "ดีบัก",
-    "about": "เกี่ยวกับ"
+    "about": "เกี่ยวกับ",
+    "searchResults": "ผลการค้นหา"
+  },
+  "search": {
+    "placeholder": "ค้นหาการตั้งค่า...",
+    "noResults": "ไม่พบผลลัพธ์",
+    "noResultsDesc": "ลองใช้คำค้นหาอื่น",
+    "resultCount": "{count} ผลลัพธ์",
+    "clear": "ล้าง",
+    "inSection": "ใน {section}"
   },
   "sections": {
     "language": "ภาษา",

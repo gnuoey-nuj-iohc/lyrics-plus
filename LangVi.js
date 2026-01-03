@@ -13,7 +13,16 @@ window.LANG_VI = {
     "advanced": "Nâng cao",
     "fullscreen": "Toàn màn hình",
     "debug": "Gỡ lỗi",
-    "about": "Giới thiệu"
+    "about": "Giới thiệu",
+    "searchResults": "Kết quả tìm kiếm"
+  },
+  "search": {
+    "placeholder": "Tìm kiếm cài đặt...",
+    "noResults": "Không tìm thấy kết quả",
+    "noResultsDesc": "Thử một từ khóa khác",
+    "resultCount": "{count} kết quả",
+    "clear": "Xóa",
+    "inSection": "Trong {section}"
   },
   "sections": {
     "language": "Ngôn ngữ",
