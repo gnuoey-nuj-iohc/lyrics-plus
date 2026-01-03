@@ -1401,7 +1401,16 @@ window.LANG_AR = {
     errorFetch: "حدث خطأ أثناء جلب TMI.",
     errorQuota: "تم تجاوز حصة API.",
     errorQuotaHint: "يرجى المحاولة لاحقًا أو إدخال مفتاح API آخر في الإعدادات.",
-    disclaimer: "تم إنشاء هذا المحتوى بواسطة الذكاء الاصطناعي باستخدام معلومات من الإنترنت وقد يحتوي على معلومات غير دقيقة."
+    disclaimer: "تم إنشاء هذا المحتوى بواسطة الذكاء الاصطناعي باستخدام معلومات من الإنترنت وقد يحتوي على معلومات غير دقيقة.",
+    sources: "المصادر",
+    verifiedSources: "مصادر موثقة",
+    relatedSources: "مصادر ذات صلة",
+    otherSources: "مصادر أخرى",
+    confidenceVeryHigh: "موثوقية عالية جدًا",
+    confidenceHigh: "موثوقية عالية",
+    confidenceMedium: "موثوقية متوسطة",
+    confidenceLow: "موثوقية منخفضة",
+    confidenceNone: "بدون مصادر"
   }
 };
 

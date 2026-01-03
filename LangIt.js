@@ -1403,7 +1403,19 @@ window.LANG_IT = {
     errorFetch: "Si è verificato un errore durante il recupero dei TMI.",
     errorQuota: "Quota API superata.",
     errorQuotaHint: "Riprova più tardi o inserisci un'altra chiave API nelle impostazioni.",
-    disclaimer: "Questo contenuto è generato dall'IA utilizzando informazioni da Internet e potrebbe contenere informazioni imprecise."
+    disclaimer: "Questo contenuto è generato dall'IA utilizzando informazioni da Internet e potrebbe contenere informazioni imprecise.",
+    verified: "Verificato",
+    unverified: "Non verificato",
+    verifiedCount: "verificato",
+    sources: "Fonti",
+    verifiedSources: "Fonti verificate",
+    relatedSources: "Fonti correlate",
+    otherSources: "Altre fonti",
+    confidenceVeryHigh: "Altissima affidabilità",
+    confidenceHigh: "Alta affidabilità",
+    confidenceMedium: "Affidabilità media",
+    confidenceLow: "Bassa affidabilità",
+    confidenceNone: "Nessuna fonte"
   }
 };
 

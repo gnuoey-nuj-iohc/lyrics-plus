@@ -1379,7 +1379,16 @@ window.LANG_BN = {
     errorFetch: "TMI আনতে ত্রুটি হয়েছে।",
     errorQuota: "API কোটা শেষ হয়ে গেছে।",
     errorQuotaHint: "অনুগ্রহ করে পরে চেষ্টা করুন বা সেটিংসে অন্য API কী দিন।",
-    disclaimer: "এই বিষয়বস্তু ইন্টারনেট থেকে তথ্য ব্যবহার করে AI দ্বারা তৈরি এবং এতে ভুল তথ্য থাকতে পারে।"
+    disclaimer: "এই বিষয়বস্তু ইন্টারনেট থেকে তথ্য ব্যবহার করে AI দ্বারা তৈরি এবং এতে ভুল তথ্য থাকতে পারে।",
+    sources: "সূত্র",
+    verifiedSources: "যাচাইকৃত সূত্র",
+    relatedSources: "সংশ্লিষ্ট সূত্র",
+    otherSources: "অন্যান্য সূত্র",
+    confidenceVeryHigh: "অত্যন্ত উচ্চ বিশ্বাসযোগ্যতা",
+    confidenceHigh: "উচ্চ বিশ্বাসযোগ্যতা",
+    confidenceMedium: "মাঝারি বিশ্বাসযোগ্যতা",
+    confidenceLow: "নিম্ন বিশ্বাসযোগ্যতা",
+    confidenceNone: "কোনো সূত্র নেই"
   }
 };
 

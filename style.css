@@ -4443,6 +4443,285 @@ ruby .lyrics-karaoke-char.sung {
   gap: 20px;
 }
 
+/* ========================================
+   TMI Verification & Source Styles
+   ======================================== */
+
+/* Reliability Badge (replaces Verification Badge) */
+.tmi-reliability-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: calc(10px * var(--tmi-scale, 1));
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: all 0.2s ease;
+}
+
+.tmi-reliability-badge.very-high {
+  background: rgba(30, 215, 96, 0.2);
+  color: #1ed760;
+  border: 1px solid rgba(30, 215, 96, 0.5);
+  box-shadow: 0 0 8px rgba(30, 215, 96, 0.3);
+}
+
+.tmi-reliability-badge.high {
+  background: rgba(30, 215, 96, 0.15);
+  color: #1ed760;
+  border: 1px solid rgba(30, 215, 96, 0.3);
+}
+
+.tmi-reliability-badge.medium {
+  background: rgba(100, 180, 255, 0.15);
+  color: #64b4ff;
+  border: 1px solid rgba(100, 180, 255, 0.3);
+}
+
+.tmi-reliability-badge.low {
+  background: rgba(255, 170, 50, 0.12);
+  color: #ffaa32;
+  border: 1px solid rgba(255, 170, 50, 0.25);
+}
+
+.tmi-reliability-badge.none {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Legacy Verification Badge - kept for backward compatibility */
+.tmi-verification-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: calc(10px * var(--tmi-scale, 1));
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: all 0.2s ease;
+}
+
+.tmi-verification-badge.verified {
+  background: rgba(30, 215, 96, 0.15);
+  color: #1ed760;
+  border: 1px solid rgba(30, 215, 96, 0.3);
+}
+
+.tmi-verification-badge.unverified {
+  background: rgba(255, 170, 50, 0.12);
+  color: #ffaa32;
+  border: 1px solid rgba(255, 170, 50, 0.25);
+}
+
+.tmi-badge-icon {
+  font-size: calc(10px * var(--tmi-scale, 1));
+  line-height: 1;
+}
+
+.tmi-badge-text {
+  font-size: calc(9px * var(--tmi-scale, 1));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Description Header */
+.tmi-description-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+/* Description with confidence level */
+.tmi-fullview-description.high {
+  border-left-color: rgba(30, 215, 96, 0.6);
+}
+
+.tmi-fullview-description.medium {
+  border-left-color: rgba(100, 180, 255, 0.5);
+}
+
+.tmi-fullview-description.low {
+  border-left-color: rgba(255, 170, 50, 0.5);
+}
+
+.tmi-fullview-description.none {
+  border-left-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Legacy verified/unverified styles */
+.tmi-fullview-description.verified {
+  border-left-color: rgba(30, 215, 96, 0.6);
+}
+
+.tmi-fullview-description.unverified {
+  border-left-color: rgba(255, 170, 50, 0.5);
+}
+
+/* Sources Section */
+.tmi-sources-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tmi-sources-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.tmi-sources-label {
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: calc(13px * var(--tmi-scale, 1));
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.02em;
+}
+
+/* Source Groups */
+.tmi-sources-group {
+  margin-bottom: 16px;
+}
+
+.tmi-sources-group:last-child {
+  margin-bottom: 0;
+}
+
+.tmi-sources-group-label {
+  display: block;
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: calc(11px * var(--tmi-scale, 1));
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tmi-sources-group.verified .tmi-sources-group-label {
+  color: rgba(30, 215, 96, 0.8);
+}
+
+.tmi-sources-group.related .tmi-sources-group-label {
+  color: rgba(100, 180, 255, 0.8);
+}
+
+.tmi-sources-group.other .tmi-sources-group-label {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Source Links Container */
+.tmi-sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tmi-source-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+  font-size: calc(11px * var(--tmi-scale, 1));
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.tmi-sources-group.verified .tmi-source-link {
+  background: rgba(30, 215, 96, 0.08);
+  border-color: rgba(30, 215, 96, 0.2);
+  color: rgba(30, 215, 96, 0.9);
+}
+
+.tmi-sources-group.verified .tmi-source-link:hover {
+  background: rgba(30, 215, 96, 0.15);
+  border-color: rgba(30, 215, 96, 0.35);
+  color: #1ed760;
+}
+
+.tmi-sources-group.related .tmi-source-link {
+  background: rgba(100, 180, 255, 0.08);
+  border-color: rgba(100, 180, 255, 0.2);
+  color: rgba(100, 180, 255, 0.9);
+}
+
+.tmi-sources-group.related .tmi-source-link:hover {
+  background: rgba(100, 180, 255, 0.15);
+  border-color: rgba(100, 180, 255, 0.35);
+  color: #64b4ff;
+}
+
+.tmi-source-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.85);
+  transform: translateY(-1px);
+}
+
+.tmi-source-icon {
+  font-size: calc(10px * var(--tmi-scale, 1));
+  opacity: 0.7;
+}
+
+.tmi-source-text {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Trivia Item Structure */
+.tmi-trivia-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+}
+
+.tmi-trivia-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.tmi-trivia-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/* Trivia item with verification status */
+.tmi-fullview-trivia-item.verified {
+  border-left: 2px solid rgba(30, 215, 96, 0.4);
+  padding-left: 14px;
+}
+
+.tmi-fullview-trivia-item.unverified {
+  border-left: 2px solid rgba(255, 170, 50, 0.35);
+  padding-left: 14px;
+}
+
+/* Trivia Summary */
+.tmi-trivia-summary {
+  font-weight: 400;
+  font-size: calc(10px * var(--tmi-scale, 1));
+  color: rgba(255, 255, 255, 0.35);
+  margin-left: 4px;
+}
+
 /* ==================== Share Image Modal ==================== */
 @keyframes shareImageFadeIn {
   from {

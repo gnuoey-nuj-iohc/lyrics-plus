@@ -1379,7 +1379,16 @@ window.LANG_FA = {
     errorFetch: "خطایی در دریافت TMI رخ داد.",
     errorQuota: "سهمیه API تمام شد.",
     errorQuotaHint: "لطفاً بعداً دوباره تلاش کنید یا کلید API دیگری در تنظیمات وارد کنید.",
-    disclaimer: "این محتوا توسط هوش مصنوعی با استفاده از اطلاعات اینترنت تولید شده و ممکن است اطلاعات نادرست داشته باشد."
+    disclaimer: "این محتوا توسط هوش مصنوعی با استفاده از اطلاعات اینترنت تولید شده و ممکن است اطلاعات نادرست داشته باشد.",
+    sources: "منابع",
+    verifiedSources: "منابع تأیید شده",
+    relatedSources: "منابع مرتبط",
+    otherSources: "سایر منابع",
+    confidenceVeryHigh: "اعتماد بسیار بالا",
+    confidenceHigh: "اعتماد بالا",
+    confidenceMedium: "اعتماد متوسط",
+    confidenceLow: "اعتماد پایین",
+    confidenceNone: "بدون منبع"
   }
 };
 

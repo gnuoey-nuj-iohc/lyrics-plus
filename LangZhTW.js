@@ -1403,6 +1403,18 @@ window.LANG_ZH_TW = {
     errorFetch: "獲取 TMI 時發生錯誤。",
     errorQuota: "API 配額已超出。",
     errorQuotaHint: "請稍後重試或在設定中輸入其他 API 金鑰。",
-    disclaimer: "此內容由AI處理網路資訊後生成，可能包含不準確的資訊。"
+    disclaimer: "此內容由AI處理網路資訊後生成，可能包含不準確的資訊。",
+    verified: "已驗證",
+    unverified: "未驗證",
+    verifiedCount: "已驗證",
+    sources: "來源",
+    verifiedSources: "已驗證的來源",
+    relatedSources: "相關來源",
+    otherSources: "其他來源",
+    confidenceVeryHigh: "極高可信度",
+    confidenceHigh: "高可信度",
+    confidenceMedium: "中可信度",
+    confidenceLow: "低可信度",
+    confidenceNone: "無來源"
   }
 };

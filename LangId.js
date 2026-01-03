@@ -1379,7 +1379,16 @@ window.LANG_ID = {
     errorFetch: "Terjadi kesalahan saat mengambil TMI.",
     errorQuota: "Kuota API terlampaui.",
     errorQuotaHint: "Silakan coba lagi nanti atau masukkan kunci API lain di pengaturan.",
-    disclaimer: "Konten ini dihasilkan oleh AI menggunakan informasi dari internet dan mungkin berisi informasi yang tidak akurat."
+    disclaimer: "Konten ini dihasilkan oleh AI menggunakan informasi dari internet dan mungkin berisi informasi yang tidak akurat.",
+    sources: "Sumber",
+    verifiedSources: "Sumber Terverifikasi",
+    relatedSources: "Sumber Terkait",
+    otherSources: "Sumber Lainnya",
+    confidenceVeryHigh: "Kepercayaan Sangat Tinggi",
+    confidenceHigh: "Kepercayaan Tinggi",
+    confidenceMedium: "Kepercayaan Sedang",
+    confidenceLow: "Kepercayaan Rendah",
+    confidenceNone: "Tanpa Sumber"
   }
 };
 

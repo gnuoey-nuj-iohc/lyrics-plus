@@ -1386,7 +1386,16 @@ window.LANG_TH = {
     errorFetch: "เกิดข้อผิดพลาดขณะดึงข้อมูล TMI",
     errorQuota: "โควต้า API เกินขีดจำกัดแล้ว",
     errorQuotaHint: "กรุณาลองใหม่ภายหลังหรือป้อน API key อื่นในการตั้งค่า",
-    disclaimer: "เนื้อหานี้สร้างโดย AI จากข้อมูลบนอินเทอร์เน็ต และอาจมีข้อมูลที่ไม่ถูกต้อง"
+    disclaimer: "เนื้อหานี้สร้างโดย AI จากข้อมูลบนอินเทอร์เน็ต และอาจมีข้อมูลที่ไม่ถูกต้อง",
+    sources: "แหล่งที่มา",
+    verifiedSources: "แหล่งที่ยืนยันแล้ว",
+    relatedSources: "แหล่งที่เกี่ยวข้อง",
+    otherSources: "แหล่งอื่นๆ",
+    confidenceVeryHigh: "ความน่าเชื่อถือสูงมาก",
+    confidenceHigh: "ความน่าเชื่อถือสูง",
+    confidenceMedium: "ความน่าเชื่อถือปานกลาง",
+    confidenceLow: "ความน่าเชื่อถือต่ำ",
+    confidenceNone: "ไม่มีแหล่งที่มา"
   }
 };
 

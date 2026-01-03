@@ -1372,7 +1372,16 @@ window.LANG_HI = {
     errorFetch: "TMI प्राप्त करते समय त्रुटि हुई।",
     errorQuota: "API कोटा समाप्त हो गया।",
     errorQuotaHint: "कृपया बाद में पुनः प्रयास करें या सेटिंग्स में अन्य API की दर्ज करें।",
-    disclaimer: "यह सामग्री इंटरनेट से जानकारी का उपयोग करके AI द्वारा उत्पन्न की गई है और इसमें गलत जानकारी हो सकती है।"
+    disclaimer: "यह सामग्री इंटरनेट से जानकारी का उपयोग करके AI द्वारा उत्पन्न की गई है और इसमें गलत जानकारी हो सकती है।",
+    sources: "स्रोत",
+    verifiedSources: "सत्यापित स्रोत",
+    relatedSources: "संबंधित स्रोत",
+    otherSources: "अन्य स्रोत",
+    confidenceVeryHigh: "बहुत उच्च विश्वसनीयता",
+    confidenceHigh: "उच्च विश्वसनीयता",
+    confidenceMedium: "मध्यम विश्वसनीयता",
+    confidenceLow: "निम्न विश्वसनीयता",
+    confidenceNone: "कोई स्रोत नहीं"
   }
 };
 

@@ -1403,7 +1403,19 @@ window.LANG_PT = {
     errorFetch: "Ocorreu um erro ao buscar TMI.",
     errorQuota: "Cota de API excedida.",
     errorQuotaHint: "Tente novamente mais tarde ou insira outra chave API nas configurações.",
-    disclaimer: "Este conteúdo é gerado por IA usando informações da internet e pode conter informações imprecisas."
+    disclaimer: "Este conteúdo é gerado por IA usando informações da internet e pode conter informações imprecisas.",
+    verified: "Verificado",
+    unverified: "Não verificado",
+    verifiedCount: "verificado",
+    sources: "Fontes",
+    verifiedSources: "Fontes verificadas",
+    relatedSources: "Fontes relacionadas",
+    otherSources: "Outras fontes",
+    confidenceVeryHigh: "Confiabilidade muito alta",
+    confidenceHigh: "Alta confiabilidade",
+    confidenceMedium: "Confiabilidade média",
+    confidenceLow: "Baixa confiabilidade",
+    confidenceNone: "Sem fontes"
   }
 };
 

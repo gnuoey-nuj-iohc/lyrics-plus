@@ -1403,7 +1403,19 @@ window.LANG_FR = {
     errorFetch: "Une erreur s'est produite lors de la récupération des TMI.",
     errorQuota: "Quota API dépassé.",
     errorQuotaHint: "Veuillez réessayer plus tard ou entrer une autre clé API dans les paramètres.",
-    disclaimer: "Ce contenu est généré par l'IA à partir d'informations sur Internet et peut contenir des informations inexactes."
+    disclaimer: "Ce contenu est généré par l'IA à partir d'informations sur Internet et peut contenir des informations inexactes.",
+    verified: "Vérifié",
+    unverified: "Non vérifié",
+    verifiedCount: "vérifié",
+    sources: "Sources",
+    verifiedSources: "Sources vérifiées",
+    relatedSources: "Sources connexes",
+    otherSources: "Autres sources",
+    confidenceVeryHigh: "Très haute fiabilité",
+    confidenceHigh: "Haute fiabilité",
+    confidenceMedium: "Fiabilité moyenne",
+    confidenceLow: "Faible fiabilité",
+    confidenceNone: "Aucune source"
   }
 };
 

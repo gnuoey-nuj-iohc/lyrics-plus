@@ -154,6 +154,76 @@ const SongInfoTMI = (() => {
         return { error: true, message: lastError?.message || 'All API keys exhausted (Rate Limit)' };
     }
 
+    // Source link renderer helper - supports new {title, uri} format
+    const renderSourceLinks = (sources, isVerified) => {
+        if (!sources || sources.length === 0) return null;
+        
+        return react.createElement("div", { className: "tmi-sources" },
+            sources.map((source, i) => {
+                // Support both old URL string format and new {title, uri} format
+                const url = typeof source === 'string' ? source : source?.uri;
+                const title = typeof source === 'string' ? null : source?.title;
+                
+                if (!url) return null;
+                
+                // Extract display text: use title if available, otherwise extract hostname
+                let displayText;
+                try {
+                    displayText = title || new URL(url).hostname.replace('www.', '').replace('vertexaisearch.cloud.google.com', 'Google Search');
+                } catch {
+                    displayText = title || url;
+                }
+                
+                return react.createElement("a", {
+                    key: i,
+                    href: url,
+                    className: "tmi-source-link",
+                    onClick: (e) => {
+                        e.preventDefault();
+                        window.open(url, '_blank');
+                    },
+                    title: url
+                },
+                    react.createElement("span", { className: "tmi-source-icon" }, "🔗"),
+                    react.createElement("span", { className: "tmi-source-text" }, displayText)
+                );
+            }).filter(Boolean)
+        );
+    };
+
+    // Reliability badge component based on confidence level
+    const ReliabilityBadge = ({ reliability }) => {
+        if (!reliability) return null;
+        
+        const { confidence, has_verified_sources, verified_source_count, related_source_count, total_source_count, unique_domains } = reliability;
+        
+        // Determine badge style and text based on confidence
+        const badgeConfig = {
+            very_high: { icon: "✓✓", className: "very-high", textKey: "tmi.confidenceVeryHigh" },
+            high: { icon: "✓", className: "high", textKey: "tmi.confidenceHigh" },
+            medium: { icon: "◐", className: "medium", textKey: "tmi.confidenceMedium" },
+            low: { icon: "○", className: "low", textKey: "tmi.confidenceLow" },
+            none: { icon: "?", className: "none", textKey: "tmi.confidenceNone" }
+        };
+        
+        const config = badgeConfig[confidence] || badgeConfig.none;
+        // Show verified + related count out of total
+        const verifiedRelatedCount = (verified_source_count || 0) + (related_source_count || 0);
+        const sourceInfo = total_source_count > 0 
+            ? ` (${verifiedRelatedCount}/${total_source_count})`
+            : '';
+        
+        return react.createElement("span", {
+            className: `tmi-reliability-badge ${config.className}`,
+            title: I18n.t(config.textKey) + sourceInfo
+        },
+            react.createElement("span", { className: "tmi-badge-icon" }, config.icon),
+            react.createElement("span", { className: "tmi-badge-text" }, 
+                I18n.t(config.textKey)
+            )
+        );
+    };
+
     // Full TMI View Component (replaces left panel content)
     const TMIFullView = react.memo(({ info, onClose, trackName, artistName, coverUrl, onRegenerate, tmiScale: propTmiScale }) => {
         // prop으로 받은 tmiScale 사용, 없으면 CONFIG에서 가져옴
@@ -203,8 +273,19 @@ const SongInfoTMI = (() => {
             );
         }
 
-        const triviaList = info?.track?.trivia || [];
-        const description = info?.track?.description || '';
+        const track = info?.track || {};
+        const triviaList = track.trivia || [];
+        const description = track.description || '';
+        
+        // New API structure: sources are in track.sources.verified, track.sources.related, and track.sources.other
+        const sources = track.sources || {};
+        const verifiedSources = sources.verified || [];
+        const relatedSources = sources.related || [];
+        const otherSources = sources.other || [];
+        const allSources = [...verifiedSources, ...relatedSources, ...otherSources];
+        
+        // Reliability info from new API structure
+        const reliability = track.reliability || {};
 
         return react.createElement("div", {
             className: "tmi-fullview",
@@ -227,21 +308,58 @@ const SongInfoTMI = (() => {
 
             // Content - scrollable area
             react.createElement("div", { className: "tmi-fullview-content" },
-                // Description
-                description && react.createElement("div", { className: "tmi-fullview-description" },
+                // Description with reliability badge
+                description && react.createElement("div", { 
+                    className: `tmi-fullview-description ${reliability.confidence || ''}`
+                },
                     react.createElement("p", null, renderMarkdown(description))
                 ),
 
                 // All Trivia items
                 triviaList.length > 0 && react.createElement("div", { className: "tmi-fullview-trivia-list" },
-                    react.createElement("div", { className: "tmi-fullview-trivia-label" }, I18n.t("tmi.didYouKnow")),
+                    react.createElement("div", { className: "tmi-fullview-trivia-label" }, 
+                        I18n.t("tmi.didYouKnow")
+                    ),
                     triviaList.map((item, i) => react.createElement("div", {
                         key: i,
                         className: "tmi-fullview-trivia-item"
                     },
-                        react.createElement("span", { className: "tmi-trivia-bullet" }, "✦"),
-                        react.createElement("span", { className: "tmi-trivia-text" }, renderMarkdown(item))
+                        react.createElement("div", { className: "tmi-trivia-content" },
+                            react.createElement("span", { className: "tmi-trivia-bullet" }, "✦"),
+                            react.createElement("div", { className: "tmi-trivia-body" },
+                                react.createElement("span", { className: "tmi-trivia-text" }, renderMarkdown(item))
+                            )
+                        )
                     ))
+                ),
+
+                // Sources section at the bottom
+                allSources.length > 0 && react.createElement("div", { className: "tmi-sources-section" },
+                    react.createElement("div", { className: "tmi-sources-header" },
+                        react.createElement("span", { className: "tmi-sources-label" }, I18n.t("tmi.sources")),
+                        react.createElement(ReliabilityBadge, { reliability })
+                    ),
+                    // Verified sources
+                    verifiedSources.length > 0 && react.createElement("div", { className: "tmi-sources-group verified" },
+                        react.createElement("span", { className: "tmi-sources-group-label" }, 
+                            I18n.t("tmi.verifiedSources") + ` (${verifiedSources.length})`
+                        ),
+                        renderSourceLinks(verifiedSources, true)
+                    ),
+                    // Related sources
+                    relatedSources.length > 0 && react.createElement("div", { className: "tmi-sources-group related" },
+                        react.createElement("span", { className: "tmi-sources-group-label" }, 
+                            I18n.t("tmi.relatedSources") + ` (${relatedSources.length})`
+                        ),
+                        renderSourceLinks(relatedSources, false)
+                    ),
+                    // Other sources
+                    otherSources.length > 0 && react.createElement("div", { className: "tmi-sources-group other" },
+                        react.createElement("span", { className: "tmi-sources-group-label" }, 
+                            I18n.t("tmi.otherSources") + ` (${otherSources.length})`
+                        ),
+                        renderSourceLinks(otherSources, false)
+                    )
                 ),
 
                 // No data fallback

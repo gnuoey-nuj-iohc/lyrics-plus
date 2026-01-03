@@ -1403,7 +1403,19 @@ window.LANG_DE = {
     errorFetch: "Beim Abrufen der TMI ist ein Fehler aufgetreten.",
     errorQuota: "API-Kontingent überschritten.",
     errorQuotaHint: "Bitte versuchen Sie es später erneut oder geben Sie einen anderen API-Schlüssel in den Einstellungen ein.",
-    disclaimer: "Dieser Inhalt wird von KI aus Internetinformationen generiert und kann ungenaue Informationen enthalten."
+    disclaimer: "Dieser Inhalt wird von KI aus Internetinformationen generiert und kann ungenaue Informationen enthalten.",
+    verified: "Verifiziert",
+    unverified: "Nicht verifiziert",
+    verifiedCount: "verifiziert",
+    sources: "Quellen",
+    verifiedSources: "Verifizierte Quellen",
+    relatedSources: "Verwandte Quellen",
+    otherSources: "Andere Quellen",
+    confidenceVeryHigh: "Sehr hohe Zuverlässigkeit",
+    confidenceHigh: "Hohe Zuverlässigkeit",
+    confidenceMedium: "Mittlere Zuverlässigkeit",
+    confidenceLow: "Niedrige Zuverlässigkeit",
+    confidenceNone: "Keine Quellen"
   }
 };
 

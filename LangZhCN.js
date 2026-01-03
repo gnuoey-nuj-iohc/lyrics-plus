@@ -1403,7 +1403,19 @@ window.LANG_ZH_CN = {
     errorFetch: "获取 TMI 时发生错误。",
     errorQuota: "API 配额已超出。",
     errorQuotaHint: "请稍后重试或在设置中输入其他 API 密钥。",
-    disclaimer: "此内容由AI处理互联网信息后生成，可能包含不准确的信息。"
+    disclaimer: "此内容由AI处理互联网信息后生成，可能包含不准确的信息。",
+    verified: "已验证",
+    unverified: "未验证",
+    verifiedCount: "已验证",
+    sources: "来源",
+    verifiedSources: "已验证的来源",
+    relatedSources: "相关来源",
+    otherSources: "其他来源",
+    confidenceVeryHigh: "极高可信度",
+    confidenceHigh: "高可信度",
+    confidenceMedium: "中可信度",
+    confidenceLow: "低可信度",
+    confidenceNone: "无来源"
   },
   notice: {
     confirm: "确认",

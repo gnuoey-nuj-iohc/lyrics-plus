@@ -1403,7 +1403,19 @@ window.LANG_JA = {
     errorFetch: "TMIの取得中にエラーが発生しました。",
     errorQuota: "APIの割り当て量を超過しました。",
     errorQuotaHint: "しばらくしてから再試行するか、設定で別のAPIキーを入力してください。",
-    disclaimer: "このコンテンツはインターネット上の情報をAIで加工して表示しており、正確でない情報が含まれている可能性があります。"
+    disclaimer: "このコンテンツはインターネット上の情報をAIで加工して表示しており、正確でない情報が含まれている可能性があります。",
+    verified: "検証済み",
+    unverified: "未検証",
+    verifiedCount: "検証済み",
+    sources: "出典",
+    verifiedSources: "検証済みの出典",
+    relatedSources: "関連の出典",
+    otherSources: "その他の出典",
+    confidenceVeryHigh: "非常に高い信頼性",
+    confidenceHigh: "高信頼性",
+    confidenceMedium: "中信頼性",
+    confidenceLow: "低信頼性",
+    confidenceNone: "出典なし"
   },
   notice: {
     confirm: "確認",
