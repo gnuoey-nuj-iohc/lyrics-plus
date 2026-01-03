@@ -1085,7 +1085,7 @@ window.LANG_JA = {
         "loading": "更新ノートを読み込み中..."
       },
       "subtitle": "ivLyricsについて",
-      "appDescription": "Spicetifyの多言語歌詞拡張機能。",
+      "appDescription": "様々な機能を含む歌詞拡張機能",
       "versionPrefix": "バージョン",
       "viewOnGithub": "GitHubで表示",
       "patchNotesLoadFailed": "更新ノートの読み込みに失敗しました",
@@ -1308,6 +1308,82 @@ window.LANG_JA = {
     "maxLinesReached": "最大3行まで選択できます",
     "noSelection": "歌詞を選択してください"
   },
+  "setupWizard": {
+    "welcome": {
+      "title": "ivLyricsへようこそ！",
+      "subtitle": "Spotifyで美しい歌詞をお楽しみください",
+      "features": {
+        "lyrics": "リアルタイム同期歌詞",
+        "translation": "AI翻訳サポート",
+        "customization": "多彩なカスタマイズ"
+      },
+      "start": "始める"
+    },
+    "language": {
+      "title": "言語選択",
+      "subtitle": "使用する言語を選択してください"
+    },
+    "apiKey": {
+      "title": "Gemini APIキー設定",
+      "subtitle": "AI翻訳機能を使用するにはAPIキーが必要です",
+      "guide": {
+        "title": "APIキーの取得方法",
+        "step1": "Google AI Studioにアクセス",
+        "step2": "Get API Keyをクリック",
+        "step3": "新しいAPIキーを作成",
+        "step4": "作成されたキーをコピー"
+      },
+      "getKey": "APIキーを取得",
+      "skip": "後で設定",
+      "placeholder": "APIキーを入力...",
+      "multipleKeysHint": "設定で複数のAPIキーを登録できます"
+    },
+    "theme": {
+      "title": "基本設定",
+      "subtitle": "歌詞の表示方法を選択してください",
+      "alignment": "配置",
+      "background": "背景効果",
+      "backgrounds": {
+        "colorful": "カラフル",
+        "gradient": "アルバムカバー",
+        "solid": "単色",
+        "video": "動画"
+      }
+    },
+    "translationTip": {
+      "title": "翻訳設定ガイド",
+      "subtitle": "翻訳機能は言語ごとに個別に設定されます",
+      "pronunciation": "発音",
+      "translation": "翻訳",
+      "description": "K-POP曲で翻訳を有効にしても、J-POPには適用されません。下の変換ボタンをクリックして、各言語の「発音」と「翻訳」オプションを個別に設定してください。"
+    },
+    "overlayTip": {
+      "title": "デスクトップオーバーレイ",
+      "subtitle": "デスクトップのどこでも歌詞を確認",
+      "description": "オーバーレイアプリをインストールすると、他のアプリを使用しながら歌詞を見ることができます。設定でいつでも有効にできます。",
+      "requiresApp": "この機能を使用するには、別途オーバーレイアプリのインストールが必要です。",
+      "enabled": "オーバーレイを有効化",
+      "downloadApp": "オーバーレイアプリをダウンロード"
+    },
+    "nowPlayingTip": {
+      "title": "NowPlayingパネル歌詞",
+      "subtitle": "右側パネルで現在の歌詞を確認",
+      "description": "Spotifyの「再生中」パネルに現在の歌詞を表示します。フルスクリーンモードなしでも歌詞を確認できます。",
+      "enabled": "パネル歌詞を表示",
+      "linesCount": "表示行数"
+    },
+    "complete": {
+      "title": "準備完了！",
+      "subtitle": "これでivLyricsを使用する準備が整いました",
+      "startNow": "今すぐ始める",
+      "openSettings": "設定を開く"
+    },
+    "navigation": {
+      "next": "次へ",
+      "back": "戻る",
+      "skip": "スキップ"
+    }
+  },
   tmi: {
     getApiKeyDesc: "Gemini API キーを取得する",
     getApiKeyInfo: "TMIの取得に使用されます。Google AI Studioから無料で取得できます。",
@@ -1328,5 +1404,10 @@ window.LANG_JA = {
     errorQuota: "APIの割り当て量を超過しました。",
     errorQuotaHint: "しばらくしてから再試行するか、設定で別のAPIキーを入力してください。",
     disclaimer: "このコンテンツはインターネット上の情報をAIで加工して表示しており、正確でない情報が含まれている可能性があります。"
+  },
+  notice: {
+    confirm: "確認",
+    next: "次へ",
+    dismissAll: "すべて閉じる"
   }
 };

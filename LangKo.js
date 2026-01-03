@@ -1085,7 +1085,7 @@ window.LANG_KO = {
         "loading": "패치 노트를 불러오는 중..."
       },
       "subtitle": "ivLyrics에 대해",
-      "appDescription": "Spicetify를 위한 한국어 대응 가사 확장 프로그램.",
+      "appDescription": "다양한 기능을 포함한 가사 Extension",
       "versionPrefix": "버전",
       "viewOnGithub": "GitHub에서 보기",
       "patchNotesLoadFailed": "패치 노트를 불러올 수 없습니다",
@@ -1308,6 +1308,82 @@ window.LANG_KO = {
     "maxLinesReached": "최대 3줄까지 선택할 수 있습니다",
     "noSelection": "가사를 선택하세요"
   },
+  "setupWizard": {
+    "welcome": {
+      "title": "ivLyrics에 오신 것을 환영합니다!",
+      "subtitle": "Spotify에서 아름다운 가사를 즐기세요",
+      "features": {
+        "lyrics": "실시간 싱크 가사",
+        "translation": "AI 번역 지원",
+        "customization": "다양한 커스터마이징"
+      },
+      "start": "시작하기"
+    },
+    "language": {
+      "title": "언어 선택",
+      "subtitle": "사용할 언어를 선택하세요"
+    },
+    "apiKey": {
+      "title": "Gemini API 키 설정",
+      "subtitle": "AI 번역 기능을 사용하려면 API 키가 필요합니다",
+      "guide": {
+        "title": "API 키 발급 방법",
+        "step1": "Google AI Studio 방문",
+        "step2": "Get API Key 클릭",
+        "step3": "새 API 키 생성",
+        "step4": "생성된 키 복사"
+      },
+      "getKey": "API 키 발급받기",
+      "skip": "나중에 설정하기",
+      "placeholder": "API 키를 입력하세요...",
+      "multipleKeysHint": "설정에서 여러 개의 API 키를 등록할 수 있습니다"
+    },
+    "theme": {
+      "title": "기본 설정",
+      "subtitle": "가사 표시 방식을 선택하세요",
+      "alignment": "정렬",
+      "background": "배경 효과",
+      "backgrounds": {
+        "colorful": "컬러풀",
+        "gradient": "앨범 커버",
+        "solid": "단색",
+        "video": "동영상"
+      }
+    },
+    "translationTip": {
+      "title": "번역 설정 안내",
+      "subtitle": "번역 기능은 언어별로 개별 설정됩니다",
+      "pronunciation": "발음",
+      "translation": "번역",
+      "description": "K-POP 곡에서 번역을 활성화해도 J-POP에는 적용되지 않습니다. 하단의 변환 버튼을 눌러, 각 언어별로 '발음'과 '번역' 옵션을 별도로 설정해주세요."
+    },
+    "overlayTip": {
+      "title": "데스크탑 오버레이",
+      "subtitle": "가사를 데스크탑 어디서든 확인하세요",
+      "description": "오버레이 앱을 설치하면 다른 앱을 사용하면서도 가사를 볼 수 있습니다. 설정에서 언제든 활성화할 수 있습니다.",
+      "requiresApp": "이 기능을 사용하려면 별도의 오버레이 앱 설치가 필요합니다.",
+      "enabled": "오버레이 활성화",
+      "downloadApp": "오버레이 앱 다운로드"
+    },
+    "nowPlayingTip": {
+      "title": "NowPlaying 패널 가사",
+      "subtitle": "우측 패널에서 현재 가사 확인",
+      "description": "Spotify의 '지금 재생 중' 패널에 현재 가사를 표시합니다. 전체화면 모드 없이도 가사를 확인할 수 있습니다.",
+      "enabled": "패널 가사 표시",
+      "linesCount": "표시할 줄 수"
+    },
+    "complete": {
+      "title": "준비 완료!",
+      "subtitle": "이제 ivLyrics를 사용할 준비가 되었습니다",
+      "startNow": "바로 시작하기",
+      "openSettings": "설정 더보기"
+    },
+    "navigation": {
+      "next": "다음",
+      "back": "이전",
+      "skip": "건너뛰기"
+    }
+  },
   tmi: {
     getApiKeyDesc: "Gemini API 키 발급받기",
     getApiKeyInfo: "TMI를 불러올 때 사용됩니다. Google AI Studio에서 무료로 발급받을 수 있습니다.",
@@ -1328,5 +1404,10 @@ window.LANG_KO = {
     errorQuota: "API 할당량을 초과했습니다.",
     errorQuotaHint: "잠시 후 다시 시도하거나, 설정에서 다른 API 키를 입력해주세요.",
     disclaimer: "해당 컨텐츠는 인터넷에 있는 정보들을 AI로 가공하여 표시되며, 올바르지 않은 정보가 포함될 수 있습니다."
+  },
+  notice: {
+    confirm: "확인",
+    next: "다음",
+    dismissAll: "모두 닫기"
   }
 };

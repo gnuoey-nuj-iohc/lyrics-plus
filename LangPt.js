@@ -1085,7 +1085,7 @@ window.LANG_PT = {
         "loading": "Carregando notas de patch..."
       },
       "subtitle": "Sobre o ivLyrics",
-      "appDescription": "Extensão de letras com suporte a português para Spicetify.",
+      "appDescription": "Extensão de letras com vários recursos",
       "versionPrefix": "Versão",
       "viewOnGithub": "Ver no GitHub",
       "patchNotesLoadFailed": "Falha ao carregar notas de patch",
@@ -1307,6 +1307,82 @@ window.LANG_PT = {
     "shared": "✓ Compartilhado",
     "maxLinesReached": "Máximo de 3 linhas podem ser selecionadas",
     "noSelection": "Por favor selecione as letras"
+  },
+  "setupWizard": {
+    "welcome": {
+      "title": "Bem-vindo ao ivLyrics!",
+      "subtitle": "Desfrute de letras bonitas no Spotify",
+      "features": {
+        "lyrics": "Letras sincronizadas em tempo real",
+        "translation": "Suporte a tradução por IA",
+        "customization": "Várias personalizações"
+      },
+      "start": "Começar"
+    },
+    "language": {
+      "title": "Seleção de Idioma",
+      "subtitle": "Por favor, escolha o seu idioma"
+    },
+    "apiKey": {
+      "title": "Configuração da Chave da API Gemini",
+      "subtitle": "Uma chave de API é necessária para usar o recurso de tradução por IA",
+      "guide": {
+        "title": "Como obter a Chave da API",
+        "step1": "Visite o Google AI Studio",
+        "step2": "Clique em Get API Key",
+        "step3": "Crie uma nova chave de API",
+        "step4": "Copie a chave gerada"
+      },
+      "getKey": "Obter Chave da API",
+      "skip": "Configurar depois",
+      "placeholder": "Insira sua chave de API...",
+      "multipleKeysHint": "Você pode registrar várias chaves de API nas configurações"
+    },
+    "theme": {
+      "title": "Configurações Básicas",
+      "subtitle": "Escolha como exibir as letras",
+      "alignment": "Alinhamento",
+      "background": "Efeito de Fundo",
+      "backgrounds": {
+        "colorful": "Colorido",
+        "gradient": "Capa do Álbum",
+        "solid": "Cor Sólida",
+        "video": "Vídeo"
+      }
+    },
+    "translationTip": {
+      "title": "Guia de Configuração de Tradução",
+      "subtitle": "O recurso de tradução é configurado individualmente para cada idioma",
+      "pronunciation": "Pronúncia",
+      "translation": "Tradução",
+      "description": "Ativar a tradução para músicas de K-POP não a aplicará ao J-POP. Clique no botão de conversão abaixo para definir as opções de 'Pronúncia' e 'Tradução' separadamente para cada idioma."
+    },
+    "overlayTip": {
+      "title": "Sobreposição de Desktop",
+      "subtitle": "Veja as letras em qualquer lugar no seu desktop",
+      "description": "Instale o aplicativo de sobreposição para ver as letras enquanto usa outros aplicativos. Você pode ativá-lo a qualquer momento nas Configurações.",
+      "requiresApp": "Este recurso requer a instalação separada do aplicativo de sobreposição.",
+      "enabled": "Ativar Sobreposição",
+      "downloadApp": "Baixar Aplicativo de Sobreposição"
+    },
+    "nowPlayingTip": {
+      "title": "Letras no Painel NowPlaying",
+      "subtitle": "Ver letra atual no painel direito",
+      "description": "Exibe a letra atual no painel 'Tocando Agora' do Spotify. Você pode verificar a letra sem o modo de tela cheia.",
+      "enabled": "Mostrar Letra no Painel",
+      "linesCount": "Número de Linhas"
+    },
+    "complete": {
+      "title": "Tudo Pronto!",
+      "subtitle": "Agora você está pronto para usar o ivLyrics",
+      "startNow": "Começar Agora",
+      "openSettings": "Abrir Configurações"
+    },
+    "navigation": {
+      "next": "Próximo",
+      "back": "Voltar",
+      "skip": "Pular"
+    }
   },
   tmi: {
     getApiKeyDesc: "Obter Chave API Gemini",

@@ -13,7 +13,7 @@
     }
 
     const react = Spicetify.React;
-    const { useState, useEffect, useRef, useCallback, useMemo } = react;
+    const { useState, useEffect, useRef, useCallback, useMemo, memo } = react;
 
     // 설정 키
     const STORAGE_KEY = "ivLyrics:visual:panel-lyrics-enabled";
@@ -371,71 +371,107 @@ body:has([data-testid="ivlyrics-page"]) .ivlyrics-panel-lyrics-section {
     };
 
     // ============================================
-    // 가사 라인 컴포넌트 (Apple Music 스타일)
-    // 노래방 가사와 일반 가사 모두 지원
+    // 노래방 단어 컴포넌트 (개별 syllable)
+    // DOM 직접 조작으로 리렌더링 없이 하이라이트
     // ============================================
-    const LyricLine = ({ line, isActive, isPast, isFuture, translation, phonetic, currentTime, isPlaceholder }) => {
-        const lineClass = `ivlyrics-panel-line ${isActive ? 'active' : ''} ${isPast ? 'past' : ''} ${isFuture ? 'future' : ''} ${isPlaceholder ? 'placeholder' : ''}`;
+    const KaraokeWord = memo(({ syllable, idx, isLinePast }) => {
+        const wordRef = useRef(null);
+        const text = syllable.text || '';
 
-        // 노래방 가사인지 확인
-        const syllables = getSyllablesFromLine(line);
-        const isKaraoke = syllables.length > 0;
-        const displayText = line.originalText || line.text || '';
+        // 외부에서 시간 업데이트 시 클래스만 토글 (리렌더링 없음)
+        useEffect(() => {
+            if (!wordRef.current) return;
 
-        // 노래방 가사인 경우
-        if (isKaraoke) {
-            // syllables를 렌더링하면서 띄어쓰기 처리
-            const renderKaraokeElements = () => {
-                const elements = [];
-                syllables.forEach((syllable, idx) => {
-                    const isSung = isActive ? currentTime >= syllable.startTime : isPast;
-                    const text = syllable.text || '';
+            const updateSungState = () => {
+                const el = wordRef.current;
+                if (!el) return;
 
-                    // 텍스트 앞에 공백이 있으면 공백 먼저 추가
-                    if (text.startsWith(' ')) {
-                        elements.push(react.createElement("span", {
-                            key: `space-before-${idx}`,
-                            className: "ivlyrics-panel-karaoke-space"
-                        }, " "));
+                // isLinePast가 true면 항상 sung
+                if (isLinePast) {
+                    if (!el.classList.contains('sung')) {
+                        el.classList.add('sung');
                     }
+                    return;
+                }
 
-                    // 실제 텍스트 (앞뒤 공백 제거)
-                    const trimmedText = text.trim();
-                    if (trimmedText) {
-                        elements.push(react.createElement("span", {
-                            key: idx,
-                            className: `ivlyrics-panel-karaoke-word ${isSung ? 'sung' : ''}`
-                        }, trimmedText));
-                    }
+                // 현재 시간과 비교 (ref에서 직접 읽음)
+                const currentTime = window._ivLyricsPanelCurrentTime || 0;
+                const shouldBeSung = currentTime >= syllable.startTime;
 
-                    // 텍스트 뒤에 공백이 있으면 공백 추가
-                    if (text.endsWith(' ') && !text.startsWith(' ')) {
-                        elements.push(react.createElement("span", {
-                            key: `space-after-${idx}`,
-                            className: "ivlyrics-panel-karaoke-space"
-                        }, " "));
-                    }
-                });
-                return elements;
+                if (shouldBeSung && !el.classList.contains('sung')) {
+                    el.classList.add('sung');
+                } else if (!shouldBeSung && el.classList.contains('sung')) {
+                    el.classList.remove('sung');
+                }
             };
 
-            return react.createElement("div", { className: lineClass },
-                // 노래방 가사 (글자별 타이밍)
-                react.createElement("div", { className: "ivlyrics-panel-line-karaoke" },
-                    renderKaraokeElements()
-                ),
-                // 발음
-                phonetic && react.createElement("div", {
-                    className: "ivlyrics-panel-line-phonetic"
-                }, phonetic),
-                // 번역
-                translation && react.createElement("div", {
-                    className: "ivlyrics-panel-line-translation"
-                }, translation)
-            );
+            // 초기 상태 설정
+            updateSungState();
+
+            // 커스텀 이벤트로 업데이트 수신
+            window.addEventListener('ivlyrics-panel-time-update', updateSungState);
+            return () => {
+                window.removeEventListener('ivlyrics-panel-time-update', updateSungState);
+            };
+        }, [syllable.startTime, isLinePast]);
+
+        // 텍스트가 비어있으면 렌더링하지 않음
+        if (!text) return null;
+
+        // 공백만 있는 경우 공백 span 반환
+        if (text.trim() === '') {
+            return react.createElement("span", {
+                key: `space-${idx}`,
+                className: "ivlyrics-panel-karaoke-space"
+            }, " ");
         }
 
-        // 일반 가사
+        // 텍스트에 공백이 포함된 경우 그대로 렌더링 (공백 유지)
+        return react.createElement("span", {
+            key: idx,
+            ref: wordRef,
+            className: `ivlyrics-panel-karaoke-word ${isLinePast ? 'sung' : ''}`
+        }, text);
+    });
+
+    // ============================================
+    // 노래방 라인 컴포넌트 (syllables 포함)
+    // ============================================
+    const KaraokeLine = memo(({ syllables, isActive, isPast, phonetic, translation, lineClass }) => {
+        return react.createElement("div", { className: lineClass },
+            // 노래방 가사 (글자별 타이밍)
+            react.createElement("div", { className: "ivlyrics-panel-line-karaoke" },
+                syllables.map((syllable, idx) =>
+                    react.createElement(KaraokeWord, {
+                        key: idx,
+                        syllable,
+                        idx,
+                        isLinePast: isPast
+                    })
+                )
+            ),
+            // 발음
+            phonetic && react.createElement("div", {
+                className: "ivlyrics-panel-line-phonetic"
+            }, phonetic),
+            // 번역
+            translation && react.createElement("div", {
+                className: "ivlyrics-panel-line-translation"
+            }, translation)
+        );
+    }, (prevProps, nextProps) => {
+        // 라인 상태가 바뀔 때만 리렌더링
+        return prevProps.isActive === nextProps.isActive &&
+               prevProps.isPast === nextProps.isPast &&
+               prevProps.lineClass === nextProps.lineClass &&
+               prevProps.phonetic === nextProps.phonetic &&
+               prevProps.translation === nextProps.translation;
+    });
+
+    // ============================================
+    // 일반 가사 라인 컴포넌트
+    // ============================================
+    const NormalLine = memo(({ displayText, phonetic, translation, lineClass }) => {
         return react.createElement("div", { className: lineClass },
             react.createElement("div", {
                 className: "ivlyrics-panel-line-text",
@@ -448,7 +484,54 @@ body:has([data-testid="ivlyrics-page"]) .ivlyrics-panel-lyrics-section {
                 className: "ivlyrics-panel-line-translation"
             }, translation)
         );
-    };
+    }, (prevProps, nextProps) => {
+        return prevProps.lineClass === nextProps.lineClass &&
+               prevProps.displayText === nextProps.displayText &&
+               prevProps.phonetic === nextProps.phonetic &&
+               prevProps.translation === nextProps.translation;
+    });
+
+    // ============================================
+    // 가사 라인 컴포넌트 (Apple Music 스타일)
+    // 노래방 가사와 일반 가사 모두 지원
+    // ============================================
+    const LyricLine = memo(({ line, isActive, isPast, isFuture, translation, phonetic, isPlaceholder }) => {
+        const lineClass = `ivlyrics-panel-line ${isActive ? 'active' : ''} ${isPast ? 'past' : ''} ${isFuture ? 'future' : ''} ${isPlaceholder ? 'placeholder' : ''}`;
+
+        // 노래방 가사인지 확인
+        const syllables = getSyllablesFromLine(line);
+        const isKaraoke = syllables.length > 0;
+        const displayText = line.originalText || line.text || '';
+
+        // 노래방 가사인 경우
+        if (isKaraoke) {
+            return react.createElement(KaraokeLine, {
+                syllables,
+                isActive,
+                isPast,
+                phonetic,
+                translation,
+                lineClass
+            });
+        }
+
+        // 일반 가사
+        return react.createElement(NormalLine, {
+            displayText,
+            phonetic,
+            translation,
+            lineClass
+        });
+    }, (prevProps, nextProps) => {
+        // currentTime 제거됨 - 라인 상태 변경 시에만 리렌더링
+        return prevProps.isActive === nextProps.isActive &&
+               prevProps.isPast === nextProps.isPast &&
+               prevProps.isFuture === nextProps.isFuture &&
+               prevProps.isPlaceholder === nextProps.isPlaceholder &&
+               prevProps.translation === nextProps.translation &&
+               prevProps.phonetic === nextProps.phonetic &&
+               prevProps.line === nextProps.line;
+    });
 
     // ============================================
     // 패널 가사 메인 컴포넌트
@@ -456,7 +539,7 @@ body:has([data-testid="ivlyrics-page"]) .ivlyrics-panel-lyrics-section {
     const PanelLyrics = () => {
         const [lyrics, setLyrics] = useState([]);
         const [currentIndex, setCurrentIndex] = useState(0);
-        const [currentTime, setCurrentTime] = useState(0); // 노래방 가사용 현재 시간
+        // currentTime은 더 이상 상태로 관리하지 않음 - 전역 변수 사용
         const [trackOffset, setTrackOffset] = useState(0); // 곡별 싱크 오프셋
         const [isEnabled, setIsEnabled] = useState(getStorageValue(STORAGE_KEY, DEFAULT_ENABLED));
         const [numLines, setNumLines] = useState(parseInt(getStorageValue(PANEL_LINES_KEY, DEFAULT_LINES), 10));
@@ -577,6 +660,7 @@ body:has([data-testid="ivlyrics-page"]) .ivlyrics-panel-lyrics-section {
         }, []);
 
         // 발음/번역 비동기 로드 (가사 표시 후 백그라운드에서)
+        // 사용자 설정에 따라 발음/번역 요청 여부 결정
         const loadTranslationAsync = useCallback(async (trackInfo, lyricsData, provider) => {
             if (!window.Translator?.callGemini) {
                 console.log("[PanelLyrics] Translator not available");
@@ -584,35 +668,121 @@ body:has([data-testid="ivlyrics-page"]) .ivlyrics-panel-lyrics-section {
             }
 
             try {
+                // 가사 언어 감지
                 const lyricsText = lyricsData.map(l => l.text || '').join('\n');
                 const trackId = trackInfo.trackId;
 
-                // 발음 요청
-                console.log("[PanelLyrics] Requesting phonetic...");
-                const phoneticResponse = await window.Translator.callGemini({
-                    trackId,
-                    artist: trackInfo.artist,
-                    title: trackInfo.title,
-                    text: lyricsText,
-                    wantSmartPhonetic: true,
-                    provider
-                });
+                // 언어 감지 (LyricsService.detectLanguage 사용)
+                // modeKey는 CONFIG의 translation-mode 키와 동일해야 함 (예: "japanese", "korean")
+                // LyricsService.detectLanguage는 언어 코드(ja, ko, zh 등)를 반환
+                const langCodeToKey = {
+                    'ja': 'japanese',
+                    'ko': 'korean',
+                    'zh': 'chinese',
+                    'ru': 'russian',
+                    'vi': 'vietnamese',
+                    'de': 'german',
+                    'es': 'spanish',
+                    'fr': 'french',
+                    'it': 'italian',
+                    'pt': 'portuguese',
+                    'nl': 'dutch',
+                    'pl': 'polish',
+                    'tr': 'turkish',
+                    'ar': 'arabic',
+                    'hi': 'hindi',
+                    'th': 'thai',
+                    'id': 'indonesian',
+                    'en': 'english'
+                };
 
-                // 번역 요청
-                console.log("[PanelLyrics] Requesting translation...");
-                const translationResponse = await window.Translator.callGemini({
-                    trackId,
-                    artist: trackInfo.artist,
-                    title: trackInfo.title,
-                    text: lyricsText,
-                    wantSmartPhonetic: false,
-                    provider
-                });
+                let modeKey = 'english';
+                try {
+                    if (window.LyricsService?.detectLanguage) {
+                        // LyricsService.detectLanguage는 배열을 받음
+                        const detected = window.LyricsService.detectLanguage(lyricsData);
+                        if (detected && langCodeToKey[detected]) {
+                            modeKey = langCodeToKey[detected];
+                        }
+                        console.log(`[PanelLyrics] Detected language code: ${detected} -> modeKey: ${modeKey}`);
+                    } else {
+                        // 폴백: 간단한 유니코드 감지
+                        if (/[\u3040-\u309F\u30A0-\u30FF]/.test(lyricsText)) {
+                            modeKey = 'japanese';
+                        } else if (/[\uAC00-\uD7AF]/.test(lyricsText)) {
+                            modeKey = 'korean';
+                        } else if (/[\u4E00-\u9FFF]/.test(lyricsText)) {
+                            modeKey = 'chinese';
+                        } else if (/[а-яА-ЯёЁ]/.test(lyricsText)) {
+                            modeKey = 'russian';
+                        }
+                        console.log(`[PanelLyrics] Fallback language detection: ${modeKey}`);
+                    }
+                } catch (e) {
+                    console.warn("[PanelLyrics] Language detection failed:", e);
+                    // 폴백: 간단한 감지
+                    if (/[\u3040-\u309F\u30A0-\u30FF]/.test(lyricsText)) {
+                        modeKey = 'japanese';
+                    } else if (/[\uAC00-\uD7AF]/.test(lyricsText)) {
+                        modeKey = 'korean';
+                    } else if (/[\u4E00-\u9FFF]/.test(lyricsText)) {
+                        modeKey = 'chinese';
+                    }
+                }
+
+                // 사용자 설정에서 발음/번역 모드 확인
+                const displayMode1 = window.CONFIG?.visual?.[`translation-mode:${modeKey}`] ||
+                    localStorage.getItem(`ivLyrics:visual:translation-mode:${modeKey}`) || "none";
+                const displayMode2 = window.CONFIG?.visual?.[`translation-mode-2:${modeKey}`] ||
+                    localStorage.getItem(`ivLyrics:visual:translation-mode-2:${modeKey}`) || "none";
+
+                console.log(`[PanelLyrics] Language: ${modeKey}, Mode1: ${displayMode1}, Mode2: ${displayMode2}`);
+
+                // 발음/번역이 모두 비활성화되어 있으면 스킵
+                if ((!displayMode1 || displayMode1 === "none") && (!displayMode2 || displayMode2 === "none")) {
+                    console.log("[PanelLyrics] Translation/phonetic disabled for this language");
+                    return;
+                }
+
+                // 발음이 필요한지, 번역이 필요한지 확인
+                const needPhonetic = displayMode1 === "gemini_romaji" || displayMode2 === "gemini_romaji";
+                const needTranslation = (displayMode1 && displayMode1 !== "none" && displayMode1 !== "gemini_romaji") ||
+                    (displayMode2 && displayMode2 !== "none" && displayMode2 !== "gemini_romaji");
+
+                console.log(`[PanelLyrics] Need phonetic: ${needPhonetic}, Need translation: ${needTranslation}`);
+
+                let phoneticLines = [];
+                let translationLines = [];
+
+                // 발음 요청 (필요한 경우에만)
+                if (needPhonetic) {
+                    console.log("[PanelLyrics] Requesting phonetic...");
+                    const phoneticResponse = await window.Translator.callGemini({
+                        trackId,
+                        artist: trackInfo.artist,
+                        title: trackInfo.title,
+                        text: lyricsText,
+                        wantSmartPhonetic: true,
+                        provider
+                    });
+                    phoneticLines = phoneticResponse?.phonetic || [];
+                }
+
+                // 번역 요청 (필요한 경우에만)
+                if (needTranslation) {
+                    console.log("[PanelLyrics] Requesting translation...");
+                    const translationResponse = await window.Translator.callGemini({
+                        trackId,
+                        artist: trackInfo.artist,
+                        title: trackInfo.title,
+                        text: lyricsText,
+                        wantSmartPhonetic: false,
+                        provider
+                    });
+                    translationLines = translationResponse?.vi || [];
+                }
 
                 // 결과 병합
-                const phoneticLines = phoneticResponse?.phonetic || [];
-                const translationLines = translationResponse?.vi || [];
-
                 if (phoneticLines.length > 0 || translationLines.length > 0) {
                     const updatedLyrics = lyricsData.map((line, idx) => ({
                         ...line,
@@ -761,17 +931,32 @@ body:has([data-testid="ivlyrics-page"]) .ivlyrics-panel-lyrics-section {
         }, []);
 
         // 현재 재생 위치 추적 및 노래방 가사 타이밍 업데이트
+        // 최적화: 상태 업데이트 최소화, DOM 직접 조작으로 노래방 하이라이트
         useEffect(() => {
+            let lastIndex = currentIndex;
+            let lastEventTime = 0;
+            const EVENT_THROTTLE = 50; // 이벤트 발생 간격 (ms) - 노래방 업데이트용
+
             const updatePosition = () => {
-                if (!lyrics || lyrics.length === 0) return;
+                if (!lyrics || lyrics.length === 0) {
+                    animationRef.current = requestAnimationFrame(updatePosition);
+                    return;
+                }
 
                 const position = Spicetify.Player.getProgress();
                 const globalDelay = parseInt(getStorageValue('ivLyrics:visual:delay', '0'), 10) || 0;
                 // 글로벌 딜레이 + 곡별 싱크 오프셋 적용
                 const adjustedPosition = position + globalDelay + trackOffset;
 
-                // 현재 시간 업데이트 (노래방 가사용)
-                setCurrentTime(adjustedPosition);
+                // 전역 변수에 현재 시간 저장 (KaraokeWord에서 읽음)
+                window._ivLyricsPanelCurrentTime = adjustedPosition;
+
+                // 노래방 가사 업데이트 이벤트 발생 (throttled)
+                const now = performance.now();
+                if (now - lastEventTime >= EVENT_THROTTLE) {
+                    lastEventTime = now;
+                    window.dispatchEvent(new Event('ivlyrics-panel-time-update'));
+                }
 
                 // 현재 라인 찾기
                 let newIndex = 0;
@@ -783,7 +968,9 @@ body:has([data-testid="ivlyrics-page"]) .ivlyrics-panel-lyrics-section {
                     }
                 }
 
-                if (newIndex !== currentIndex) {
+                // 라인이 변경될 때만 상태 업데이트 (리렌더링 최소화)
+                if (newIndex !== lastIndex) {
+                    lastIndex = newIndex;
                     setCurrentIndex(newIndex);
                 }
 
@@ -798,8 +985,10 @@ body:has([data-testid="ivlyrics-page"]) .ivlyrics-panel-lyrics-section {
                 if (animationRef.current) {
                     cancelAnimationFrame(animationRef.current);
                 }
+                // 전역 변수 정리
+                window._ivLyricsPanelCurrentTime = 0;
             };
-        }, [lyrics, isEnabled, currentIndex, trackOffset]);
+        }, [lyrics, isEnabled, trackOffset]); // currentIndex 의존성 제거
 
         // 스크롤 애니메이션 비활성화 - Now Playing 탭 스크롤 문제 방지
         // useEffect(() => {
@@ -863,7 +1052,7 @@ body:has([data-testid="ivlyrics-page"]) .ivlyrics-panel-lyrics-section {
             return lines;
         }, [lyrics, currentIndex, numLines]);
 
-        // currentTime은 이제 상태로 관리됨 (위에서 useState로 선언)
+        // currentTime은 더 이상 상태로 관리하지 않음 (전역 변수 window._ivLyricsPanelCurrentTime 사용)
 
         // ivLyrics 페이지로 이동
         const handleContainerClick = useCallback(() => {
@@ -917,7 +1106,6 @@ body:has([data-testid="ivlyrics-page"]) .ivlyrics-panel-lyrics-section {
                         isFuture: visLine.isFuture,
                         translation: visLine.translation,
                         phonetic: visLine.phonetic,
-                        currentTime: currentTime,
                         isPlaceholder: visLine.isPlaceholder
                     })
                 )

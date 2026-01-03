@@ -411,7 +411,7 @@
     // ============================================
     const LyricsCache = {
         DB_NAME: 'ivLyricsCache',
-        DB_VERSION: 5,
+        DB_VERSION: 6,
 
         EXPIRY: {
             lyrics: 7,
@@ -1580,6 +1580,11 @@
 
         // 제공자 접근
         providers: Providers,
+
+        // 언어 감지 (Extension 내 Utils에서 직접 참조)
+        detectLanguage(lyrics) {
+            return Utils.detectLanguage(lyrics);
+        },
 
         /**
          * 가사 가져오기

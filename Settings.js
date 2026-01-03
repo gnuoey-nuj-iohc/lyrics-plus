@@ -6745,7 +6745,7 @@ const ConfigModal = () => {
               },
             },
             react.createElement("strong", null, I18n.t("settingsAdvanced.aboutTab.originalProject")),
-            " ivLyrics by khanhas"
+            "lyrics-plus by khanhas"
           ),
           react.createElement(
             "p",
@@ -7184,26 +7184,26 @@ function openConfig() {
 		left: 0;
 		width: 100%;
 		height: 100%;
-		background: rgba(0, 0, 0, 0.2);
+		background: rgba(0, 0, 0, 0.5);
 		z-index: 9999;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		backdrop-filter: blur(20px) saturate(120%);
-		-webkit-backdrop-filter: blur(5px) saturate(120%);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
 	`;
 
   const modalContainer = document.createElement("div");
   modalContainer.style.cssText = `
-		background: rgba(0, 0, 0, 0.6);
-		backdrop-filter: blur(60px) saturate(200%) brightness(1.1);
-		-webkit-backdrop-filter: blur(60px) saturate(200%) brightness(1.1);
+		background: rgba(24, 24, 24, 0.95);
+		backdrop-filter: blur(40px) saturate(180%);
+		-webkit-backdrop-filter: blur(40px) saturate(180%);
 		border-radius: 16px;
 		max-width: 90vw;
 		max-height: 90vh;
 		width: 800px;
 		overflow: hidden;
-		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.1) inset;
+		box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
 		border: 1px solid rgba(255, 255, 255, 0.1);
 	`;
 

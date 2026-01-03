@@ -1089,7 +1089,7 @@ window.LANG_AR = {
         "loading": "جاري تحميل ملاحظات التحديث..."
       },
       "subtitle": "حول ivLyrics",
-      "appDescription": "إضافة كلمات متوافقة مع اللغة العربية لـ Spicetify.",
+      "appDescription": "إضافة كلمات مع ميزات متنوعة",
       "versionPrefix": "الإصدار",
       "viewOnGithub": "عرض على GitHub",
       "patchNotesLoadFailed": "تعذر تحميل ملاحظات التحديث",
@@ -1305,6 +1305,82 @@ window.LANG_AR = {
     "shared": "✓ تمت المشاركة",
     "maxLinesReached": "يمكن اختيار 3 أسطر كحد أقصى",
     "noSelection": "يرجى اختيار الكلمات"
+  },
+  "setupWizard": {
+    "welcome": {
+      "title": "مرحبًا بك في ivLyrics!",
+      "subtitle": "استمتع بكلمات أغاني جميلة على Spotify",
+      "features": {
+        "lyrics": "كلمات متزامنة في الوقت الفعلي",
+        "translation": "دعم الترجمة بالذكاء الاصطناعي",
+        "customization": "تخصيصات متنوعة"
+      },
+      "start": "ابدأ"
+    },
+    "language": {
+      "title": "اختيار اللغة",
+      "subtitle": "يرجى اختيار لغتك"
+    },
+    "apiKey": {
+      "title": "إعداد مفتاح Gemini API",
+      "subtitle": "مفتاح API مطلوب لاستخدام ميزة الترجمة بالذكاء الاصطناعي",
+      "guide": {
+        "title": "كيفية الحصول على مفتاح API",
+        "step1": "قم بزيارة Google AI Studio",
+        "step2": "انقر على Get API Key",
+        "step3": "أنشئ مفتاح API جديد",
+        "step4": "انسخ المفتاح الذي تم إنشاؤه"
+      },
+      "getKey": "احصل على مفتاح API",
+      "skip": "الإعداد لاحقًا",
+      "placeholder": "أدخل مفتاح API الخاص بك...",
+      "multipleKeysHint": "يمكنك تسجيل مفاتيح API متعددة في الإعدادات"
+    },
+    "theme": {
+      "title": "الإعدادات الأساسية",
+      "subtitle": "اختر كيفية عرض الكلمات",
+      "alignment": "المحاذاة",
+      "background": "تأثير الخلفية",
+      "backgrounds": {
+        "colorful": "ملون",
+        "gradient": "غلاف الألبوم",
+        "solid": "لون ثابت",
+        "video": "فيديو"
+      }
+    },
+    "translationTip": {
+      "title": "دليل إعداد الترجمة",
+      "subtitle": "يتم تعيين ميزة الترجمة بشكل فردي لكل لغة",
+      "pronunciation": "النطق",
+      "translation": "الترجمة",
+      "description": "تمكين الترجمة لأغاني K-POP لن يطبقها على J-POP. يرجى النقر على زر التحويل أدناه لتعيين خيارات 'النطق' و 'الترجمة' بشكل منفصل لكل لغة."
+    },
+    "overlayTip": {
+      "title": "تراكب سطح المكتب",
+      "subtitle": "شاهد الكلمات في أي مكان على سطح المكتب",
+      "description": "قم بتثبيت تطبيق التراكب لرؤية الكلمات أثناء استخدام تطبيقات أخرى. يمكنك تمكينه في أي وقت في الإعدادات.",
+      "requiresApp": "تتطلب هذه الميزة تثبيت تطبيق التراكب المنفصل.",
+      "enabled": "تمكين التراكب",
+      "downloadApp": "تنزيل تطبيق التراكب"
+    },
+    "nowPlayingTip": {
+      "title": "كلمات لوحة التشغيل الآن",
+      "subtitle": "شاهد الكلمات الحالية في اللوحة اليمنى",
+      "description": "يعرض الكلمات الحالية في لوحة 'التشغيل الآن' في Spotify. يمكنك التحقق من الكلمات دون وضع ملء الشاشة.",
+      "enabled": "إظهار الكلمات في اللوحة",
+      "linesCount": "عدد الأسطر"
+    },
+    "complete": {
+      "title": "كل شيء جاهز!",
+      "subtitle": "أنت الآن جاهز لاستخدام ivLyrics",
+      "startNow": "ابدأ الآن",
+      "openSettings": "فتح الإعدادات"
+    },
+    "navigation": {
+      "next": "التالي",
+      "back": "السابق",
+      "skip": "تخطي"
+    }
   },
   tmi: {
     getApiKeyDesc: "الحصول على مفتاح API Gemini",

@@ -46,7 +46,9 @@
 		"CommunityVideoSelector.js",
 		"VideoBackground.js",
 		"FullscreenOverlay.js",
-		"SongInfoTicker.js"
+		"SetupWizard.js",
+		"SongInfoTicker.js",
+		"NoticeSystem.js"
 	],
 	"subfiles_extension": [
 		"LyricsService.js",

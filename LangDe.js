@@ -1085,7 +1085,7 @@ window.LANG_DE = {
         "loading": "Lade Patch-Notizen..."
       },
       "subtitle": "Über ivLyrics",
-      "appDescription": "Songtext-Erweiterung mit deutscher Unterstützung für Spicetify.",
+      "appDescription": "Songtext-Erweiterung mit verschiedenen Funktionen",
       "versionPrefix": "Version",
       "viewOnGithub": "Auf GitHub ansehen",
       "patchNotesLoadFailed": "Patch-Notizen konnten nicht geladen werden",
@@ -1307,6 +1307,82 @@ window.LANG_DE = {
     "shared": "✓ Geteilt",
     "maxLinesReached": "Maximal 3 Zeilen können ausgewählt werden",
     "noSelection": "Bitte wählen Sie Textzeilen aus"
+  },
+  "setupWizard": {
+    "welcome": {
+      "title": "Willkommen bei ivLyrics!",
+      "subtitle": "Genießen Sie schöne Songtexte auf Spotify",
+      "features": {
+        "lyrics": "Echtzeit synchronisierte Songtexte",
+        "translation": "KI-Übersetzungsunterstützung",
+        "customization": "Verschiedene Anpassungen"
+      },
+      "start": "Starten"
+    },
+    "language": {
+      "title": "Sprachauswahl",
+      "subtitle": "Bitte wählen Sie Ihre Sprache"
+    },
+    "apiKey": {
+      "title": "Gemini API-Schlüssel Einrichtung",
+      "subtitle": "Ein API-Schlüssel ist erforderlich, um die KI-Übersetzungsfunktion zu nutzen",
+      "guide": {
+        "title": "So erhalten Sie den API-Schlüssel",
+        "step1": "Besuchen Sie Google AI Studio",
+        "step2": "Klicken Sie auf Get API Key",
+        "step3": "Erstellen Sie einen neuen API-Schlüssel",
+        "step4": "Kopieren Sie den generierten Schlüssel"
+      },
+      "getKey": "API-Schlüssel erhalten",
+      "skip": "Später einrichten",
+      "placeholder": "Geben Sie Ihren API-Schlüssel ein...",
+      "multipleKeysHint": "Sie können mehrere API-Schlüssel in den Einstellungen registrieren"
+    },
+    "theme": {
+      "title": "Grundeinstellungen",
+      "subtitle": "Wählen Sie, wie Songtexte angezeigt werden sollen",
+      "alignment": "Ausrichtung",
+      "background": "Hintergrundeffekt",
+      "backgrounds": {
+        "colorful": "Bunt",
+        "gradient": "Albumcover",
+        "solid": "Einfarbig",
+        "video": "Video"
+      }
+    },
+    "translationTip": {
+      "title": "Übersetzungseinstellungsleitfaden",
+      "subtitle": "Die Übersetzungsfunktion wird für jede Sprache individuell eingestellt",
+      "pronunciation": "Aussprache",
+      "translation": "Übersetzung",
+      "description": "Das Aktivieren der Übersetzung für K-POP-Songs wendet sie nicht auf J-POP an. Bitte klicken Sie unten auf die Konvertierungsschaltfläche, um die Optionen 'Aussprache' und 'Übersetzung' für jede Sprache separat festzulegen."
+    },
+    "overlayTip": {
+      "title": "Desktop-Overlay",
+      "subtitle": "Sehen Sie Songtexte überall auf Ihrem Desktop",
+      "description": "Installieren Sie die Overlay-App, um Songtexte zu sehen, während Sie andere Apps verwenden. Sie können es jederzeit in den Einstellungen aktivieren.",
+      "requiresApp": "Diese Funktion erfordert die separate Installation der Overlay-App.",
+      "enabled": "Overlay aktivieren",
+      "downloadApp": "Overlay-App herunterladen"
+    },
+    "nowPlayingTip": {
+      "title": "Aktuelle Wiedergabe Panel-Texte",
+      "subtitle": "Aktuellen Text im rechten Panel sehen",
+      "description": "Zeigt den aktuellen Songtext im 'Aktuelle Wiedergabe'-Panel von Spotify an. Sie können Songtexte ohne Vollbildmodus überprüfen.",
+      "enabled": "Songtexte im Panel anzeigen",
+      "linesCount": "Anzahl der Zeilen"
+    },
+    "complete": {
+      "title": "Alles bereit!",
+      "subtitle": "Sie sind jetzt bereit, ivLyrics zu verwenden",
+      "startNow": "Jetzt starten",
+      "openSettings": "Einstellungen öffnen"
+    },
+    "navigation": {
+      "next": "Weiter",
+      "back": "Zurück",
+      "skip": "Überspringen"
+    }
   },
   tmi: {
     getApiKeyDesc: "Gemini API-Key erhalten",

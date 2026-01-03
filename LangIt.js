@@ -1085,7 +1085,7 @@ window.LANG_IT = {
         "loading": "Caricamento note patch..."
       },
       "subtitle": "Informazioni su ivLyrics",
-      "appDescription": "Estensione testi con supporto italiano per Spicetify.",
+      "appDescription": "Estensione testi con varie funzionalità",
       "versionPrefix": "Versione",
       "viewOnGithub": "Vedi su GitHub",
       "patchNotesLoadFailed": "Impossibile caricare note patch",
@@ -1307,6 +1307,82 @@ window.LANG_IT = {
     "shared": "✓ Condiviso",
     "maxLinesReached": "Massimo 3 righe possono essere selezionate",
     "noSelection": "Seleziona il testo"
+  },
+  "setupWizard": {
+    "welcome": {
+      "title": "Benvenuto in ivLyrics!",
+      "subtitle": "Goditi bellissimi testi su Spotify",
+      "features": {
+        "lyrics": "Testi sincronizzati in tempo reale",
+        "translation": "Supporto traduzione AI",
+        "customization": "Varie personalizzazioni"
+      },
+      "start": "Inizia"
+    },
+    "language": {
+      "title": "Seleziona Lingua",
+      "subtitle": "Per favore seleziona la tua lingua"
+    },
+    "apiKey": {
+      "title": "Impostazione Chiave API Gemini",
+      "subtitle": "È necessaria una chiave API per utilizzare la funzione di traduzione AI",
+      "guide": {
+        "title": "Come ottenere la Chiave API",
+        "step1": "Visita Google AI Studio",
+        "step2": "Clicca su Get API Key",
+        "step3": "Crea una nuova chiave API",
+        "step4": "Copia la chiave generata"
+      },
+      "getKey": "Ottieni Chiave API",
+      "skip": "Imposta più tardi",
+      "placeholder": "Inserisci la tua chiave API...",
+      "multipleKeysHint": "Puoi registrare più chiavi API nelle impostazioni"
+    },
+    "theme": {
+      "title": "Impostazioni Base",
+      "subtitle": "Scegli come visualizzare i testi",
+      "alignment": "Allineamento",
+      "background": "Effetto Sfondo",
+      "backgrounds": {
+        "colorful": "Colorato",
+        "gradient": "Copertina Album",
+        "solid": "Tinta Unita",
+        "video": "Video"
+      }
+    },
+    "translationTip": {
+      "title": "Guida Impostazione Traduzione",
+      "subtitle": "La funzione di traduzione è impostata individualmente per ogni lingua",
+      "pronunciation": "Pronuncia",
+      "translation": "Traduzione",
+      "description": "Abilitare la traduzione per le canzoni K-POP non la applicherà al J-POP. Clicca sul pulsante di conversione qui sotto per impostare le opzioni 'Pronuncia' e 'Traduzione' separatamente per ciascuna lingua."
+    },
+    "overlayTip": {
+      "title": "Overlay Desktop",
+      "subtitle": "Visualizza i testi ovunque sul tuo desktop",
+      "description": "Installa l'app overlay per vedere i testi mentre usi altre app. Puoi abilitarlo in qualsiasi momento nelle Impostazioni.",
+      "requiresApp": "Questa funzione richiede l'installazione separata dell'app overlay.",
+      "enabled": "Abilita Overlay",
+      "downloadApp": "Scarica App Overlay"
+    },
+    "nowPlayingTip": {
+      "title": "Testi Pannello In Riproduzione",
+      "subtitle": "Vedi testo attuale nel pannello destro",
+      "description": "Mostra il testo attuale nel pannello 'In Riproduzione' di Spotify. Puoi controllare i testi senza la modalità a schermo intero.",
+      "enabled": "Mostra Testo nel Pannello",
+      "linesCount": "Numero di Righe"
+    },
+    "complete": {
+      "title": "Tutto Pronto!",
+      "subtitle": "Ora sei pronto per usare ivLyrics",
+      "startNow": "Inizia Ora",
+      "openSettings": "Apri Impostazioni"
+    },
+    "navigation": {
+      "next": "Avanti",
+      "back": "Indietro",
+      "skip": "Salta"
+    }
   },
   tmi: {
     getApiKeyDesc: "Ottieni la chiave API Gemini",

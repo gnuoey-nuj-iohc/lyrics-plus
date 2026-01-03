@@ -377,16 +377,16 @@ function openOptionsModal(title, items, onChange, eventType = null) {
 	visibility: hidden;
 }
 
-/* Custom Modal Overlay - 일반 설정과 동일한 스타일 */
+/* Custom Modal Overlay - 커뮤니티 영상 모달과 동일한 스타일 */
 #ivLyrics-translation-overlay {
 	position: fixed;
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;
-	background: rgba(0, 0, 0, 0.4);
-	backdrop-filter: blur(60px) saturate(200%) brightness(1.1);
-	-webkit-backdrop-filter: blur(60px) saturate(200%) brightness(1.1);
+	background: rgba(0, 0, 0, 0.5);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
 	z-index: 9999;
 	display: flex;
 	align-items: center;
@@ -404,11 +404,12 @@ function openOptionsModal(title, items, onChange, eventType = null) {
 }
 
 #ivLyrics-translation-modal {
-	background: rgba(28, 28, 30, 0.95);
-	backdrop-filter: blur(60px) saturate(200%);
-	-webkit-backdrop-filter: blur(60px) saturate(200%);
+	background: rgba(24, 24, 24, 0.95);
+	backdrop-filter: blur(40px) saturate(180%);
+	-webkit-backdrop-filter: blur(40px) saturate(180%);
 	border-radius: 16px;
-	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
 	max-width: 520px;
 	width: 90%;
 	max-height: 80vh;
@@ -1136,15 +1137,15 @@ const SyncAdjustButton = react.memo(
               position: "fixed",
               bottom: modalStyle.bottom,
               right: modalStyle.right,
-              background: "rgba(28, 28, 30, 0.95)",
-              backdropFilter: "blur(60px) saturate(200%)",
-              WebkitBackdropFilter: "blur(60px) saturate(200%)",
-              border: "1px solid rgba(255, 255, 255, 0.08)",
+              background: "rgba(24, 24, 24, 0.95)",
+              backdropFilter: "blur(40px) saturate(180%)",
+              WebkitBackdropFilter: "blur(40px) saturate(180%)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
               borderRadius: "16px",
               padding: "20px 24px",
               zIndex: 99999,
               minWidth: "520px",
-              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
+              boxShadow: "0 24px 64px rgba(0, 0, 0, 0.5)",
               fontFamily:
                 "Pretendard Variable, -apple-system, BlinkMacSystemFont, sans-serif",
             },
@@ -3008,9 +3009,9 @@ function openShareImageModal(lyrics, trackInfo) {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 9999;
     display: flex;
     align-items: center;
@@ -3020,13 +3021,15 @@ function openShareImageModal(lyrics, trackInfo) {
 
   const modalContainer = document.createElement("div");
   modalContainer.style.cssText = `
-    background: rgba(28, 28, 30, 0.95);
+    background: rgba(24, 24, 24, 0.95);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
     border-radius: 16px;
     width: 90%;
     max-width: 900px;
     max-height: 85vh;
     overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.1);
   `;
 

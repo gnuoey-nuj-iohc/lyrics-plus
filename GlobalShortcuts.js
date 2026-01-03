@@ -71,32 +71,44 @@
 
     // 전체화면 토글 함수 (LyricsContainer가 있으면 해당 메서드 사용, 없으면 직접 처리)
     const toggleFullscreen = () => {
-        // LyricsContainer가 있으면 해당 toggle 사용 (ivLyrics 페이지에 있든 없든)
-        if (window.lyricContainer && typeof window.lyricContainer.toggleFullscreen === 'function') {
+        // 현재 ivLyrics 페이지에 있고 lyricContainer가 준비되어 있으면 바로 토글
+        if (isOnLyricsPage() && window.lyricContainer && typeof window.lyricContainer.toggleFullscreen === 'function') {
             window.lyricContainer.toggleFullscreen();
             return;
         }
 
-        // LyricsContainer가 없으면 ivLyrics 페이지로 이동 후 전체화면
-        if (!window.lyricContainer) {
-            // 현재 경로 저장 (나중에 돌아오기 위해)
-            const currentPath = Spicetify.Platform?.History?.location?.pathname || "";
-            if (!currentPath.includes("/ivLyrics")) {
-                previousPathBeforeFullscreen = currentPath;
-                // 전역으로 저장 (index.js에서 접근 가능하도록)
-                window._ivLyricsPreviousPath = currentPath;
-            }
-
-            // 먼저 ivLyrics 페이지로 이동
-            Spicetify.Platform?.History?.push?.("/ivLyrics");
-
-            // 약간의 딜레이 후 전체화면 토글
-            setTimeout(() => {
-                if (window.lyricContainer && typeof window.lyricContainer.toggleFullscreen === 'function') {
-                    window.lyricContainer.toggleFullscreen();
-                }
-            }, 300);
+        // ivLyrics 페이지가 아니거나 lyricContainer가 없으면 페이지 이동 후 전체화면
+        const currentPath = Spicetify.Platform?.History?.location?.pathname || "";
+        if (!currentPath.includes("/ivLyrics")) {
+            previousPathBeforeFullscreen = currentPath;
+            window._ivLyricsPreviousPath = currentPath;
         }
+
+        // ivLyrics 페이지로 이동
+        if (!isOnLyricsPage()) {
+            Spicetify.Platform?.History?.push?.("/ivLyrics");
+        }
+
+        // lyricContainer가 준비될 때까지 대기 후 전체화면 토글
+        let retryCount = 0;
+        const maxRetries = 20; // 최대 2초 대기 (100ms * 20)
+
+        const waitAndToggle = () => {
+            retryCount++;
+
+            if (window.lyricContainer && typeof window.lyricContainer.toggleFullscreen === 'function') {
+                // lyricContainer가 준비됨 - 전체화면 토글
+                window.lyricContainer.toggleFullscreen();
+            } else if (retryCount < maxRetries) {
+                // 아직 준비되지 않음 - 재시도
+                setTimeout(waitAndToggle, 100);
+            } else {
+                console.warn("[ivLyrics] Failed to toggle fullscreen - lyricContainer not ready after retries");
+            }
+        };
+
+        // 첫 시도는 약간의 딜레이 후 시작 (페이지 이동 시간 고려)
+        setTimeout(waitAndToggle, 200);
     };
 
     // TV 모드 토글 함수 (전체화면 모드에서만 작동)
@@ -132,7 +144,7 @@
 
         // 컨테이너 클래스 업데이트 (fullscreen-container 내부의 컨테이너 찾기)
         const fullscreenContainer = document.getElementById('lyrics-fullscreen-container');
-        const container = fullscreenContainer?.querySelector('.lyrics-lyricsContainer-LyricsContainer') 
+        const container = fullscreenContainer?.querySelector('.lyrics-lyricsContainer-LyricsContainer')
             || document.querySelector('.lyrics-lyricsContainer-LyricsContainer.fullscreen-active');
         if (container) {
             if (newValue) {

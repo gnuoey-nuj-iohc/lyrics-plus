@@ -1089,7 +1089,7 @@ window.LANG_VI = {
         "loading": "Đang tải ghi chú bản vá..."
       },
       "subtitle": "Về ivLyrics",
-      "appDescription": "Tiện ích mở rộng lời bài hát cho Spicetify hỗ trợ tiếng Việt.",
+      "appDescription": "Tiện ích lời bài hát với nhiều tính năng",
       "versionPrefix": "Phiên bản",
       "viewOnGithub": "Xem trên GitHub",
       "patchNotesLoadFailed": "Không thể tải ghi chú bản vá",
@@ -1311,6 +1311,82 @@ window.LANG_VI = {
     "shared": "✓ Đã chia sẻ",
     "maxLinesReached": "Tối đa có thể chọn 3 dòng",
     "noSelection": "Vui lòng chọn lời bài hát"
+  },
+  "setupWizard": {
+    "welcome": {
+      "title": "Chào mừng đến với ivLyrics!",
+      "subtitle": "Tận hưởng lời bài hát tuyệt đẹp trên Spotify",
+      "features": {
+        "lyrics": "Lời bài hát đồng bộ thời gian thực",
+        "translation": "Hỗ trợ dịch thuật AI",
+        "customization": "Tùy chỉnh đa dạng"
+      },
+      "start": "Bắt đầu"
+    },
+    "language": {
+      "title": "Chọn ngôn ngữ",
+      "subtitle": "Vui lòng chọn ngôn ngữ của bạn"
+    },
+    "apiKey": {
+      "title": "Cài đặt khóa API Gemini",
+      "subtitle": "Cần có khóa API để sử dụng tính năng dịch thuật AI",
+      "guide": {
+        "title": "Cách lấy khóa API",
+        "step1": "Truy cập Google AI Studio",
+        "step2": "Nhấp vào Get API Key",
+        "step3": "Tạo khóa API mới",
+        "step4": "Sao chép khóa đã tạo"
+      },
+      "getKey": "Lấy khóa API",
+      "skip": "Thiết lập sau",
+      "placeholder": "Nhập khóa API của bạn...",
+      "multipleKeysHint": "Bạn có thể đăng ký nhiều khóa API trong Cài đặt"
+    },
+    "theme": {
+      "title": "Cài đặt cơ bản",
+      "subtitle": "Chọn cách hiển thị lời bài hát",
+      "alignment": "Căn chỉnh",
+      "background": "Hiệu ứng nền",
+      "backgrounds": {
+        "colorful": "Đầy màu sắc",
+        "gradient": "Bìa album",
+        "solid": "Màu đơn",
+        "video": "Video"
+      }
+    },
+    "translationTip": {
+      "title": "Hướng dẫn cài đặt dịch thuật",
+      "subtitle": "Tính năng dịch được cài đặt riêng cho từng ngôn ngữ",
+      "pronunciation": "Phát âm",
+      "translation": "Dịch",
+      "description": "Kích hoạt dịch thuật cho bài hát K-POP sẽ không áp dụng cho J-POP. Vui lòng nhấp vào nút chuyển đổi bên dưới để đặt tùy chọn 'Phát âm' và 'Dịch' riêng cho từng ngôn ngữ."
+    },
+    "overlayTip": {
+      "title": "Lớp phủ máy tính",
+      "subtitle": "Xem lời bài hát ở bất cứ đâu trên máy tính",
+      "description": "Cài đặt ứng dụng lớp phủ để xem lời bài hát khi sử dụng ứng dụng khác. Bạn có thể bật tính năng này bất cứ lúc nào trong Cài đặt.",
+      "requiresApp": "Tính năng này yêu cầu cài đặt ứng dụng lớp phủ riêng biệt.",
+      "enabled": "Bật lớp phủ",
+      "downloadApp": "Tải ứng dụng lớp phủ"
+    },
+    "nowPlayingTip": {
+      "title": "Lời bài hát bảng điều khiển",
+      "subtitle": "Xem lời bài hát hiện tại ở bảng bên phải",
+      "description": "Hiển thị lời bài hát hiện tại trong bảng 'Đang phát' của Spotify. Bạn có thể kiểm tra lời bài hát mà không cần chế độ toàn màn hình.",
+      "enabled": "Hiển thị lời bài hát trong bảng",
+      "linesCount": "Số dòng hiển thị"
+    },
+    "complete": {
+      "title": "Đã sẵn sàng!",
+      "subtitle": "Bây giờ bạn đã sẵn sàng sử dụng ivLyrics",
+      "startNow": "Bắt đầu ngay",
+      "openSettings": "Mở Cài đặt"
+    },
+    "navigation": {
+      "next": "Tiếp theo",
+      "back": "Quay lại",
+      "skip": "Bỏ qua"
+    }
   },
   tmi: {
     getApiKeyDesc: "Lấy Gemini API Key",

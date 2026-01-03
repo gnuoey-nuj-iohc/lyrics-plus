@@ -1828,7 +1828,7 @@ const Prefetcher = {
     if (!lyricsArray || lyricsArray.length === 0) return;
 
     // 언어 감지
-    const detectedLanguage = Utils.detectLanguage(lyricsArray);
+    const detectedLanguage = LyricsService.detectLanguage(lyricsArray);
     if (!detectedLanguage) return;
     // Update Utils detected language for furigana check
     Utils.setDetectedLanguage(detectedLanguage);
@@ -3986,6 +3986,15 @@ class LyricsContainer extends react.Component {
       fileInput: null,
     };
 
+    // Check for first-run setup wizard
+    if (typeof isSetupNeeded === "function" && isSetupNeeded()) {
+      setTimeout(() => {
+        if (typeof openSetupWizard === "function") {
+          openSetupWizard();
+        }
+      }, 500); // Small delay to ensure all components are loaded
+    }
+
     // Check for updates when app starts
     setTimeout(() => {
       Utils.showUpdateNotificationIfAvailable().catch((error) => {
@@ -4124,6 +4133,15 @@ class LyricsContainer extends react.Component {
       const isEnabled = !this.state.isFullscreen;
       const useBrowserFullscreen = CONFIG.visual["fullscreen-browser-fullscreen"] === true;
       if (isEnabled) {
+        // 기존 컨테이너가 DOM에 남아있으면 제거
+        const existingContainer = document.getElementById("lyrics-fullscreen-container");
+        if (existingContainer) {
+          existingContainer.innerHTML = '';
+          existingContainer.remove();
+        }
+        // 새로운 전체화면 컨테이너 생성
+        this.fullscreenContainer = document.createElement("div");
+        this.fullscreenContainer.id = "lyrics-fullscreen-container";
         // TMI 폰트 크기 CSS 변수 설정
         const tmiScale = (CONFIG.visual["fullscreen-tmi-font-size"] || 100) / 100;
         this.fullscreenContainer.style.setProperty("--fullscreen-tmi-font-size", tmiScale);
@@ -4155,7 +4173,9 @@ class LyricsContainer extends react.Component {
           });
         }
       } else {
-        this.fullscreenContainer.remove();
+        // 먼저 setState를 호출하여 React가 Portal 렌더링을 중단하도록 함
+        // (이렇게 하면 React가 자연스럽게 컴포넌트를 언마운트함)
+
         if (document.fullscreenElement) {
           document.exitFullscreen().catch(() => { });
         }
@@ -4172,8 +4192,23 @@ class LyricsContainer extends react.Component {
         }
         // 전체화면 종료 이벤트 발생 (GlobalShortcuts에서 이전 페이지로 이동하기 위해)
         window.dispatchEvent(new CustomEvent("ivLyrics:fullscreen-closed"));
+
+        // 컨테이너는 setState 후 다음 렌더 사이클에서 React가 Portal을 렌더링하지 않으므로
+        // 약간의 딜레이 후에 안전하게 제거
+        const containerToRemove = this.fullscreenContainer;
+        setTimeout(() => {
+          if (containerToRemove && containerToRemove.parentNode) {
+            containerToRemove.remove();
+          }
+          // 혹시 남아있는 컨테이너도 제거
+          const leftover = document.getElementById("lyrics-fullscreen-container");
+          if (leftover && leftover.parentNode) {
+            leftover.remove();
+          }
+        }, 100); // React 렌더 사이클이 완료될 시간 확보
       }
 
+      // 먼저 상태를 업데이트하여 React가 Portal 렌더링을 중단하게 함
       this.setState({
         isFullscreen: isEnabled,
       });
@@ -5032,3 +5067,18 @@ class LyricsContainer extends react.Component {
     });
   }
 })();
+
+// 공지사항 시스템 초기화
+(function initNoticeSystem() {
+  // 앱이 완전히 로드된 후 공지사항 확인
+  setTimeout(() => {
+    console.log("[ivLyrics] Checking for notice system...");
+    if (typeof window.showNoticeIfNeeded === 'function') {
+      console.log("[ivLyrics] Calling showNoticeIfNeeded...");
+      window.showNoticeIfNeeded();
+    } else {
+      console.warn("[ivLyrics] showNoticeIfNeeded not found. NoticeSystem may not be loaded.");
+    }
+  }, 3000); // 3초 후 실행 (앱 로드 완료 대기)
+})();
+

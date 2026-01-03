@@ -1085,7 +1085,7 @@ window.LANG_ZH_TW = {
         "loading": "正在載入更新說明..."
       },
       "subtitle": "關於ivLyrics",
-      "appDescription": "Spicetify的多語言歌詞擴充功能。",
+      "appDescription": "包含各種功能的歌詞擴充功能",
       "versionPrefix": "版本",
       "viewOnGithub": "在GitHub上查看",
       "patchNotesLoadFailed": "無法載入更新說明",
@@ -1307,6 +1307,82 @@ window.LANG_ZH_TW = {
     "shared": "✓ 已分享",
     "maxLinesReached": "最多可選擇3行",
     "noSelection": "請選擇歌詞"
+  },
+  "setupWizard": {
+    "welcome": {
+      "title": "歡迎使用 ivLyrics！",
+      "subtitle": "在 Spotify 上享受美麗的歌詞體驗",
+      "features": {
+        "lyrics": "即時同步歌詞",
+        "translation": "AI 翻譯支援",
+        "customization": "豐富的自訂選項"
+      },
+      "start": "開始"
+    },
+    "language": {
+      "title": "語言選擇",
+      "subtitle": "請選擇您使用的語言"
+    },
+    "apiKey": {
+      "title": "Gemini API 金鑰設定",
+      "subtitle": "使用 AI 翻譯功能需要 API 金鑰",
+      "guide": {
+        "title": "如何獲取 API 金鑰",
+        "step1": "訪問 Google AI Studio",
+        "step2": "點擊 Get API Key",
+        "step3": "建立新 API 金鑰",
+        "step4": "複製生成的金鑰"
+      },
+      "getKey": "獲取 API 金鑰",
+      "skip": "稍後設定",
+      "placeholder": "輸入 API 金鑰...",
+      "multipleKeysHint": "可以在設定中註冊多個 API 金鑰"
+    },
+    "theme": {
+      "title": "基本設定",
+      "subtitle": "選擇歌詞顯示方式",
+      "alignment": "對齊",
+      "background": "背景效果",
+      "backgrounds": {
+        "colorful": "多彩",
+        "gradient": "專輯封面",
+        "solid": "純色",
+        "video": "影片"
+      }
+    },
+    "translationTip": {
+      "title": "翻譯設定指南",
+      "subtitle": "翻譯功能按語言單獨設定",
+      "pronunciation": "發音",
+      "translation": "翻譯",
+      "description": "即使在 K-POP 歌曲中啟用了翻譯，也不會應用於 J-POP。請點擊下方的轉換按鈕，分別設定每種語言的「發音」和「翻譯」選項。"
+    },
+    "overlayTip": {
+      "title": "桌面覆蓋",
+      "subtitle": "在桌面任何位置查看歌詞",
+      "description": "安裝覆蓋應用後，您可以在使用其他應用時查看歌詞。您可以隨時在設定中啟用它。",
+      "requiresApp": "使用此功能需要安裝單獨的覆蓋應用程式。",
+      "enabled": "啟用覆蓋",
+      "downloadApp": "下載覆蓋應用"
+    },
+    "nowPlayingTip": {
+      "title": "正在播放面板歌詞",
+      "subtitle": "在右側面板查看當前歌詞",
+      "description": "在 Spotify 的「正在播放」面板中顯示當前歌詞。無需全螢幕模式即可查看歌詞。",
+      "enabled": "顯示面板歌詞",
+      "linesCount": "顯示行數"
+    },
+    "complete": {
+      "title": "準備就緒！",
+      "subtitle": "現在可以開始使用 ivLyrics 了",
+      "startNow": "立即開始",
+      "openSettings": "打開設定"
+    },
+    "navigation": {
+      "next": "下一步",
+      "back": "上一步",
+      "skip": "跳過"
+    }
   },
   tmi: {
     getApiKeyDesc: "獲取 Gemini API 金鑰",

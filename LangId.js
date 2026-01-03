@@ -1061,7 +1061,7 @@ window.LANG_ID = {
         "loading": "Memuat catatan patch..."
       },
       "subtitle": "Tentang ivLyrics",
-      "appDescription": "Ekstensi lirik untuk Spicetify dengan dukungan Bahasa Indonesia.",
+      "appDescription": "Ekstensi lirik dengan berbagai fitur",
       "versionPrefix": "Versi",
       "viewOnGithub": "Lihat di GitHub",
       "patchNotesLoadFailed": "Gagal memuat catatan patch",
@@ -1283,6 +1283,82 @@ window.LANG_ID = {
     "shared": "✓ Dibagikan",
     "maxLinesReached": "Maksimal 3 baris dapat dipilih",
     "noSelection": "Silakan pilih lirik"
+  },
+  "setupWizard": {
+    "welcome": {
+      "title": "Selamat datang di ivLyrics!",
+      "subtitle": "Nikmati lirik indah di Spotify",
+      "features": {
+        "lyrics": "Lirik tersinkronisasi real-time",
+        "translation": "Dukungan terjemahan AI",
+        "customization": "Berbagai kustomisasi"
+      },
+      "start": "Mulai"
+    },
+    "language": {
+      "title": "Pilih Bahasa",
+      "subtitle": "Silakan pilih bahasa Anda"
+    },
+    "apiKey": {
+      "title": "Pengaturan Kunci API Gemini",
+      "subtitle": "Kunci API diperlukan untuk menggunakan fitur terjemahan AI",
+      "guide": {
+        "title": "Cara mendapatkan Kunci API",
+        "step1": "Kunjungi Google AI Studio",
+        "step2": "Klik Get API Key",
+        "step3": "Buat kunci API baru",
+        "step4": "Salin kunci yang dibuat"
+      },
+      "getKey": "Dapatkan Kunci API",
+      "skip": "Atur nanti",
+      "placeholder": "Masukkan kunci API Anda...",
+      "multipleKeysHint": "Anda dapat mendaftarkan beberapa kunci API di pengaturan"
+    },
+    "theme": {
+      "title": "Pengaturan Dasar",
+      "subtitle": "Pilih cara menampilkan lirik",
+      "alignment": "Perataan",
+      "background": "Efek Latar Belakang",
+      "backgrounds": {
+        "colorful": "Berwarna",
+        "gradient": "Sampul Album",
+        "solid": "Warna Solid",
+        "video": "Video"
+      }
+    },
+    "translationTip": {
+      "title": "Panduan Pengaturan Terjemahan",
+      "subtitle": "Fitur terjemahan diatur secara individual untuk setiap bahasa",
+      "pronunciation": "Pelafalan",
+      "translation": "Terjemahan",
+      "description": "Mengaktifkan terjemahan untuk lagu K-POP tidak akan menerapkannya ke J-POP. Silakan klik tombol konversi di bawah ini untuk mengatur opsi 'Pelafalan' dan 'Terjemahan' secara terpisah untuk setiap bahasa."
+    },
+    "overlayTip": {
+      "title": "Overlay Desktop",
+      "subtitle": "Lihat lirik di mana saja di desktop Anda",
+      "description": "Instal aplikasi overlay untuk melihat lirik saat menggunakan aplikasi lain. Anda dapat mengaktifkannya kapan saja di Pengaturan.",
+      "requiresApp": "Fitur ini memerlukan instalasi aplikasi overlay terpisah.",
+      "enabled": "Aktifkan Overlay",
+      "downloadApp": "Unduh Aplikasi Overlay"
+    },
+    "nowPlayingTip": {
+      "title": "Lirik Panel Sedang Diputar",
+      "subtitle": "Lihat lirik saat ini di panel kanan",
+      "description": "Menampilkan lirik saat ini di panel 'Sedang Diputar' Spotify. Anda dapat memeriksa lirik tanpa mode layar penuh.",
+      "enabled": "Tampilkan Lirik di Panel",
+      "linesCount": "Jumlah Baris"
+    },
+    "complete": {
+      "title": "Siap!",
+      "subtitle": "Sekarang Anda siap menggunakan ivLyrics",
+      "startNow": "Mulai Sekarang",
+      "openSettings": "Buka Pengaturan"
+    },
+    "navigation": {
+      "next": "Lanjut",
+      "back": "Kembali",
+      "skip": "Lewati"
+    }
   },
   tmi: {
     getApiKeyDesc: "Dapatkan Kunci API Gemini",
