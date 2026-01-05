@@ -1491,7 +1491,7 @@ const VideoHelperToggle = ({ name, defaultValue, disabled, onChange = () => { } 
     if (typeof VideoHelperService !== "undefined") {
       VideoHelperService.openDownloadPage();
     } else {
-      window.open("https://github.com/ivLis-Studio/ivLyrics-helper/releases/latest", "_blank");
+      window.open("https://ivlis.kr/ivLyrics/extensions/#helper", "_blank");
     }
   };
 
@@ -4701,7 +4701,7 @@ const ConfigModal = () => {
               message: I18n.t("settings.videoHelper.info"),
               buttonText: I18n.t("settings.videoHelper.download"),
               onButtonClick: () => {
-                window.open("https://github.com/ivLis-Studio/ivLyrics-helper/releases/latest", "_blank");
+                window.open("https://ivlis.kr/ivLyrics/extensions/#helper", "_blank");
               },
               when: () => CONFIG.visual["video-background"] && !CONFIG.visual["video-helper-enabled"],
             },
