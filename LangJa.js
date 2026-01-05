@@ -1396,6 +1396,28 @@ window.LANG_JA = {
       "next": "次へ",
       "back": "戻る",
       "skip": "スキップ"
+    },
+    "videoTest": {
+      "title": "動画背景テスト",
+      "subtitle": "以下のYouTube動画が正常に再生されるか確認してください",
+      "question": "動画を再生するにはログインが必要と表示されますか？",
+      "yes": "はい",
+      "no": "いいえ",
+      "helperRequired": "その場合、ヘルパープログラムをインストールする必要があります。",
+      "helperDesc": "ヘルパープログラムを使用すると、YouTubeログインなしで動画を再生できます。",
+      "installHelper": "ヘルパープログラムをインストール",
+      "skip": "スキップ"
+    },
+    "videoHelperTest": {
+      "title": "ヘルパープログラムテスト",
+      "subtitle": "ヘルパープログラムが正しく動作するか確認します",
+      "enableHelper": "ヘルパープログラムを有効化",
+      "testVideo": "テスト動画を再生",
+      "testing": "テスト中...",
+      "success": "ヘルパープログラムは正常に動作しています！",
+      "failed": "ヘルパープログラムに接続できません。プログラムが実行中か確認してください。",
+      "downloading": "動画をダウンロード中: {percent}%",
+      "skip": "スキップ"
     }
   },
   tmi: {

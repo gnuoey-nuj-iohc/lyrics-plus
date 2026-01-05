@@ -736,7 +736,7 @@ const Utils = {
   /**
    * Current version of the ivLyrics app
    */
-  currentVersion: "3.1.6",
+  currentVersion: "3.1.7",
 
   /**
    * Check for updates from remote repository
@@ -1696,13 +1696,13 @@ const Toast = {
       const barEl = this._progressToast.element.querySelector('.ivlyrics-toast-progress-bar');
       if (textEl) textEl.textContent = message;
       if (barEl) barEl.style.width = `${Math.min(100, Math.max(0, percent))}%`;
-      
+
       // 타임아웃 리셋 (활동이 있으면 연장)
       if (this._progressToast.timeout) {
         clearTimeout(this._progressToast.timeout);
       }
       this._progressToast.timeout = setTimeout(() => this.dismissProgress(), 60000);
-      
+
       return this._progressToast.id;
     }
 
@@ -1725,11 +1725,11 @@ const Toast = {
     // Progress bar container
     const progressContainer = document.createElement('div');
     progressContainer.className = 'ivlyrics-toast-progress-container';
-    
+
     const progressBar = document.createElement('div');
     progressBar.className = 'ivlyrics-toast-progress-bar';
     progressBar.style.width = `${Math.min(100, Math.max(0, percent))}%`;
-    
+
     progressContainer.appendChild(progressBar);
 
     // Close button
@@ -1747,7 +1747,7 @@ const Toast = {
     toast.appendChild(closeBtn);
 
     this._container.appendChild(toast);
-    
+
     // 안전장치: 60초 후 자동 닫힘
     const timeout = setTimeout(() => this.dismissProgress(), 60000);
     this._progressToast = { id, element: toast, timeout };

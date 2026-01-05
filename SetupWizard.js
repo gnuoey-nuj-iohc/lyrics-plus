@@ -1893,6 +1893,737 @@ const NowPlayingTipStep = ({ nowPlayingEnabled, onNowPlayingChange, onNext, onBa
   );
 };
 
+// Video Test step - Check if YouTube embed requires login
+const VideoTestStep = ({ onNext, onBack, onNeedHelper, onSkip }) => {
+  const [loginRequired, setLoginRequired] = useState(null);
+  const [playerReady, setPlayerReady] = useState(false);
+  const playerContainerRef = react.useRef(null);
+  const playerRef = react.useRef(null);
+  const playerIdRef = react.useRef("yt-wizard-player-" + Math.random().toString(36).substr(2, 9));
+
+  const handleYes = () => {
+    setLoginRequired(true);
+  };
+
+  const handleNo = () => {
+    // No login required, skip helper steps
+    onSkip();
+  };
+
+  const handleInstallHelper = () => {
+    if (typeof VideoHelperService !== "undefined") {
+      VideoHelperService.openDownloadPage();
+    } else {
+      window.open("https://ivlis.kr/ivLyrics/extensions/#helper", "_blank");
+    }
+  };
+
+  // Initialize YouTube Player API
+  react.useEffect(() => {
+    const playerId = playerIdRef.current;
+
+    const createPlayer = () => {
+      if (!window.YT || !window.YT.Player) {
+        // Wait for YT API to load
+        setTimeout(createPlayer, 200);
+        return;
+      }
+
+      // Create container div if not exists
+      if (playerContainerRef.current && !document.getElementById(playerId)) {
+        const div = document.createElement("div");
+        div.id = playerId;
+        div.style.width = "100%";
+        div.style.height = "100%";
+        playerContainerRef.current.appendChild(div);
+      }
+
+      try {
+        playerRef.current = new window.YT.Player(playerId, {
+          videoId: "9bZkp7q19f0",
+          host: "https://www.youtube-nocookie.com",
+          playerVars: {
+            rel: 0,
+            iv_load_policy: 3,
+            modestbranding: 1,
+            playsinline: 1,
+            fs: 0,
+            disablekb: 1,
+            origin: window.location.origin,
+            autoplay: 0,
+            controls: 1,
+          },
+          events: {
+            onReady: () => {
+              setPlayerReady(true);
+            },
+            onError: (e) => {
+              console.warn("[VideoTestStep] Player error:", e.data);
+            },
+          },
+        });
+      } catch (e) {
+        console.error("[VideoTestStep] Failed to create player:", e);
+      }
+    };
+
+    // Load YouTube IFrame API if not loaded
+    if (!window.YT) {
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName("script")[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+      window.onYouTubeIframeAPIReady = () => {
+        createPlayer();
+      };
+    } else {
+      createPlayer();
+    }
+
+    // Cleanup
+    return () => {
+      if (playerRef.current && typeof playerRef.current.destroy === "function") {
+        try {
+          playerRef.current.destroy();
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+      }
+      playerRef.current = null;
+      setPlayerReady(false);
+    };
+  }, []);
+
+  return react.createElement(
+    "div",
+    {
+      className: "wizard-step video-test-step",
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        padding: "24px",
+        minHeight: "420px",
+      },
+    },
+    react.createElement(
+      "h2",
+      {
+        style: {
+          fontSize: "20px",
+          fontWeight: "600",
+          color: "#fff",
+          marginBottom: "4px",
+          textAlign: "center",
+        },
+      },
+      I18n.t("setupWizard.videoTest.title")
+    ),
+    react.createElement(
+      "p",
+      {
+        style: {
+          fontSize: "13px",
+          color: "rgba(255, 255, 255, 0.5)",
+          marginBottom: "20px",
+          textAlign: "center",
+        },
+      },
+      I18n.t("setupWizard.videoTest.subtitle")
+    ),
+    // YouTube Player container
+    react.createElement(
+      "div",
+      {
+        ref: playerContainerRef,
+        style: {
+          width: "100%",
+          maxWidth: "400px",
+          margin: "0 auto 20px",
+          aspectRatio: "16/9",
+          borderRadius: "12px",
+          overflow: "hidden",
+          background: "rgba(0, 0, 0, 0.3)",
+        },
+      }
+    ),
+    // Question section
+    react.createElement(
+      "div",
+      {
+        style: {
+          textAlign: "center",
+          marginBottom: "16px",
+        },
+      },
+      react.createElement(
+        "p",
+        {
+          style: {
+            fontSize: "14px",
+            fontWeight: "500",
+            color: "rgba(255, 255, 255, 0.9)",
+            marginBottom: "12px",
+          },
+        },
+        I18n.t("setupWizard.videoTest.question")
+      ),
+      // Yes/No buttons
+      loginRequired === null &&
+      react.createElement(
+        "div",
+        {
+          style: {
+            display: "flex",
+            justifyContent: "center",
+            gap: "12px",
+          },
+        },
+        react.createElement(
+          "button",
+          {
+            onClick: handleYes,
+            style: {
+              padding: "10px 32px",
+              fontSize: "14px",
+              fontWeight: "500",
+              color: "#fff",
+              background: "rgba(255, 107, 107, 0.2)",
+              border: "1px solid rgba(255, 107, 107, 0.5)",
+              borderRadius: "8px",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+            },
+          },
+          I18n.t("setupWizard.videoTest.yes")
+        ),
+        react.createElement(
+          "button",
+          {
+            onClick: handleNo,
+            style: {
+              padding: "10px 32px",
+              fontSize: "14px",
+              fontWeight: "500",
+              color: "#fff",
+              background: "rgba(29, 185, 84, 0.2)",
+              border: "1px solid rgba(29, 185, 84, 0.5)",
+              borderRadius: "8px",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+            },
+          },
+          I18n.t("setupWizard.videoTest.no")
+        )
+      )
+    ),
+    // Helper required message (shown when loginRequired is true)
+    loginRequired === true &&
+    react.createElement(
+      "div",
+      {
+        style: {
+          textAlign: "center",
+          padding: "16px 20px",
+          background: "rgba(255, 193, 7, 0.1)",
+          borderRadius: "12px",
+          border: "1px solid rgba(255, 193, 7, 0.3)",
+          marginBottom: "16px",
+        },
+      },
+      react.createElement(
+        "p",
+        {
+          style: {
+            fontSize: "14px",
+            fontWeight: "600",
+            color: "#ffc107",
+            marginBottom: "8px",
+          },
+        },
+        I18n.t("setupWizard.videoTest.helperRequired")
+      ),
+      react.createElement(
+        "p",
+        {
+          style: {
+            fontSize: "12px",
+            color: "rgba(255, 255, 255, 0.6)",
+            marginBottom: "16px",
+          },
+        },
+        I18n.t("setupWizard.videoTest.helperDesc")
+      ),
+      react.createElement(
+        "button",
+        {
+          onClick: handleInstallHelper,
+          style: {
+            padding: "12px 24px",
+            fontSize: "13px",
+            fontWeight: "600",
+            color: "#000",
+            background: "linear-gradient(135deg, #ffc107 0%, #ffca2c 100%)",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
+            marginBottom: "12px",
+          },
+        },
+        react.createElement("svg", {
+          width: 16,
+          height: 16,
+          viewBox: "0 0 24 24",
+          fill: "currentColor",
+          dangerouslySetInnerHTML: { __html: WizardIcons.externalLink },
+        }),
+        I18n.t("setupWizard.videoTest.installHelper")
+      )
+    ),
+    // Spacer
+    react.createElement("div", { style: { flex: 1 } }),
+    // Navigation buttons
+    react.createElement(
+      "div",
+      {
+        style: {
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginTop: "16px",
+          paddingTop: "16px",
+          borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+        },
+      },
+      react.createElement(
+        "button",
+        {
+          onClick: onBack,
+          style: {
+            padding: "10px 20px",
+            fontSize: "13px",
+            fontWeight: "500",
+            color: "rgba(255, 255, 255, 0.7)",
+            background: "transparent",
+            border: "1px solid rgba(255, 255, 255, 0.15)",
+            borderRadius: "6px",
+            cursor: "pointer",
+          },
+        },
+        I18n.t("setupWizard.navigation.back")
+      ),
+      react.createElement(
+        "div",
+        { style: { display: "flex", gap: "10px" } },
+        react.createElement(
+          "button",
+          {
+            onClick: onSkip,
+            style: {
+              padding: "10px 16px",
+              fontSize: "12px",
+              fontWeight: "500",
+              color: "rgba(255, 255, 255, 0.4)",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+            },
+          },
+          I18n.t("setupWizard.videoTest.skip")
+        ),
+        loginRequired === true &&
+        react.createElement(
+          "button",
+          {
+            onClick: onNeedHelper,
+            style: {
+              padding: "10px 28px",
+              fontSize: "13px",
+              fontWeight: "600",
+              color: "#000",
+              background: "linear-gradient(135deg, #1db954 0%, #1ed760 100%)",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+            },
+          },
+          I18n.t("setupWizard.navigation.next")
+        )
+      )
+    )
+  );
+};
+
+// Video Helper Test step - Test helper program with the same video
+const VideoHelperTestStep = ({ onNext, onBack, onSkip, helperEnabled, onHelperChange }) => {
+  const [testStatus, setTestStatus] = useState("idle"); // idle, testing, downloading, success, failed
+  const [downloadPercent, setDownloadPercent] = useState(0);
+  const [videoUrl, setVideoUrl] = useState(null);
+
+  const testVideoId = "9bZkp7q19f0";
+
+  const handleEnableHelper = () => {
+    onHelperChange(!helperEnabled);
+  };
+
+  const handleTestVideo = async () => {
+    if (typeof VideoHelperService === "undefined") {
+      setTestStatus("failed");
+      return;
+    }
+
+    setTestStatus("testing");
+    setDownloadPercent(0);
+    setVideoUrl(null);
+
+    // First check if helper is available
+    const available = await VideoHelperService.checkHealth();
+    if (!available) {
+      setTestStatus("failed");
+      return;
+    }
+
+    // Request the video
+    const abort = VideoHelperService.requestVideo(testVideoId, {
+      onProgress: (data) => {
+        setTestStatus("downloading");
+        setDownloadPercent(data.percent || 0);
+      },
+      onComplete: (url) => {
+        setVideoUrl(url);
+        setTestStatus("success");
+      },
+      onError: (message) => {
+        console.error("[VideoHelperTest] Error:", message);
+        setTestStatus("failed");
+      },
+    });
+  };
+
+  return react.createElement(
+    "div",
+    {
+      className: "wizard-step video-helper-test-step",
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        padding: "24px",
+        minHeight: "420px",
+      },
+    },
+    react.createElement(
+      "h2",
+      {
+        style: {
+          fontSize: "20px",
+          fontWeight: "600",
+          color: "#fff",
+          marginBottom: "4px",
+          textAlign: "center",
+        },
+      },
+      I18n.t("setupWizard.videoHelperTest.title")
+    ),
+    react.createElement(
+      "p",
+      {
+        style: {
+          fontSize: "13px",
+          color: "rgba(255, 255, 255, 0.5)",
+          marginBottom: "24px",
+          textAlign: "center",
+        },
+      },
+      I18n.t("setupWizard.videoHelperTest.subtitle")
+    ),
+    // Enable helper toggle
+    react.createElement(
+      "div",
+      {
+        onClick: handleEnableHelper,
+        style: {
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "16px 20px",
+          background: "rgba(255, 255, 255, 0.03)",
+          borderRadius: "12px",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          marginBottom: "16px",
+          cursor: "pointer",
+        },
+      },
+      react.createElement(
+        "span",
+        {
+          style: {
+            fontSize: "14px",
+            fontWeight: "500",
+            color: "rgba(255, 255, 255, 0.9)",
+          },
+        },
+        I18n.t("setupWizard.videoHelperTest.enableHelper")
+      ),
+      // Toggle switch
+      react.createElement(
+        "div",
+        {
+          style: {
+            width: "44px",
+            height: "24px",
+            background: helperEnabled
+              ? "linear-gradient(135deg, #1db954 0%, #1ed760 100%)"
+              : "rgba(255, 255, 255, 0.15)",
+            borderRadius: "12px",
+            position: "relative",
+            transition: "background 0.2s ease",
+          },
+        },
+        react.createElement("div", {
+          style: {
+            width: "20px",
+            height: "20px",
+            background: "#fff",
+            borderRadius: "50%",
+            position: "absolute",
+            top: "2px",
+            left: helperEnabled ? "22px" : "2px",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+            transition: "left 0.2s ease",
+          },
+        })
+      )
+    ),
+    // Test button
+    helperEnabled &&
+    react.createElement(
+      "div",
+      {
+        style: {
+          textAlign: "center",
+          marginBottom: "20px",
+        },
+      },
+      react.createElement(
+        "button",
+        {
+          onClick: handleTestVideo,
+          disabled: testStatus === "testing" || testStatus === "downloading",
+          style: {
+            padding: "14px 32px",
+            fontSize: "14px",
+            fontWeight: "600",
+            color: testStatus === "testing" || testStatus === "downloading" ? "rgba(255, 255, 255, 0.5)" : "#000",
+            background: testStatus === "testing" || testStatus === "downloading"
+              ? "rgba(255, 255, 255, 0.1)"
+              : "linear-gradient(135deg, #1db954 0%, #1ed760 100%)",
+            border: "none",
+            borderRadius: "8px",
+            cursor: testStatus === "testing" || testStatus === "downloading" ? "not-allowed" : "pointer",
+            transition: "all 0.2s ease",
+          },
+        },
+        testStatus === "testing" || testStatus === "downloading"
+          ? I18n.t("setupWizard.videoHelperTest.testing")
+          : I18n.t("setupWizard.videoHelperTest.testVideo")
+      )
+    ),
+    // Download progress
+    testStatus === "downloading" &&
+    react.createElement(
+      "div",
+      {
+        style: {
+          textAlign: "center",
+          marginBottom: "16px",
+        },
+      },
+      react.createElement(
+        "div",
+        {
+          style: {
+            width: "100%",
+            maxWidth: "300px",
+            height: "8px",
+            background: "rgba(255, 255, 255, 0.1)",
+            borderRadius: "4px",
+            margin: "0 auto 8px",
+            overflow: "hidden",
+          },
+        },
+        react.createElement("div", {
+          style: {
+            width: `${downloadPercent}%`,
+            height: "100%",
+            background: "linear-gradient(90deg, #1db954 0%, #1ed760 100%)",
+            borderRadius: "4px",
+            transition: "width 0.3s ease",
+          },
+        })
+      ),
+      react.createElement(
+        "p",
+        {
+          style: {
+            fontSize: "12px",
+            color: "rgba(255, 255, 255, 0.6)",
+          },
+        },
+        I18n.t("setupWizard.videoHelperTest.downloading").replace("{percent}", Math.round(downloadPercent))
+      )
+    ),
+    // Success message
+    testStatus === "success" &&
+    react.createElement(
+      "div",
+      {
+        style: {
+          textAlign: "center",
+          padding: "16px 20px",
+          background: "rgba(29, 185, 84, 0.15)",
+          borderRadius: "12px",
+          border: "1px solid rgba(29, 185, 84, 0.4)",
+          marginBottom: "16px",
+        },
+      },
+      react.createElement(
+        "p",
+        {
+          style: {
+            fontSize: "14px",
+            fontWeight: "600",
+            color: "#1db954",
+            marginBottom: videoUrl ? "12px" : "0",
+          },
+        },
+        "✓ " + I18n.t("setupWizard.videoHelperTest.success")
+      ),
+      // Show video preview if available
+      videoUrl &&
+      react.createElement(
+        "div",
+        {
+          style: {
+            maxWidth: "300px",
+            margin: "0 auto",
+            borderRadius: "8px",
+            overflow: "hidden",
+          },
+        },
+        react.createElement("video", {
+          src: videoUrl,
+          style: {
+            width: "100%",
+            borderRadius: "8px",
+          },
+          controls: true,
+          autoPlay: true,
+          muted: true,
+        })
+      )
+    ),
+    // Failed message
+    testStatus === "failed" &&
+    react.createElement(
+      "div",
+      {
+        style: {
+          textAlign: "center",
+          padding: "16px 20px",
+          background: "rgba(255, 107, 107, 0.15)",
+          borderRadius: "12px",
+          border: "1px solid rgba(255, 107, 107, 0.4)",
+          marginBottom: "16px",
+        },
+      },
+      react.createElement(
+        "p",
+        {
+          style: {
+            fontSize: "14px",
+            fontWeight: "600",
+            color: "#ff6b6b",
+          },
+        },
+        "✕ " + I18n.t("setupWizard.videoHelperTest.failed")
+      )
+    ),
+    // Spacer
+    react.createElement("div", { style: { flex: 1 } }),
+    // Navigation buttons
+    react.createElement(
+      "div",
+      {
+        style: {
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginTop: "16px",
+          paddingTop: "16px",
+          borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+        },
+      },
+      react.createElement(
+        "button",
+        {
+          onClick: onBack,
+          style: {
+            padding: "10px 20px",
+            fontSize: "13px",
+            fontWeight: "500",
+            color: "rgba(255, 255, 255, 0.7)",
+            background: "transparent",
+            border: "1px solid rgba(255, 255, 255, 0.15)",
+            borderRadius: "6px",
+            cursor: "pointer",
+          },
+        },
+        I18n.t("setupWizard.navigation.back")
+      ),
+      react.createElement(
+        "div",
+        { style: { display: "flex", gap: "10px" } },
+        react.createElement(
+          "button",
+          {
+            onClick: onSkip,
+            style: {
+              padding: "10px 16px",
+              fontSize: "12px",
+              fontWeight: "500",
+              color: "rgba(255, 255, 255, 0.4)",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+            },
+          },
+          I18n.t("setupWizard.videoHelperTest.skip")
+        ),
+        react.createElement(
+          "button",
+          {
+            onClick: onNext,
+            style: {
+              padding: "10px 28px",
+              fontSize: "13px",
+              fontWeight: "600",
+              color: "#000",
+              background: "linear-gradient(135deg, #1db954 0%, #1ed760 100%)",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+            },
+          },
+          I18n.t("setupWizard.navigation.next")
+        )
+      )
+    )
+  );
+};
+
 // Complete step
 const CompleteStep = ({ onStart, onOpenSettings }) => {
   const [showCheck, setShowCheck] = useState(false);
@@ -2057,7 +2788,35 @@ const SetupWizard = ({ onComplete }) => {
   const [overlayEnabled, setOverlayEnabled] = useState(false);
   const [nowPlayingEnabled, setNowPlayingEnabled] = useState(true);
 
-  const totalSteps = 8;
+  // Video test state - whether we need to show helper test step
+  const [showHelperTestStep, setShowHelperTestStep] = useState(false);
+
+  // Video helper enabled state
+  const [videoHelperEnabled, setVideoHelperEnabled] = useState(false);
+
+  // Build dynamic step list based on selected background
+  const getSteps = () => {
+    const baseSteps = [
+      "welcome",
+      "language",
+      "theme",
+    ];
+
+    // If video background is selected, add video test step
+    if (themeSettings.background === "video") {
+      baseSteps.push("videoTest");
+      // If user said login is required, add helper test step
+      if (showHelperTestStep) {
+        baseSteps.push("videoHelperTest");
+      }
+    }
+
+    baseSteps.push("overlay", "nowPlaying", "apiKey", "translationTip", "complete");
+    return baseSteps;
+  };
+
+  const steps = getSteps();
+  const totalSteps = steps.length;
 
   const handleLanguageChange = (langCode) => {
     setSelectedLanguage(langCode);
@@ -2070,6 +2829,10 @@ const SetupWizard = ({ onComplete }) => {
 
   const handleThemeChange = (key, value) => {
     setThemeSettings((prev) => ({ ...prev, [key]: value }));
+    // Reset helper test step state when background changes
+    if (key === "background") {
+      setShowHelperTestStep(false);
+    }
   };
 
   const saveSettings = () => {
@@ -2107,6 +2870,12 @@ const SetupWizard = ({ onComplete }) => {
       } else if (themeSettings.background === "video") {
         StorageManager.saveConfig("video-background", true);
         CONFIG.visual["video-background"] = true;
+      }
+
+      // Save video helper setting (only if video background selected and helper step was shown)
+      if (themeSettings.background === "video" && showHelperTestStep) {
+        StorageManager.saveConfig("video-helper-enabled", videoHelperEnabled);
+        CONFIG.visual["video-helper-enabled"] = videoHelperEnabled;
       }
 
       // Save overlay setting
@@ -2153,39 +2922,79 @@ const SetupWizard = ({ onComplete }) => {
     }
   };
 
+  // Handler for when user needs helper (from VideoTestStep)
+  const handleNeedHelper = () => {
+    setShowHelperTestStep(true);
+    goNext();
+  };
+
+  // Handler to skip video helper steps (user doesn't need login or wants to skip)
+  const handleSkipVideoSteps = () => {
+    // Find the next step after video-related steps
+    const currentStepName = steps[currentStep];
+    if (currentStepName === "videoTest" || currentStepName === "videoHelperTest") {
+      // Find overlay step index
+      const overlayIndex = steps.indexOf("overlay");
+      if (overlayIndex > currentStep) {
+        setCurrentStep(overlayIndex);
+      } else {
+        goNext();
+      }
+    } else {
+      goNext();
+    }
+  };
+
   const renderStep = () => {
-    switch (currentStep) {
-      case 0:
+    const stepName = steps[currentStep];
+
+    switch (stepName) {
+      case "welcome":
         return react.createElement(WelcomeStep, { onNext: goNext });
-      case 1:
+      case "language":
         return react.createElement(LanguageStep, {
           selectedLanguage,
           onLanguageChange: handleLanguageChange,
           onNext: goNext,
           onBack: goBack,
         });
-      case 2:
+      case "theme":
         return react.createElement(ThemeStep, {
           settings: themeSettings,
           onSettingChange: handleThemeChange,
           onNext: goNext,
           onBack: goBack,
         });
-      case 3:
+      case "videoTest":
+        return react.createElement(VideoTestStep, {
+          onNext: goNext,
+          onBack: goBack,
+          onNeedHelper: handleNeedHelper,
+          onSkip: handleSkipVideoSteps,
+        });
+      case "videoHelperTest":
+        return react.createElement(VideoHelperTestStep, {
+          onNext: goNext,
+          onBack: goBack,
+          onSkip: handleSkipVideoSteps,
+          helperEnabled: videoHelperEnabled,
+          onHelperChange: setVideoHelperEnabled,
+        });
+      case "overlay":
         return react.createElement(OverlayTipStep, {
           overlayEnabled,
           onOverlayChange: setOverlayEnabled,
           onNext: goNext,
           onBack: goBack,
         });
-      case 4:
+      case "nowPlaying":
         return react.createElement(NowPlayingTipStep, {
           nowPlayingEnabled,
           onNowPlayingChange: setNowPlayingEnabled,
           onNext: goNext,
           onBack: goBack,
         });
-      case 5:
+      case "apiKey":
         return react.createElement(ApiKeyStep, {
           apiKey,
           onApiKeyChange: setApiKey,
@@ -2193,12 +3002,12 @@ const SetupWizard = ({ onComplete }) => {
           onBack: goBack,
           onSkip: goNext,
         });
-      case 6:
+      case "translationTip":
         return react.createElement(TranslationTipStep, {
           onNext: goNext,
           onBack: goBack,
         });
-      case 7:
+      case "complete":
         return react.createElement(CompleteStep, {
           onStart: () => handleComplete(false),
           onOpenSettings: () => handleComplete(true),

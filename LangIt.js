@@ -1396,6 +1396,28 @@ window.LANG_IT = {
       "next": "Avanti",
       "back": "Indietro",
       "skip": "Salta"
+    },
+    "videoTest": {
+      "title": "Test Sfondo Video",
+      "subtitle": "Verifica se il video YouTube qui sotto viene riprodotto correttamente",
+      "question": "Viene mostrato che è necessario accedere per riprodurre il video?",
+      "yes": "Sì",
+      "no": "No",
+      "helperRequired": "In tal caso, devi installare il programma helper.",
+      "helperDesc": "Il programma helper ti permette di riprodurre video senza accedere a YouTube.",
+      "installHelper": "Installa Programma Helper",
+      "skip": "Salta"
+    },
+    "videoHelperTest": {
+      "title": "Test Programma Helper",
+      "subtitle": "Verifica che il programma helper funzioni correttamente",
+      "enableHelper": "Abilita Programma Helper",
+      "testVideo": "Testa Riproduzione Video",
+      "testing": "Test in corso...",
+      "success": "Il programma helper funziona correttamente!",
+      "failed": "Impossibile connettersi al programma helper. Assicurati che sia in esecuzione.",
+      "downloading": "Download video: {percent}%",
+      "skip": "Salta"
     }
   },
   tmi: {

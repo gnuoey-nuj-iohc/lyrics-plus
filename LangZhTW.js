@@ -1396,6 +1396,28 @@ window.LANG_ZH_TW = {
       "next": "下一步",
       "back": "上一步",
       "skip": "跳過"
+    },
+    "videoTest": {
+      "title": "影片背景測試",
+      "subtitle": "請檢查下方的YouTube影片是否正常播放",
+      "question": "是否顯示需要登入才能播放影片？",
+      "yes": "是",
+      "no": "否",
+      "helperRequired": "如果是，您需要安裝助手程式。",
+      "helperDesc": "助手程式可以讓您無需YouTube登入即可播放影片。",
+      "installHelper": "安裝助手程式",
+      "skip": "跳過"
+    },
+    "videoHelperTest": {
+      "title": "助手程式測試",
+      "subtitle": "驗證助手程式是否正常運作",
+      "enableHelper": "啟用助手程式",
+      "testVideo": "測試影片播放",
+      "testing": "測試中...",
+      "success": "助手程式運作正常！",
+      "failed": "無法連接到助手程式。請確保程式正在執行。",
+      "downloading": "正在下載影片: {percent}%",
+      "skip": "跳過"
     }
   },
   tmi: {

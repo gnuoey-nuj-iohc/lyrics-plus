@@ -1396,6 +1396,28 @@ window.LANG_ES = {
       "next": "Siguiente",
       "back": "Atrás",
       "skip": "Omitir"
+    },
+    "videoTest": {
+      "title": "Prueba de Fondo de Video",
+      "subtitle": "Por favor, verifique si el video de YouTube se reproduce correctamente",
+      "question": "¿Muestra que necesita iniciar sesión para reproducir el video?",
+      "yes": "Sí",
+      "no": "No",
+      "helperRequired": "Si es así, necesita instalar el programa auxiliar.",
+      "helperDesc": "El programa auxiliar le permite reproducir videos sin iniciar sesión en YouTube.",
+      "installHelper": "Instalar Programa Auxiliar",
+      "skip": "Omitir"
+    },
+    "videoHelperTest": {
+      "title": "Prueba del Programa Auxiliar",
+      "subtitle": "Verifique que el programa auxiliar funciona correctamente",
+      "enableHelper": "Activar Programa Auxiliar",
+      "testVideo": "Probar Reproducción de Video",
+      "testing": "Probando...",
+      "success": "¡El programa auxiliar funciona correctamente!",
+      "failed": "No se puede conectar al programa auxiliar. Asegúrese de que esté en ejecución.",
+      "downloading": "Descargando video: {percent}%",
+      "skip": "Omitir"
     }
   },
   tmi: {

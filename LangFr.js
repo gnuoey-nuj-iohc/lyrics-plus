@@ -1396,6 +1396,28 @@ window.LANG_FR = {
       "next": "Suivant",
       "back": "Retour",
       "skip": "Ignorer"
+    },
+    "videoTest": {
+      "title": "Test de fond vidéo",
+      "subtitle": "Veuillez vérifier si la vidéo YouTube ci-dessous se lit correctement",
+      "question": "Indique-t-il que vous devez vous connecter pour lire la vidéo ?",
+      "yes": "Oui",
+      "no": "Non",
+      "helperRequired": "Si oui, vous devez installer le programme d'assistance.",
+      "helperDesc": "Le programme d'assistance permet de lire des vidéos sans connexion YouTube.",
+      "installHelper": "Installer le programme d'assistance",
+      "skip": "Ignorer"
+    },
+    "videoHelperTest": {
+      "title": "Test du programme d'assistance",
+      "subtitle": "Vérifiez que le programme d'assistance fonctionne correctement",
+      "enableHelper": "Activer le programme d'assistance",
+      "testVideo": "Tester la lecture vidéo",
+      "testing": "Test en cours...",
+      "success": "Le programme d'assistance fonctionne correctement !",
+      "failed": "Impossible de se connecter au programme d'assistance. Assurez-vous qu'il est en cours d'exécution.",
+      "downloading": "Téléchargement de la vidéo : {percent}%",
+      "skip": "Ignorer"
     }
   },
   tmi: {

@@ -1405,6 +1405,28 @@ window.LANG_EN = {
       "next": "Next",
       "back": "Back",
       "skip": "Skip"
+    },
+    "videoTest": {
+      "title": "Video Background Test",
+      "subtitle": "Please check if the YouTube video below plays correctly",
+      "question": "Does it say you need to log in to play the video?",
+      "yes": "Yes",
+      "no": "No",
+      "helperRequired": "If so, you need to install the helper program.",
+      "helperDesc": "The helper program allows you to play videos without YouTube login.",
+      "installHelper": "Install Helper Program",
+      "skip": "Skip"
+    },
+    "videoHelperTest": {
+      "title": "Helper Program Test",
+      "subtitle": "Verify that the helper program works correctly",
+      "enableHelper": "Enable Helper Program",
+      "testVideo": "Test Video Playback",
+      "testing": "Testing...",
+      "success": "Helper program is working correctly!",
+      "failed": "Cannot connect to helper program. Make sure it's running.",
+      "downloading": "Downloading video: {percent}%",
+      "skip": "Skip"
     }
   },
   tmi: {

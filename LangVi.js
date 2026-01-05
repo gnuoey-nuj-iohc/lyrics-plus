@@ -1400,6 +1400,28 @@ window.LANG_VI = {
       "next": "Tiếp theo",
       "back": "Quay lại",
       "skip": "Bỏ qua"
+    },
+    "videoTest": {
+      "title": "Kiểm tra nền video",
+      "subtitle": "Vui lòng kiểm tra xem video YouTube bên dưới có phát đúng không",
+      "question": "Có hiển thị rằng bạn cần đăng nhập để phát video không?",
+      "yes": "Có",
+      "no": "Không",
+      "helperRequired": "Nếu có, bạn cần cài đặt chương trình hỗ trợ.",
+      "helperDesc": "Chương trình hỗ trợ cho phép bạn phát video mà không cần đăng nhập YouTube.",
+      "installHelper": "Cài đặt chương trình hỗ trợ",
+      "skip": "Bỏ qua"
+    },
+    "videoHelperTest": {
+      "title": "Kiểm tra chương trình hỗ trợ",
+      "subtitle": "Xác minh rằng chương trình hỗ trợ hoạt động đúng",
+      "enableHelper": "Bật chương trình hỗ trợ",
+      "testVideo": "Kiểm tra phát video",
+      "testing": "Đang kiểm tra...",
+      "success": "Chương trình hỗ trợ hoạt động đúng!",
+      "failed": "Không thể kết nối với chương trình hỗ trợ. Đảm bảo nó đang chạy.",
+      "downloading": "Đang tải video: {percent}%",
+      "skip": "Bỏ qua"
     }
   },
   tmi: {

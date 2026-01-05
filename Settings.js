@@ -1448,8 +1448,8 @@ const VideoHelperToggle = ({ name, defaultValue, disabled, onChange = () => { } 
       if (typeof VideoHelperService === "undefined") return;
 
       // 설정 탭이 보이는지 확인 (visibility check)
-      const settingsTab = document.querySelector('.ivlyrics-settings');
-      if (!settingsTab || settingsTab.offsetParent === null) return;
+      const settingsTab = document.querySelector('#ivLyrics-config-container') || document.querySelector('#ivLyrics-settings-overlay');
+      if (!settingsTab) return;
 
       setChecking(true);
       const connected = await VideoHelperService.checkHealth();

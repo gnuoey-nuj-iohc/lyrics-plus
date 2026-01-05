@@ -1396,6 +1396,28 @@ window.LANG_DE = {
       "next": "Weiter",
       "back": "Zurück",
       "skip": "Überspringen"
+    },
+    "videoTest": {
+      "title": "Video-Hintergrund-Test",
+      "subtitle": "Bitte überprüfen Sie, ob das YouTube-Video unten korrekt abgespielt wird",
+      "question": "Wird angezeigt, dass Sie sich anmelden müssen, um das Video abzuspielen?",
+      "yes": "Ja",
+      "no": "Nein",
+      "helperRequired": "Wenn ja, müssen Sie das Hilfsprogramm installieren.",
+      "helperDesc": "Das Hilfsprogramm ermöglicht die Videowiedergabe ohne YouTube-Anmeldung.",
+      "installHelper": "Hilfsprogramm installieren",
+      "skip": "Überspringen"
+    },
+    "videoHelperTest": {
+      "title": "Hilfsprogramm-Test",
+      "subtitle": "Überprüfen Sie, ob das Hilfsprogramm korrekt funktioniert",
+      "enableHelper": "Hilfsprogramm aktivieren",
+      "testVideo": "Videowiedergabe testen",
+      "testing": "Teste...",
+      "success": "Das Hilfsprogramm funktioniert korrekt!",
+      "failed": "Verbindung zum Hilfsprogramm nicht möglich. Stellen Sie sicher, dass es läuft.",
+      "downloading": "Video wird heruntergeladen: {percent}%",
+      "skip": "Überspringen"
     }
   },
   tmi: {

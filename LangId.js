@@ -1372,6 +1372,28 @@ window.LANG_ID = {
       "next": "Lanjut",
       "back": "Kembali",
       "skip": "Lewati"
+    },
+    "videoTest": {
+      "title": "Uji Latar Belakang Video",
+      "subtitle": "Silakan periksa apakah video YouTube di bawah diputar dengan benar",
+      "question": "Apakah menampilkan bahwa Anda perlu masuk untuk memutar video?",
+      "yes": "Ya",
+      "no": "Tidak",
+      "helperRequired": "Jika ya, Anda perlu menginstal program pembantu.",
+      "helperDesc": "Program pembantu memungkinkan Anda memutar video tanpa login YouTube.",
+      "installHelper": "Instal Program Pembantu",
+      "skip": "Lewati"
+    },
+    "videoHelperTest": {
+      "title": "Uji Program Pembantu",
+      "subtitle": "Verifikasi bahwa program pembantu berfungsi dengan benar",
+      "enableHelper": "Aktifkan Program Pembantu",
+      "testVideo": "Uji Pemutaran Video",
+      "testing": "Menguji...",
+      "success": "Program pembantu berfungsi dengan benar!",
+      "failed": "Tidak dapat terhubung ke program pembantu. Pastikan program sedang berjalan.",
+      "downloading": "Mengunduh video: {percent}%",
+      "skip": "Lewati"
     }
   },
   tmi: {

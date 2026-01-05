@@ -1396,6 +1396,28 @@ window.LANG_PT = {
       "next": "Próximo",
       "back": "Voltar",
       "skip": "Pular"
+    },
+    "videoTest": {
+      "title": "Teste de Fundo de Vídeo",
+      "subtitle": "Por favor, verifique se o vídeo do YouTube abaixo reproduz corretamente",
+      "question": "Mostra que é necessário fazer login para reproduzir o vídeo?",
+      "yes": "Sim",
+      "no": "Não",
+      "helperRequired": "Se sim, você precisa instalar o programa auxiliar.",
+      "helperDesc": "O programa auxiliar permite reproduzir vídeos sem fazer login no YouTube.",
+      "installHelper": "Instalar Programa Auxiliar",
+      "skip": "Pular"
+    },
+    "videoHelperTest": {
+      "title": "Teste do Programa Auxiliar",
+      "subtitle": "Verifique se o programa auxiliar funciona corretamente",
+      "enableHelper": "Ativar Programa Auxiliar",
+      "testVideo": "Testar Reprodução de Vídeo",
+      "testing": "Testando...",
+      "success": "O programa auxiliar está funcionando corretamente!",
+      "failed": "Não foi possível conectar ao programa auxiliar. Certifique-se de que está em execução.",
+      "downloading": "Baixando vídeo: {percent}%",
+      "skip": "Pular"
     }
   },
   tmi: {

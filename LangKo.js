@@ -1405,6 +1405,28 @@ window.LANG_KO = {
       "next": "다음",
       "back": "이전",
       "skip": "건너뛰기"
+    },
+    "videoTest": {
+      "title": "동영상 배경 테스트",
+      "subtitle": "아래 YouTube 영상이 정상적으로 재생되는지 확인해주세요",
+      "question": "혹시 영상을 재생하려면 로그인이 필요하다고 표시되나요?",
+      "yes": "네",
+      "no": "아니요",
+      "helperRequired": "그렇다면, 헬퍼 프로그램을 설치하셔야 합니다.",
+      "helperDesc": "헬퍼 프로그램은 YouTube 로그인 없이 동영상을 재생할 수 있게 해줍니다.",
+      "installHelper": "헬퍼 프로그램 설치하기",
+      "skip": "건너뛰기"
+    },
+    "videoHelperTest": {
+      "title": "헬퍼 프로그램 테스트",
+      "subtitle": "헬퍼 프로그램이 올바르게 작동하는지 확인합니다",
+      "enableHelper": "헬퍼 프로그램 활성화",
+      "testVideo": "테스트 영상 재생",
+      "testing": "테스트 중...",
+      "success": "헬퍼 프로그램이 정상적으로 작동합니다!",
+      "failed": "헬퍼 프로그램에 연결할 수 없습니다. 프로그램이 실행 중인지 확인해주세요.",
+      "downloading": "영상 다운로드 중: {percent}%",
+      "skip": "건너뛰기"
     }
   },
   tmi: {

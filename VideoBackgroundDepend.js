@@ -428,7 +428,7 @@
         if (!iframe || iframe.__ytAdBlockSanitized) return;
         const currentSrc = iframe.getAttribute("src");
         if (!currentSrc) return;
-        if (!/youtube\.|youtu\.be/i.test(currentSrc)) return;
+        if (!/youtu(be\.com|\.be|be-nocookie\.com|be\.googleapis\.com)/i.test(currentSrc)) return;
         const sanitizedSrc = sanitizeYoutubeSrc(currentSrc);
         if (sanitizedSrc && sanitizedSrc !== currentSrc) {
             iframe.setAttribute("src", sanitizedSrc);
