@@ -23,9 +23,11 @@ Spicetify용 가사 확장 프로그램입니다. Google Gemini API를 활용하
 ## 주요 기능
 
 ### 가사 번역 및 발음 표기
-- Google Gemini API를 통한 실시간 가사 번역
+- Google Gemini API 및 Perplexity API를 통한 실시간 가사 번역
 - 일본어, 한국어, 중국어 등 다양한 언어의 로마자 발음 표기 지원
 - 일본어 가사에 후리가나(ふりがな) 표시 기능
+- API 키 로테이션 지원 (여러 API 키를 순환 사용)
+- Perplexity API 실패 시 Gemini API로 자동 전환
 
 ### 사용자 인터페이스
 - 노래방 스타일 가사 표시 (단어별 하이라이트)
@@ -121,8 +123,10 @@ curl -fsSL https://ivlis.kr/ivLyrics/install.sh | sh
 
 1. Spotify를 실행하고 좌측 메뉴에서 ivLyrics를 선택합니다.
 2. 우측 하단의 설정 버튼을 클릭합니다.
-3. 고급 탭에서 Gemini API 키를 입력합니다.
-   - API 키는 [Google AI Studio](https://aistudio.google.com/apikey?hl=ko)에서 무료로 발급받을 수 있습니다.
+3. 고급 탭에서 API 키를 입력합니다:
+   - **Gemini API 키**: [Google AI Studio](https://aistudio.google.com/apikey?hl=ko)에서 무료로 발급받을 수 있습니다.
+   - **Perplexity API 키** (선택사항): [Perplexity AI](https://www.perplexity.ai/)에서 발급받을 수 있습니다. Perplexity API 키가 있으면 먼저 사용하고, 실패 시 Gemini API로 자동 전환됩니다.
+   - 여러 API 키를 JSON 배열 형식으로 입력하면 자동으로 로테이션됩니다. 예: `["key1", "key2", "key3"]`
 4. 음악을 재생하고 가사 영역에 마우스를 올리면 나타나는 변환 버튼을 클릭하여 번역/발음 모드를 활성화합니다.
 
 ---
@@ -141,7 +145,8 @@ curl -fsSL https://ivlis.kr/ivLyrics/install.sh | sh
 ### 자주 발생하는 문제
 
 - **가사가 표시되지 않음**: 설정에서 가사 제공자가 활성화되어 있는지 확인하세요.
-- **번역이 작동하지 않음**: Gemini API 키가 올바르게 입력되었는지 확인하세요.
+- **번역이 작동하지 않음**: Gemini API 키 또는 Perplexity API 키가 올바르게 입력되었는지 확인하세요.
+- **일본어 발음 표기가 한 줄씩 밀림**: 최신 버전으로 업데이트하세요. 이 문제는 수정되었습니다.
 - **Spotify가 실행되지 않음**: `spicetify restore` 후 `spicetify apply`를 다시 실행하세요.
 
 ---

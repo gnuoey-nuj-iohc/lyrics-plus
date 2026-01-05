@@ -2411,6 +2411,14 @@ const ConfigModal = () => {
       desc: I18n.t("menu.apiSettings"),
       keywords: ["gemini", "api", "키", "key", "번역", "translation", "ai"]
     },
+    {
+      section: I18n.t("tabs.providers"),
+      sectionKey: "translation",
+      settingKey: "perplexity-api",
+      name: "Perplexity API",
+      desc: I18n.t("menu.apiSettings"),
+      keywords: ["perplexity", "api", "키", "key", "번역", "translation", "ai"]
+    },
 
     // 전체화면 탭
     {
@@ -5674,6 +5682,12 @@ const ConfigModal = () => {
               desc: I18n.t("settingsAdvanced.api.geminiKey.desc"),
               info: I18n.t("settingsAdvanced.api.geminiKey.info"),
               key: "gemini-api-key",
+              type: ConfigKeyList,
+            },
+            {
+              desc: "Perplexity API Key",
+              info: "Perplexity API 키를 입력하세요. https://www.perplexity.ai/에서 발급받을 수 있습니다.",
+              key: "perplexity-api-key",
               type: ConfigKeyList,
             },
 

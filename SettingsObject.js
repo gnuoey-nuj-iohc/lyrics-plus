@@ -88,6 +88,7 @@ const SettingKeys = [
   "ivLyrics:visual:translation-mode-2:gemini",
   "ivLyrics:visual:gemini-api-key",
   "ivLyrics:visual:gemini-api-key-romaji",
+  "ivLyrics:visual:perplexity-api-key",
   "ivLyrics:visual:translate",
   "ivLyrics:visual:furigana-enabled",
   "ivLyrics:visual:ja-detect-threshold",

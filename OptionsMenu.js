@@ -594,6 +594,10 @@ const getStaticOptions = () => ({
     gemini_romaji: I18n.t("translationMenu.geminiRomaji"),
     gemini_ko: I18n.t("translationMenu.geminiKo"),
   },
+  perplexityModes: {
+    perplexity_romaji: "Perplexity Romaji/Romaja/Pinyin",
+    perplexity_ko: "Perplexity Korean",
+  },
   languageModes: {
     japanese: {
       furigana: I18n.t("translationMenu.furigana"),

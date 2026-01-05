@@ -2533,6 +2533,263 @@
             return requestPromise;
         }
 
+        static async callPerplexity({
+            trackId,
+            artist,
+            title,
+            text,
+            wantSmartPhonetic = false,
+            provider = null,
+            ignoreCache = false,
+        }) {
+            if (!text?.trim()) throw new Error("No text provided for translation");
+
+            const apiKeyRaw = getStorageItem("ivLyrics:visual:perplexity-api-key");
+            let apiKeys = [];
+
+            try {
+                if (apiKeyRaw) {
+                    const trimmed = apiKeyRaw.trim();
+                    if (trimmed.startsWith('[')) {
+                        const parsed = JSON.parse(trimmed);
+                        if (Array.isArray(parsed)) {
+                            apiKeys = parsed;
+                        } else {
+                            apiKeys = [trimmed];
+                        }
+                    } else {
+                        apiKeys = [trimmed];
+                    }
+                }
+            } catch (e) {
+                console.warn("Failed to parse Perplexity API keys:", e);
+                apiKeys = [apiKeyRaw];
+            }
+
+            apiKeys = apiKeys.filter(k => k && k.trim().length > 0);
+
+            if (apiKeys.length === 0) {
+                throw new Error(getTranslatorErrorMessage("translator.missingApiKey", "Perplexity API key is required"));
+            }
+
+            let finalTrackId = trackId;
+            if (!finalTrackId) {
+                finalTrackId = Spicetify.Player.data?.item?.uri?.split(':')[2];
+            }
+            if (!finalTrackId) {
+                throw new Error("No track ID available");
+            }
+
+            const userLang = getCurrentLanguage();
+
+            if (!ignoreCache) {
+                try {
+                    const localCached = await LyricsCache.getTranslation(finalTrackId, userLang, wantSmartPhonetic, provider);
+                    if (localCached) {
+                        if (window.ApiTracker) {
+                            window.ApiTracker.logCacheHit(
+                                wantSmartPhonetic ? 'phonetic' : 'translation',
+                                `${finalTrackId}:${userLang}:perplexity`,
+                                { lineCount: localCached.phonetic?.length || localCached.translation?.length || 0 }
+                            );
+                        }
+                        return localCached;
+                    }
+                } catch (e) {
+                    console.warn('[Translator] Local cache check failed:', e);
+                }
+            }
+
+            const requestKey = `perplexity:${getTranslatorRequestKey(finalTrackId, wantSmartPhonetic, userLang)}`;
+
+            if (!ignoreCache && _translatorInflightRequests.has(requestKey)) {
+                return _translatorInflightRequests.get(requestKey);
+            }
+
+            const executeRequest = async (currentApiKey) => {
+                const url = "https://api.perplexity.ai/chat/completions";
+
+                const category = wantSmartPhonetic ? 'phonetic' : 'translation';
+                let logId = null;
+                if (window.ApiTracker) {
+                    logId = window.ApiTracker.logRequest(category, url, {
+                        trackId: finalTrackId,
+                        artist,
+                        title,
+                        lang: userLang,
+                        wantSmartPhonetic,
+                        textLength: text?.length || 0
+                    });
+                }
+
+                // Construct prompt based on mode
+                let systemPrompt, userPrompt;
+                if (wantSmartPhonetic) {
+                    systemPrompt = "You are a pronunciation assistant. Convert the given lyrics to phonetic notation (Romaji for Japanese, Romaja for Korean, Pinyin for Chinese). Return ONLY the phonetic notation, line by line, matching the original structure. Do not include any explanations or additional text.";
+                    userPrompt = `Convert these lyrics to phonetic notation:\n\n${text}`;
+                } else {
+                    systemPrompt = `You are a translation assistant. Translate the given lyrics to ${userLang === 'ko' ? 'Korean' : userLang === 'en' ? 'English' : userLang}. Return ONLY the translated lyrics, line by line, matching the original structure. Do not include any explanations or additional text.`;
+                    userPrompt = `Translate these lyrics to ${userLang === 'ko' ? 'Korean' : userLang === 'en' ? 'English' : userLang}:\n\n${text}`;
+                }
+
+                // Perplexity API model
+                // Available models: sonar, sonar-small, sonar-pro, llama-3.1-sonar-large-128k-online
+                // Using 'sonar' as default (most reliable)
+                const body = {
+                    model: "sonar",
+                    messages: [
+                        { role: "system", content: systemPrompt },
+                        { role: "user", content: userPrompt }
+                    ],
+                    temperature: 0.3,
+                    max_tokens: 4096
+                };
+
+                // Log request for debugging
+                console.log("[Perplexity] Request:", {
+                    model: body.model,
+                    messageCount: body.messages.length,
+                    textLength: text?.length || 0,
+                    wantSmartPhonetic
+                });
+
+                const tryFetch = async (url) => {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 80000);
+
+                    try {
+                        const res = await fetch(url, {
+                            method: "POST",
+                            headers: {
+                                "Authorization": `Bearer ${currentApiKey}`,
+                                "Content-Type": "application/json",
+                                Accept: "application/json",
+                            },
+                            body: JSON.stringify(body),
+                            signal: controller.signal,
+                            mode: "cors",
+                        });
+
+                        clearTimeout(timeoutId);
+                        return res;
+                    } catch (error) {
+                        clearTimeout(timeoutId);
+                        throw error;
+                    }
+                };
+
+                try {
+                    const res = await tryFetch(url);
+
+                    if (!res || !res.ok) {
+                        if (res) {
+                            let errorData;
+                            try {
+                                const responseText = await res.text();
+                                errorData = JSON.parse(responseText);
+                            } catch (e) {
+                                errorData = { message: `HTTP ${res.status}: ${res.statusText}` };
+                            }
+
+                            console.error("[Perplexity] API Error:", {
+                                status: res.status,
+                                statusText: res.statusText,
+                                errorData: errorData
+                            });
+
+                            if (res.status === 400) {
+                                const errorMsg = errorData.error?.message || errorData.message || "Bad Request";
+                                throw new Error(`400 Bad Request: ${errorMsg}. API 키나 요청 형식을 확인해주세요.`);
+                            }
+                            if (res.status === 429) throw new Error("429 Rate Limit Exceeded");
+                            if (res.status === 403) throw new Error("403 Forbidden");
+                            if (errorData.error && errorData.message) throw new Error(errorData.message);
+                            throw new Error(`HTTP ${res.status}: ${errorData.message || res.statusText}`);
+                        }
+
+                        throw new Error("Request failed");
+                    }
+
+                    const data = await res.json();
+
+                    if (data.error) {
+                        const errorStr = typeof data.error === 'string' ? data.error : (data.message || JSON.stringify(data.error));
+                        const isRateLimitError = errorStr.includes('429') || errorStr.includes('rate_limit');
+                        const isForbiddenError = errorStr.includes('403') || errorStr.includes('Forbidden');
+
+                        if (isRateLimitError) throw new Error(`429 Rate Limit: ${errorStr}`);
+                        if (isForbiddenError) throw new Error(`403 Forbidden: ${errorStr}`);
+                        throw new Error(data.message || "Translation failed");
+                    }
+
+                    // Extract content from Perplexity response
+                    const content = data.choices?.[0]?.message?.content;
+                    if (!content) {
+                        throw new Error("No content in Perplexity response");
+                    }
+
+                    // Parse the response into lines
+                    const lines = content.split('\n').filter(line => line.trim() !== '');
+
+                    // Format response to match Gemini format
+                    const result = {
+                        translation: wantSmartPhonetic ? undefined : lines,
+                        phonetic: wantSmartPhonetic ? lines : undefined,
+                        vi: wantSmartPhonetic ? undefined : lines
+                    };
+
+                    if (window.ApiTracker && logId) {
+                        window.ApiTracker.logResponse(logId, {
+                            lineCount: lines.length,
+                            cached: false
+                        }, 'success');
+                    }
+
+                    LyricsCache.setTranslation(finalTrackId, userLang, wantSmartPhonetic, result, provider).catch(() => { });
+
+                    return result;
+                } catch (error) {
+                    if (window.ApiTracker && logId) {
+                        window.ApiTracker.logResponse(logId, null, 'error', error.message);
+                    }
+                    throw error;
+                }
+            };
+
+            const runWithRotation = async () => {
+                let lastError;
+                for (let i = 0; i < apiKeys.length; i++) {
+                    const key = apiKeys[i];
+                    try {
+                        return await executeRequest(key);
+                    } catch (error) {
+                        lastError = error;
+                        const isRateLimit = error.message.includes("429") || error.message.includes("Rate Limit");
+                        const isForbidden = error.message.includes("403") || error.message.includes("Forbidden");
+
+                        if (isRateLimit || isForbidden) {
+                            console.warn(`[Translator] Perplexity API Key ${key.substring(0, 8)}... failed. Rotating...`);
+                            if (i === apiKeys.length - 1) break;
+                            continue;
+                        }
+
+                        throw error;
+                    }
+                }
+                throw new Error(`Translation failed: ${lastError ? lastError.message : "All keys failed"}`);
+            };
+
+            const requestPromise = runWithRotation().finally(() => {
+                _translatorInflightRequests.delete(requestKey);
+            });
+
+            if (!ignoreCache) {
+                _translatorInflightRequests.set(requestKey, requestPromise);
+            }
+
+            return requestPromise;
+        }
+
         includeExternal(url) {
             return new Promise((resolve, reject) => {
                 const existingScript = document.querySelector(`script[src="${url}"]`);

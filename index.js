@@ -805,7 +805,7 @@ const StorageManager = {
   // Unified config save method to reduce duplication
   saveConfig(name, value) {
     saveStorageKeys(`${APP_NAME}:visual:${name}`);
-    if (name === "gemini-api-key" || name === "gemini-api-key-romaji") {
+    if (name === "gemini-api-key" || name === "gemini-api-key-romaji" || name === "perplexity-api-key") {
       // Save sensitive keys to both storages for persistence
       this.setPersisted(`${APP_NAME}:visual:${name}`, value);
     } else if (name === "language") {
@@ -1191,6 +1191,8 @@ const CONFIG = {
     "gemini-api-key-romaji":
       StorageManager.getPersisted("ivLyrics:visual:gemini-api-key-romaji") ||
       "",
+    "perplexity-api-key":
+      StorageManager.getPersisted("ivLyrics:visual:perplexity-api-key") || "",
     translate: StorageManager.get("ivLyrics:visual:translate", false),
     "furigana-enabled": StorageManager.get(
       "ivLyrics:visual:furigana-enabled",
@@ -1860,17 +1862,38 @@ const Prefetcher = {
 
     if (!text.trim()) return;
 
-    // 발음이 필요한지, 번역이 필요한지 확인
-    const needPhonetic = displayMode1 === "gemini_romaji" || displayMode2 === "gemini_romaji";
-    const needTranslation = (displayMode1 && displayMode1 !== "none" && displayMode1 !== "gemini_romaji") ||
-      (displayMode2 && displayMode2 !== "none" && displayMode2 !== "gemini_romaji");
+        // 발음이 필요한지, 번역이 필요한지 확인
+        const needPhonetic = displayMode1 === "gemini_romaji" || displayMode2 === "gemini_romaji";
+        const needTranslation = (displayMode1 && displayMode1 !== "none" && displayMode1 !== "gemini_romaji") ||
+          (displayMode2 && displayMode2 !== "none" && displayMode2 !== "gemini_romaji");
 
-    const prefetchPromise = (async () => {
-      try {
-        console.log(`[Prefetcher] Fetching translation for: ${trackInfo.title} (phonetic: ${needPhonetic}, translation: ${needTranslation})`);
+        // Check if Perplexity API key is available
+        const perplexityApiKey = StorageManager.getPersisted(
+          `${APP_NAME}:visual:perplexity-api-key`
+        );
+        let hasPerplexityKey = false;
+        if (perplexityApiKey) {
+          const trimmed = perplexityApiKey.trim();
+          if (trimmed.length > 0) {
+            if (trimmed.startsWith('[')) {
+              try {
+                const parsed = JSON.parse(trimmed);
+                hasPerplexityKey = Array.isArray(parsed) && parsed.length > 0 && parsed.some(k => k && k.trim().length > 0);
+              } catch (e) {
+                hasPerplexityKey = true;
+              }
+            } else {
+              hasPerplexityKey = true;
+            }
+          }
+        }
 
-        // CacheManager에도 저장 (getGeminiTranslation에서 사용)
-        const processTranslationResult = (outText) => {
+        const prefetchPromise = (async () => {
+          try {
+            console.log(`[Prefetcher] Fetching translation for: ${trackInfo.title} (phonetic: ${needPhonetic}, translation: ${needTranslation}, usingPerplexity: ${hasPerplexityKey})`);
+
+            // CacheManager에도 저장 (getGeminiTranslation에서 사용)
+            const processTranslationResult = (outText) => {
           if (!outText) return null;
 
           let lines;
@@ -1913,15 +1936,25 @@ const Prefetcher = {
         // 발음 요청 (wantSmartPhonetic = true)
         if (needPhonetic) {
           try {
-            const phoneticResponse = await window.Translator.callGemini({
-              trackId,
-              artist: trackInfo.artist,
-              title: trackInfo.title,
-              text,
-              wantSmartPhonetic: true,
-              provider: lyrics.provider,
-              ignoreCache: false,
-            });
+            const phoneticResponse = hasPerplexityKey
+              ? await window.Translator.callPerplexity({
+                  trackId,
+                  artist: trackInfo.artist,
+                  title: trackInfo.title,
+                  text,
+                  wantSmartPhonetic: true,
+                  provider: lyrics.provider,
+                  ignoreCache: false,
+                })
+              : await window.Translator.callGemini({
+                  trackId,
+                  artist: trackInfo.artist,
+                  title: trackInfo.title,
+                  text,
+                  wantSmartPhonetic: true,
+                  provider: lyrics.provider,
+                  ignoreCache: false,
+                });
 
             if (phoneticResponse.phonetic) {
               const mapped = processTranslationResult(phoneticResponse.phonetic);
@@ -1938,15 +1971,25 @@ const Prefetcher = {
         // 번역 요청 (wantSmartPhonetic = false)
         if (needTranslation) {
           try {
-            const translationResponse = await window.Translator.callGemini({
-              trackId,
-              artist: trackInfo.artist,
-              title: trackInfo.title,
-              text,
-              wantSmartPhonetic: false,
-              provider: lyrics.provider,
-              ignoreCache: false,
-            });
+            const translationResponse = hasPerplexityKey
+              ? await window.Translator.callPerplexity({
+                  trackId,
+                  artist: trackInfo.artist,
+                  title: trackInfo.title,
+                  text,
+                  wantSmartPhonetic: false,
+                  provider: lyrics.provider,
+                  ignoreCache: false,
+                })
+              : await window.Translator.callGemini({
+                  trackId,
+                  artist: trackInfo.artist,
+                  title: trackInfo.title,
+                  text,
+                  wantSmartPhonetic: false,
+                  provider: lyrics.provider,
+                  ignoreCache: false,
+                });
 
             if (translationResponse.vi) {
               const mapped = processTranslationResult(translationResponse.vi);
@@ -2827,6 +2870,7 @@ class LyricsContainer extends react.Component {
       // Reset per-track progressive results and inflight maps
       this._dmResults = {};
       this._inflightGemini = new Map();
+      this._inflightPerplexity = new Map();
       this.lastCleanedUri = currentUri;
     }
 
@@ -2866,12 +2910,56 @@ class LyricsContainer extends react.Component {
       console.log("[processMode] Processing mode:", mode);
       try {
         if (String(mode).startsWith("gemini")) {
+          // Check if Perplexity API key is available - use it instead of Gemini if available
+          const perplexityApiKey = StorageManager.getPersisted(
+            `${APP_NAME}:visual:perplexity-api-key`
+          );
+          
+          let hasPerplexityKey = false;
+          if (perplexityApiKey) {
+            const trimmed = perplexityApiKey.trim();
+            if (trimmed.length > 0) {
+              if (trimmed.startsWith('[')) {
+                try {
+                  const parsed = JSON.parse(trimmed);
+                  hasPerplexityKey = Array.isArray(parsed) && parsed.length > 0 && parsed.some(k => k && k.trim().length > 0);
+                } catch (e) {
+                  hasPerplexityKey = true;
+                }
+              } else {
+                hasPerplexityKey = true;
+              }
+            }
+          }
+          
+          // If Perplexity API key is available, use Perplexity instead of Gemini
+          if (hasPerplexityKey) {
+            const perplexityMode = mode === "gemini_romaji" ? "perplexity_romaji" : "perplexity_ko";
+            console.log(`[processMode] Perplexity API key found, using Perplexity instead of Gemini (${mode} -> ${perplexityMode})`);
+            const result = await this.getPerplexityTranslation(
+              lyricsState,
+              baseLyrics,
+              perplexityMode
+            );
+            console.log("[processMode] Perplexity result sample:", result?.[0]);
+            return result;
+          }
+          
+          // No Perplexity key, use Gemini as originally intended
           const result = await this.getGeminiTranslation(
             lyricsState,
             baseLyrics,
             mode
           );
           console.log("[processMode] Gemini result sample:", result?.[0]);
+          return result;
+        } else if (String(mode).startsWith("perplexity")) {
+          const result = await this.getPerplexityTranslation(
+            lyricsState,
+            baseLyrics,
+            mode
+          );
+          console.log("[processMode] Perplexity result sample:", result?.[0]);
           return result;
         } else {
           return await this.getTraditionalConversion(
@@ -2882,10 +2970,18 @@ class LyricsContainer extends react.Component {
           );
         }
       } catch (error) {
-        const modeDisplayName =
-          mode === "gemini_romaji"
+        let modeDisplayName;
+        if (String(mode).startsWith("perplexity")) {
+          modeDisplayName = mode === "perplexity_romaji"
             ? I18n.t("notifications.romajiTranslationFailed")
             : I18n.t("notifications.koreanTranslationFailed");
+        } else if (String(mode).startsWith("gemini")) {
+          modeDisplayName = mode === "gemini_romaji"
+            ? I18n.t("notifications.romajiTranslationFailed")
+            : I18n.t("notifications.koreanTranslationFailed");
+        } else {
+          modeDisplayName = I18n.t("notifications.translationFailed");
+        }
         Toast.error(`${modeDisplayName}: ${error.message || "Unknown error"}`);
         return null; // Return null on failure
       }
@@ -3515,6 +3611,256 @@ class LyricsContainer extends react.Component {
     });
   }
 
+  getPerplexityTranslation(lyricsState, lyrics, mode) {
+    return new Promise((resolve, reject) => {
+      const apiKeyRaw = StorageManager.getPersisted(
+        `${APP_NAME}:visual:perplexity-api-key`
+      );
+
+      // Check if API key exists and is not empty
+      let hasApiKey = false;
+      if (apiKeyRaw) {
+        const trimmed = apiKeyRaw.trim();
+        if (trimmed.length > 0) {
+          // Check if it's a JSON array format
+          if (trimmed.startsWith('[')) {
+            try {
+              const parsed = JSON.parse(trimmed);
+              hasApiKey = Array.isArray(parsed) && parsed.length > 0 && parsed.some(k => k && k.trim().length > 0);
+            } catch (e) {
+              // Not valid JSON, treat as single key
+              hasApiKey = true;
+            }
+          } else {
+            hasApiKey = true;
+          }
+        }
+      }
+
+      if (!hasApiKey || !Array.isArray(lyrics) || lyrics.length === 0) {
+        return reject(
+          new Error(
+            "Perplexity API key missing. Please add your API key in Settings."
+          )
+        );
+      }
+
+      const cacheKey = mode;
+      const providerKey = lyricsState.provider || '';
+      const cacheKey2 = `${lyricsState.uri}:${providerKey}:${cacheKey}`;
+      const cached = CacheManager.get(cacheKey2);
+
+      if (cached) {
+        return resolve(cached);
+      }
+
+      // De-duplicate concurrent calls per (uri, type). Share the same promise for callers
+      const inflightKey = `${lyricsState.uri}:${providerKey}:${cacheKey}`;
+      if (this._inflightPerplexity?.has(inflightKey)) {
+        return this._inflightPerplexity
+          .get(inflightKey)
+          .then(resolve)
+          .catch(reject);
+      }
+
+      // Use optimized rate limiter
+      const rateLimitKey = mode.replace("perplexity_", "perplexity-");
+      if (!RateLimiter.canMakeCall(rateLimitKey, 5, 2000)) {
+        const modeName =
+          mode === "perplexity_romaji" ? "Romaji, Romaja, Pinyin" : "Korean";
+        return reject(
+          new Error(
+            I18n.t("notifications.tooManyTranslationRequests")
+          )
+        );
+      }
+
+      // Filter out section headers before sending to Perplexity for translation
+      const allLines = lyrics.map((l) => l?.text || "").filter(Boolean);
+      const nonSectionLines = allLines.filter(
+        (line) => !Utils.isSectionHeader(line)
+      );
+      const text = nonSectionLines.join("\n");
+
+      const wantSmartPhonetic = mode === "perplexity_romaji";
+
+      // Start appropriate loading indicator based on mode type
+      if (wantSmartPhonetic) {
+        this.startPhoneticLoading();
+      } else {
+        this.startTranslationLoading();
+      }
+
+      const processTranslationResult = (outText) => {
+        if (!outText) throw new Error("Empty result from translation.");
+
+        // Handle both array and string formats
+        let lines;
+        if (Array.isArray(outText)) {
+          lines = outText;
+        } else if (typeof outText === "string") {
+          lines = outText.split("\n");
+        } else {
+          throw new Error("Invalid translation format received.");
+        }
+
+        // Create mapping arrays for proper alignment
+        const originalNonSectionLines = [];
+        const originalNonSectionIndices = [];
+
+        // Collect non-section lines from original lyrics (excluding empty lines)
+        lyrics.forEach((line, i) => {
+          const text = line?.text || "";
+          if (!Utils.isSectionHeader(text) && text.trim() !== "") {
+            originalNonSectionLines.push(text);
+            originalNonSectionIndices.push(i);
+          }
+        });
+
+        // Filter out section headers and empty lines from translation results
+        const cleanTranslationLines = lines.filter(
+          (line) =>
+            line && line.trim() !== "" && !Utils.isSectionHeader(line.trim())
+        );
+
+        // Use the clean translation lines for mapping
+        lines = cleanTranslationLines;
+
+        // Smart mapping that accounts for section headers and empty lines
+        const mapped = lyrics.map((line, i) => {
+          const originalText = line?.text || "";
+
+          // If this is a section header, keep original and don't show translation
+          if (Utils.isSectionHeader(originalText)) {
+            return {
+              ...line,
+              text: null,
+              originalText: originalText,
+            };
+          }
+
+          // If this is an empty line, keep it empty
+          if (originalText.trim() === "") {
+            return {
+              ...line,
+              text: "",
+              originalText: originalText,
+            };
+          }
+
+          // Find the translation index for this non-section, non-empty line
+          const positionInNonSectionLines =
+            originalNonSectionIndices.indexOf(i);
+          const translatedText =
+            lines[positionInNonSectionLines]?.trim() || "";
+
+          return {
+            ...line,
+            text: translatedText || line?.text || "",
+            originalText: originalText,
+          };
+        });
+        CacheManager.set(cacheKey2, mapped);
+        return mapped;
+      };
+
+      // Try Perplexity first, fallback to Gemini on failure
+      const inflightPromise = window.Translator.callPerplexity({
+        artist: this.state.artist || lyricsState.artist,
+        title: this.state.title || lyricsState.title,
+        text,
+        wantSmartPhonetic,
+        provider: lyricsState.provider,
+      })
+        .then((response) => {
+          let outText;
+          if (wantSmartPhonetic) {
+            outText = response.phonetic;
+          } else {
+            outText = response.vi || response.translation;
+          }
+
+          return processTranslationResult(outText);
+        })
+        .catch((perplexityError) => {
+          // Fallback to Gemini API if Perplexity fails
+          console.warn("[Perplexity] Translation failed, attempting fallback to Gemini:", perplexityError);
+          
+          // Check if Gemini API key is available
+          const geminiApiKey = StorageManager.getPersisted(
+            `${APP_NAME}:visual:gemini-api-key`
+          );
+          const geminiRomajiApiKey = StorageManager.getPersisted(
+            `${APP_NAME}:visual:gemini-api-key-romaji`
+          );
+          
+          const hasGeminiKey = wantSmartPhonetic 
+            ? (geminiRomajiApiKey && geminiRomajiApiKey.trim().length > 0)
+            : (geminiApiKey && geminiApiKey.trim().length > 0);
+
+          if (!hasGeminiKey) {
+            // No Gemini fallback available, throw Perplexity error without mentioning Gemini
+            const errorMessage = perplexityError.message || "Perplexity API translation failed";
+            // Extract the actual error reason from Perplexity
+            let userFriendlyMessage = "Perplexity API 번역에 실패했습니다.";
+            if (errorMessage.includes("API key") || errorMessage.includes("키")) {
+              userFriendlyMessage = "Perplexity API 키를 확인해주세요. 설정에서 API 키가 올바르게 입력되었는지 확인하세요.";
+            } else if (errorMessage.includes("429") || errorMessage.includes("Rate Limit")) {
+              userFriendlyMessage = "Perplexity API 요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.";
+            } else if (errorMessage.includes("403") || errorMessage.includes("Forbidden")) {
+              userFriendlyMessage = "Perplexity API 접근이 거부되었습니다. API 키 권한을 확인해주세요.";
+            }
+            throw new Error(userFriendlyMessage);
+          }
+
+          // Convert mode from perplexity to gemini
+          const geminiMode = wantSmartPhonetic ? "gemini_romaji" : "gemini_ko";
+          
+          console.log("[Perplexity] Falling back to Gemini API...");
+          
+          // Call Gemini API as fallback
+          return window.Translator.callGemini({
+            artist: this.state.artist || lyricsState.artist,
+            title: this.state.title || lyricsState.title,
+            text,
+            wantSmartPhonetic,
+            provider: lyricsState.provider,
+          })
+            .then((response) => {
+              console.log("[Perplexity] Successfully fell back to Gemini API");
+              let outText;
+              if (wantSmartPhonetic) {
+                outText = response.phonetic;
+              } else {
+                outText = response.vi;
+              }
+
+              return processTranslationResult(outText);
+            })
+            .catch((geminiError) => {
+              // Both APIs failed, throw the original Perplexity error
+              console.error("[Perplexity] Both Perplexity and Gemini APIs failed");
+              const errorMessage = perplexityError.message || "Perplexity API translation failed";
+              throw new Error(`Perplexity API 번역 실패: ${errorMessage}`);
+            });
+        })
+        .finally(() => {
+          // Clear appropriate loading indicator based on mode type
+          if (wantSmartPhonetic) {
+            this.clearPhoneticLoading();
+          } else {
+            this.clearTranslationLoading();
+          }
+          this._inflightPerplexity = this._inflightPerplexity || new Map();
+          this._inflightPerplexity?.delete(inflightKey);
+        });
+
+      this._inflightPerplexity = this._inflightPerplexity || new Map();
+      this._inflightPerplexity.set(inflightKey, inflightPromise);
+      inflightPromise.then(resolve).catch(reject);
+    });
+  }
+
   getTraditionalConversion(lyricsState, lyrics, language, displayMode) {
     return new Promise((resolve, reject) => {
       if (!Array.isArray(lyrics))
@@ -3874,6 +4220,17 @@ class LyricsContainer extends react.Component {
         }
       }
       keysToDelete.forEach((key) => this._inflightGemini.delete(key));
+    }
+
+    // Clear inflight Perplexity requests for this track
+    if (this._inflightPerplexity) {
+      const keysToDelete = [];
+      for (const [key] of this._inflightPerplexity) {
+        if (key.includes(uri)) {
+          keysToDelete.push(key);
+        }
+      }
+      keysToDelete.forEach((key) => this._inflightPerplexity.delete(key));
     }
 
     // Check if there are any translations to reset
@@ -4261,6 +4618,11 @@ class LyricsContainer extends react.Component {
     if (this._inflightGemini) {
       this._inflightGemini.clear();
       this._inflightGemini = null;
+    }
+
+    if (this._inflightPerplexity) {
+      this._inflightPerplexity.clear();
+      this._inflightPerplexity = null;
     }
 
     if (this._inflightTrad) {
