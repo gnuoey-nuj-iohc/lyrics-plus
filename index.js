@@ -706,6 +706,130 @@ const TrackSyncDB = {
 
 // TrackSyncDB를 window에 등록 (LyricsService와 다른 컴포넌트에서 사용 가능)
 window.TrackSyncDB = TrackSyncDB;
+
+// IndexedDB for track language overrides (곡별 언어 오버라이드)
+const LANG_DB_NAME = "ivLyrics-lang-db";
+const LANG_DB_VERSION = 1;
+const LANG_STORE_NAME = "track-language-overrides";
+
+let langDbInstance = null;
+
+const initLangDB = () => {
+  return new Promise((resolve, reject) => {
+    if (langDbInstance) {
+      resolve(langDbInstance);
+      return;
+    }
+
+    const request = indexedDB.open(LANG_DB_NAME, LANG_DB_VERSION);
+
+    request.onerror = () => {
+      console.error("[ivLyrics] Language IndexedDB error:", request.error);
+      reject(request.error);
+    };
+
+    request.onsuccess = () => {
+      langDbInstance = request.result;
+      console.log("[ivLyrics] Language IndexedDB initialized");
+      resolve(langDbInstance);
+    };
+
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains(LANG_STORE_NAME)) {
+        db.createObjectStore(LANG_STORE_NAME);
+        console.log("[ivLyrics] Language IndexedDB object store created");
+      }
+    };
+  });
+};
+
+const TrackLanguageDB = {
+  async getLanguage(trackUri) {
+    try {
+      const db = await initLangDB();
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction([LANG_STORE_NAME], "readonly");
+        const store = transaction.objectStore(LANG_STORE_NAME);
+        const request = store.get(trackUri);
+
+        request.onsuccess = () => resolve(request.result || null);
+        request.onerror = () => reject(request.error);
+      });
+    } catch (error) {
+      console.error("[ivLyrics] Failed to get language override:", error);
+      return null;
+    }
+  },
+
+  async setLanguage(trackUri, language) {
+    try {
+      const db = await initLangDB();
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction([LANG_STORE_NAME], "readwrite");
+        const store = transaction.objectStore(LANG_STORE_NAME);
+        const request = store.put(language, trackUri);
+
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    } catch (error) {
+      console.error("[ivLyrics] Failed to set language override:", error);
+    }
+  },
+
+  async clearLanguage(trackUri) {
+    try {
+      const db = await initLangDB();
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction([LANG_STORE_NAME], "readwrite");
+        const store = transaction.objectStore(LANG_STORE_NAME);
+        const request = store.delete(trackUri);
+
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    } catch (error) {
+      console.error("[ivLyrics] Failed to clear language override:", error);
+    }
+  },
+
+  async getAllOverrides() {
+    try {
+      const db = await initLangDB();
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction([LANG_STORE_NAME], "readonly");
+        const store = transaction.objectStore(LANG_STORE_NAME);
+        const request = store.getAllKeys();
+
+        request.onsuccess = () => {
+          const keys = request.result;
+          const getAllRequest = store.getAll();
+
+          getAllRequest.onsuccess = () => {
+            const values = getAllRequest.result;
+            const result = {};
+            keys.forEach((key, index) => {
+              result[key] = values[index];
+            });
+            resolve(result);
+          };
+
+          getAllRequest.onerror = () => reject(getAllRequest.error);
+        };
+
+        request.onerror = () => reject(request.error);
+      });
+    } catch (error) {
+      console.error("[ivLyrics] Failed to get all language overrides:", error);
+      return {};
+    }
+  },
+};
+
+// TrackLanguageDB를 window에 등록 (다른 컴포넌트에서 사용 가능)
+window.TrackLanguageDB = TrackLanguageDB;
+
 // Migrate from localStorage to IndexedDB
 (async () => {
   try {
@@ -2142,6 +2266,8 @@ class LyricsContainer extends react.Component {
     this.initMoustrap();
     // Cache last state
     this.languageOverride = CONFIG.visual["translate:detect-language-override"];
+    // 트랙별 언어 오버라이드 (IndexedDB에서 로드)
+    this.trackLanguageOverride = null;
     this.reRenderLyricsPage = false;
     this.displayMode = null;
 
@@ -2640,6 +2766,14 @@ class LyricsContainer extends react.Component {
       if (!info) {
         this.setState({ error: "No track info", isLoading: false });
         return;
+      }
+
+      // 트랙별 언어 오버라이드 로드 (IndexedDB)
+      try {
+        this.trackLanguageOverride = await TrackLanguageDB.getLanguage(info.uri);
+      } catch (e) {
+        console.warn("[ivLyrics] Failed to load track language override:", e);
+        this.trackLanguageOverride = null;
       }
 
       // keep artist/title for prompts
@@ -3562,6 +3696,12 @@ class LyricsContainer extends react.Component {
 
   provideLanguageCode(lyrics) {
     if (!lyrics) return null;
+
+    // 1. 트랙별 언어 오버라이드 우선 확인 (IndexedDB에서 로드된 값)
+    if (this.trackLanguageOverride) {
+      Utils.setDetectedLanguage(this.trackLanguageOverride);
+      return this.trackLanguageOverride;
+    }
 
     const provider = CONFIG.visual["translate:translated-lyrics-source"];
 

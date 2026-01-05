@@ -35,57 +35,179 @@ const OptionsMenuItem = react.memo(({ onSelect, value, isSelected }) => {
 
 const OptionsMenu = react.memo(
   ({ options, onSelect, selected, defaultValue, bold = false }) => {
-    /**
-     * <Spicetify.ReactComponent.ContextMenu
-     *      menu = { options.map(a => <OptionsMenuItem>) }
-     * >
-     *      <button>
-     *          <span> {select.value} </span>
-     *          <svg> arrow icon </svg>
-     *      </button>
-     * </Spicetify.ReactComponent.ContextMenu>
-     */
-    // React 130 방지: Hook은 항상 같은 순서로 호출
-    const menuRef = react.useRef(null);
+    // Custom Dropdown State
+    const [isOpen, setIsOpen] = react.useState(false);
+    const containerRef = react.useRef(null);
+    const dropdownRef = react.useRef(null);
+    const [dropdownPosition, setDropdownPosition] = react.useState({ top: 0, left: 0, width: 0 });
 
     // React 31 방지: options 배열 유효성 검사
     const safeOptions = Array.isArray(options) ? options : [];
 
-    return react.createElement(
-      Spicetify.ReactComponent.ContextMenu,
-      {
-        menu: react.createElement(
-          Spicetify.ReactComponent.Menu,
-          {},
-          safeOptions.map(({ key, value }) =>
-            react.createElement(OptionsMenuItem, {
-              key: key, // React warning 방지를 위한 key prop 추가
-              value,
-              onSelect: () => {
-                onSelect(key);
-                // Close menu on item click
-                menuRef.current?.click();
+    // 초기 선택 값 결정 (selected 또는 defaultValue에서)
+    const getInitialSelected = () => {
+      let initialItem = selected || defaultValue;
+      if (initialItem && typeof initialItem !== 'object') {
+        initialItem = safeOptions.find(o => o.key === initialItem);
+      } else if (initialItem && initialItem.key && !initialItem.value) {
+        const found = safeOptions.find(o => o.key === initialItem.key);
+        if (found) initialItem = found;
+      }
+      return initialItem;
+    };
+
+    // 내부 상태로 선택된 항목 관리
+    const [selectedItem, setSelectedItem] = react.useState(getInitialSelected);
+
+    // props가 변경되면 내부 상태 업데이트
+    react.useEffect(() => {
+      setSelectedItem(getInitialSelected());
+    }, [selected, defaultValue]);
+
+    // Resolve default item for display fallback
+    let defaultItem = defaultValue;
+    if (defaultValue && typeof defaultValue !== 'object') {
+      defaultItem = safeOptions.find(o => o.key === defaultValue);
+    } else if (defaultValue && defaultValue.key && !defaultValue.value) {
+      const found = safeOptions.find(o => o.key === defaultValue.key);
+      if (found) defaultItem = found;
+    }
+
+    // Determine display text
+    const displayValue = selectedItem?.value || defaultItem?.value || (typeof defaultValue === 'string' ? defaultValue : "") || "";
+
+    // Toggle Dropdown and Calculate Position
+    const toggleDropdown = () => {
+      if (!isOpen) {
+        if (containerRef.current) {
+          const rect = containerRef.current.getBoundingClientRect();
+          setDropdownPosition({
+            top: rect.bottom + window.scrollY + 4,
+            left: rect.right + window.scrollX, // Align Right
+            width: Math.max(rect.width, 160)
+          });
+        }
+      }
+      setIsOpen(!isOpen);
+    };
+
+    // Close on outside click & scroll
+    react.useEffect(() => {
+      if (!isOpen) return;
+
+      const handleOutsideClick = (e) => {
+        // 드롭다운 내부 클릭은 무시 (개별 아이템 클릭 핸들러에서 처리)
+        if (e.target.closest('.optionsMenu-dropdown-list')) return;
+
+        if (containerRef.current && !containerRef.current.contains(e.target)) {
+          setIsOpen(false);
+        }
+      };
+
+      const handleScroll = (e) => {
+        // 드롭다운 목록 내부 스크롤은 무시
+        if (dropdownRef.current && dropdownRef.current.contains(e.target)) {
+          return;
+        }
+        // 외부 스크롤 시 위치가 어긋나므로 닫음
+        setIsOpen(false);
+      };
+
+      window.addEventListener('mousedown', handleOutsideClick);
+      window.addEventListener('scroll', handleScroll, true); // Capture phase for all scrollable parents
+      window.addEventListener('resize', handleScroll);
+
+      return () => {
+        window.removeEventListener('mousedown', handleOutsideClick);
+        window.removeEventListener('scroll', handleScroll, true);
+        window.removeEventListener('resize', handleScroll);
+      };
+    }, [isOpen]);
+
+    // Render Dropdown via Portal
+    const dropdownMenu = isOpen && Spicetify.ReactDOM.createPortal(
+      react.createElement(
+        "div",
+        {
+          ref: dropdownRef,
+          className: "optionsMenu-dropdown-list",
+          style: {
+            position: 'fixed',
+            top: `${dropdownPosition.top}px`,
+            left: 'auto',
+            right: `${window.innerWidth - dropdownPosition.left}px`, // Right Align
+            width: 'max-content',
+            minWidth: `${dropdownPosition.width}px`,
+            maxWidth: '300px',
+            marginTop: '0', // Portal 사용 시 margin 불필요
+            zIndex: 99999 // 최상위
+          }
+        },
+        safeOptions.map(({ key, value }) => {
+          const isSelected = selectedItem?.key === key;
+          return react.createElement(
+            "div",
+            {
+              key: key,
+              className: `optionsMenu-item ${isSelected ? "selected" : ""}`,
+              onMouseDown: (e) => {
+                // onClick 대신 onMouseDown 사용: window의 mousedown 리스너가 먼저 실행되어 메뉴를 닫는 것을 방지
+                e.preventDefault();
+                e.stopPropagation();
+
+                // 내부 상태 업데이트
+                const selectedOption = safeOptions.find(o => o.key === key);
+                if (selectedOption) {
+                  setSelectedItem(selectedOption);
+                }
+
+                // 외부 콜백 호출
+                console.log('[OptionsMenu] Item clicked:', key, 'onSelect type:', typeof onSelect);
+                if (typeof onSelect === 'function') {
+                  onSelect(key);
+                } else {
+                  console.error('[OptionsMenu] onSelect is not a function:', onSelect);
+                }
+                setIsOpen(false);
+              }
+            },
+            react.createElement("span", null, value),
+            isSelected && react.createElement(
+              "svg",
+              {
+                width: 16,
+                height: 16,
+                viewBox: "0 0 16 16",
+                fill: "currentColor"
               },
-              isSelected: selected?.key === key,
-            })
-          )
-        ),
-        trigger: "click",
-        action: "toggle",
-        renderInline: false,
+              react.createElement("path", {
+                d: "M13.985 2.383L5.127 12.754 1.388 8.375l-.658.77 4.397 5.149 9.618-11.262z"
+              })
+            )
+          );
+        })
+      ),
+      document.body // Body에 직접 렌더링
+    );
+
+    return react.createElement(
+      "div",
+      {
+        ref: containerRef,
+        style: { position: "relative" }
       },
       react.createElement(
         "button",
         {
           className: "optionsMenu-dropBox",
-          ref: menuRef,
+          onClick: toggleDropdown,
         },
         react.createElement(
           "span",
           {
             className: bold ? "main-type-mestoBold" : "main-type-mesto",
           },
-          selected?.value || defaultValue
+          displayValue
         ),
         react.createElement(
           "svg",
@@ -94,12 +216,17 @@ const OptionsMenu = react.memo(
             width: "16",
             fill: "currentColor",
             viewBox: "0 0 16 16",
+            style: {
+              transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform 0.2s ease"
+            }
           },
           react.createElement("path", {
             d: "M3 6l5 5.794L13 6z",
           })
         )
-      )
+      ),
+      dropdownMenu
     );
   }
 );
@@ -168,6 +295,90 @@ const SettingRowDescription = ({ icon, text }) => {
     react.createElement("span", null, text || "")
   );
 };
+
+// Helper Component: Toggle Switch
+const IvConfigSlider = react.memo(({ defaultValue, onToggle }) => {
+  const [isActive, setIsActive] = react.useState(defaultValue);
+
+  const handleClick = () => {
+    const newState = !isActive;
+    setIsActive(newState);
+    onToggle(newState);
+  };
+
+  return react.createElement(
+    "button",
+    {
+      className: `switch-checkbox ${isActive ? "active" : ""}`,
+      onClick: handleClick,
+    },
+    react.createElement("div", { className: "switch-knob" })
+  );
+});
+
+// Helper Component: Simple Button
+const IvConfigButton = react.memo(({ text, onClick }) => {
+  return react.createElement(
+    "button",
+    {
+      className: "btn",
+      onClick: onClick,
+    },
+    text
+  );
+});
+
+// OptionList Component (Renamed to avoid collision)
+const IvOptionList = react.memo(({ items, onChange }) => {
+  return react.createElement(
+    "div",
+    {},
+    items.map((item) => {
+      const { key, type, desc, info, ...props } = item;
+
+      let control = null;
+      if (type === OptionsMenu) {
+        control = react.createElement(OptionsMenu, {
+          ...props,
+          onSelect: (val) => onChange(key, val),
+          selected: props.defaultValue
+        });
+      } else if (type === IvConfigSlider || type === ConfigSlider) { // Handle both just in case
+        control = react.createElement(IvConfigSlider, {
+          defaultValue: props.defaultValue,
+          onToggle: (val) => onChange(key, val)
+        });
+      } else if (type === IvConfigButton || type === ConfigButton) {
+        control = react.createElement(IvConfigButton, {
+          text: props.text,
+          onClick: props.onChange || (() => { })
+        });
+      }
+
+      // info 타입은 컨트롤 없음
+
+      return react.createElement(
+        "div",
+        { key: key, className: "setting-row" },
+        react.createElement(
+          "div",
+          { className: "setting-row-content" },
+          react.createElement(
+            "div",
+            { className: "setting-row-left" },
+            react.createElement("div", { className: "setting-name" }, desc),
+            info && react.createElement("div", { className: "setting-description" }, info)
+          ),
+          react.createElement(
+            "div",
+            { className: "setting-row-right" },
+            control
+          )
+        )
+      );
+    })
+  );
+});
 
 // Helper: open a compact options modal using existing settings styles
 function openOptionsModal(title, items, onChange, eventType = null) {
@@ -437,6 +648,91 @@ function openOptionsModal(title, items, onChange, eventType = null) {
 	justify-content: space-between;
 }
 
+/* Options Dropdown Button Style Fix */
+#${APP_NAME}-config-container .optionsMenu-dropBox {
+	background: rgba(255, 255, 255, 0.1);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 8px;
+	color: #ffffff;
+	padding: 6px 12px;
+	font-size: 13px;
+	font-weight: 500;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	transition: all 0.2s ease;
+	min-width: 100px;
+	justify-content: space-between;
+}
+
+#${APP_NAME}-config-container .optionsMenu-dropBox:hover {
+	background: rgba(255, 255, 255, 0.15);
+	border-color: rgba(255, 255, 255, 0.2);
+}
+
+#${APP_NAME}-config-container .optionsMenu-dropBox svg {
+	fill: currentColor;
+	opacity: 0.7;
+}
+
+/* Custom Dropdown Styles - Global (Portal로 이동되므로 컨테이너 ID 제거) */
+.optionsMenu-dropdown-list {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	min-width: 160px;
+	width: max-content;
+	max-width: 300px;
+	margin-top: 6px;
+	background: #2a2a2a;
+	border: 1px solid rgba(255, 255, 255, 0.15);
+	border-radius: 8px;
+	box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+	z-index: 10000;
+	overflow: hidden;
+	max-height: 250px;
+	overflow-y: auto;
+	pointer-events: auto;
+}
+
+.optionsMenu-item {
+	padding: 10px 14px;
+	font-size: 13px;
+	color: rgba(255, 255, 255, 0.9);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	transition: background 0.1s;
+	white-space: nowrap;
+}
+
+.optionsMenu-item:hover {
+	background: rgba(255, 255, 255, 0.1);
+}
+
+.optionsMenu-item.selected {
+	color: #34c759;
+	font-weight: 600;
+	background: rgba(52, 199, 89, 0.1);
+}
+
+.optionsMenu-item svg {
+	fill: currentColor;
+	margin-left: 12px;
+	flex-shrink: 0;
+}
+
+/* Scrollbar for dropdown */
+.optionsMenu-dropdown-list::-webkit-scrollbar {
+	width: 6px;
+}
+.optionsMenu-dropdown-list::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.3);
+	border-radius: 3px;
+}
+
 #ivLyrics-translation-modal .modal-header h2 {
 	margin: 0;
 	font-size: 22px;
@@ -516,7 +812,7 @@ function openOptionsModal(title, items, onChange, eventType = null) {
         ),
         // Section Items
         react.createElement(
-          OptionList,
+          IvOptionList,
           Object.assign(
             {
               items: section.items || [section],
@@ -729,6 +1025,33 @@ const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
 
     const displayLanguageName = getDisplayLanguageName(friendlyLanguage);
 
+    // 현재 트랙 URI 가져오기
+    const currentTrackUri = Spicetify.Player.data?.item?.uri || "";
+
+    // 지원되는 언어 목록
+    const supportedLanguages = [
+      { key: "auto", value: I18n.t("menu.autoDetect") || "자동 감지" },
+      { key: "ja", value: getDisplayLanguageName("ja") },
+      { key: "ko", value: getDisplayLanguageName("ko") },
+      { key: "zh-hans", value: getDisplayLanguageName("zh-Hans") },
+      { key: "zh-hant", value: getDisplayLanguageName("zh-Hant") },
+      { key: "en", value: getDisplayLanguageName("en") },
+      { key: "ru", value: getDisplayLanguageName("ru") },
+      { key: "vi", value: getDisplayLanguageName("vi") },
+      { key: "de", value: getDisplayLanguageName("de") },
+      { key: "es", value: getDisplayLanguageName("es") },
+      { key: "fr", value: getDisplayLanguageName("fr") },
+      { key: "pt", value: getDisplayLanguageName("pt") },
+      { key: "tr", value: getDisplayLanguageName("tr") },
+      { key: "pl", value: getDisplayLanguageName("pl") },
+      { key: "ar", value: getDisplayLanguageName("ar") },
+      { key: "th", value: getDisplayLanguageName("th") },
+      { key: "hi", value: getDisplayLanguageName("hi") },
+    ];
+
+    // 현재 트랙의 언어 오버라이드 상태 (비동기로 로드)
+    let currentOverride = window.lyricContainer?.trackLanguageOverride || null;
+
     const items = [
       {
         section: I18n.t("menu.detectedLanguage"),
@@ -741,6 +1064,19 @@ const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
             }),
             key: "detected-language-display",
             type: "info",
+          },
+          {
+            desc: react.createElement(SettingRowDescription, {
+              icon: ICONS.language,
+              text: I18n.t("menu.overrideLanguage") || "언어 수동 설정",
+            }),
+            key: "track-language-override",
+            type: OptionsMenu,
+            options: supportedLanguages,
+            defaultValue: currentOverride
+              ? supportedLanguages.find(l => l.key === currentOverride)
+              : supportedLanguages[0],
+            info: I18n.t("menu.overrideLanguageInfo") || "이 곡의 언어를 수동으로 설정합니다. 자동 감지 대신 선택한 언어로 번역됩니다.",
           },
         ],
       },
@@ -814,9 +1150,39 @@ const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
       },
     ];
 
-    openOptionsModal(I18n.t("menu.translationSettings"), items, (name, value) => {
+    openOptionsModal(I18n.t("menu.translationSettings"), items, async (name, value) => {
       // Skip processing for button items
       if (name === "open-api-settings") {
+        return;
+      }
+
+      // 트랙별 언어 오버라이드 처리
+      if (name === "track-language-override") {
+        const trackUri = Spicetify.Player.data?.item?.uri;
+        if (!trackUri) return;
+
+        if (value === "auto") {
+          // 자동 감지로 되돌리기 - DB에서 삭제
+          await window.TrackLanguageDB?.clearLanguage(trackUri);
+          if (window.lyricContainer) {
+            window.lyricContainer.trackLanguageOverride = null;
+          }
+        } else {
+          // 언어 오버라이드 저장
+          await window.TrackLanguageDB?.setLanguage(trackUri, value);
+          if (window.lyricContainer) {
+            window.lyricContainer.trackLanguageOverride = value;
+          }
+        }
+
+        // 번역 캐시 클리어 및 강제 리로드
+        if (window.lyricContainer) {
+          window.lyricContainer._dmResults = {};
+          window.lyricContainer.lastProcessedUri = null;
+          window.lyricContainer.lastProcessedMode = null;
+          window.lyricContainer.forceUpdate();
+        }
+        lyricContainerUpdate?.();
         return;
       }
 
