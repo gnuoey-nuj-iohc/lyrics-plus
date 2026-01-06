@@ -1826,8 +1826,10 @@
                 }
 
                 // 설정을 LocalStorage에서 직접 읽기
-                const translationProvider = Spicetify.LocalStorage.get("ivLyrics:visual:translate:translated-lyrics-source") || "geminiKo";
-                const modeKey = translationProvider === "geminiKo" && !friendlyLanguage ? "gemini" : friendlyLanguage;
+                const translationProvider = Spicetify.LocalStorage.get("ivLyrics:visual:translate:translated-lyrics-source") || "perplexityKo";
+                const modeKey = (translationProvider === "geminiKo" || translationProvider === "perplexityKo") && !friendlyLanguage 
+                  ? (translationProvider === "perplexityKo" ? "perplexity" : "gemini") 
+                  : friendlyLanguage;
 
                 // 설정 키: translation-mode:japanese, translation-mode-2:japanese 등
                 if (mode1 === null) {
@@ -2517,6 +2519,706 @@
 
                         if (isRateLimit || isForbidden) {
                             console.warn(`[Translator] API Key ${key.substring(0, 8)}... failed. Rotating...`);
+                            if (i === apiKeys.length - 1) break;
+                            continue;
+                        }
+
+                        throw error;
+                    }
+                }
+                throw new Error(`Translation failed: ${lastError ? lastError.message : "All keys failed"}`);
+            };
+
+            const requestPromise = runWithRotation().finally(() => {
+                _translatorInflightRequests.delete(requestKey);
+            });
+
+            if (!ignoreCache) {
+                _translatorInflightRequests.set(requestKey, requestPromise);
+            }
+
+            return requestPromise;
+        }
+
+        static async callPerplexity({
+            trackId,
+            artist,
+            title,
+            text,
+            wantSmartPhonetic = false,
+            provider = null,
+            ignoreCache = false,
+        }) {
+            if (!text?.trim()) throw new Error("No text provided for translation");
+
+            const apiKeyRaw = getStorageItem("ivLyrics:visual:perplexity-api-key");
+            let apiKeys = [];
+
+            try {
+                if (apiKeyRaw) {
+                    const trimmed = apiKeyRaw.trim();
+                    if (trimmed.startsWith('[')) {
+                        const parsed = JSON.parse(trimmed);
+                        if (Array.isArray(parsed)) {
+                            apiKeys = parsed;
+                        } else {
+                            apiKeys = [trimmed];
+                        }
+                    } else {
+                        apiKeys = [trimmed];
+                    }
+                }
+            } catch (e) {
+                console.warn("Failed to parse Perplexity API keys:", e);
+                apiKeys = [apiKeyRaw];
+            }
+
+            apiKeys = apiKeys.filter(k => k && k.trim().length > 0);
+
+            if (apiKeys.length === 0) {
+                throw new Error(getTranslatorErrorMessage("translator.missingApiKey", "Perplexity API key is required"));
+            }
+
+            let finalTrackId = trackId;
+            if (!finalTrackId) {
+                finalTrackId = Spicetify.Player.data?.item?.uri?.split(':')[2];
+            }
+            if (!finalTrackId) {
+                throw new Error("No track ID available");
+            }
+
+            const userLang = getCurrentLanguage();
+
+            if (!ignoreCache) {
+                try {
+                    const localCached = await LyricsCache.getTranslation(finalTrackId, userLang, wantSmartPhonetic, provider);
+                    if (localCached) {
+                        if (window.ApiTracker) {
+                            window.ApiTracker.logCacheHit(
+                                wantSmartPhonetic ? 'phonetic' : 'translation',
+                                `${finalTrackId}:${userLang}`,
+                                { lineCount: localCached.phonetic?.length || localCached.translation?.length || 0 }
+                            );
+                        }
+                        return localCached;
+                    }
+                } catch (e) {
+                    console.warn('[Translator] Local cache check failed:', e);
+                }
+            }
+
+            const requestKey = getTranslatorRequestKey(finalTrackId, wantSmartPhonetic, userLang) + ":perplexity";
+
+            if (!ignoreCache && _translatorInflightRequests.has(requestKey)) {
+                return _translatorInflightRequests.get(requestKey);
+            }
+
+            const executeRequest = async (currentApiKey) => {
+                const endpoints = ["https://api.perplexity.ai/chat/completions"];
+                const userHash = getUserHash();
+
+                // 모델을 설정에서 읽고, 없으면 안전한 기본값 사용
+                const userModel =
+                    getStorageItem("ivLyrics:visual:perplexity-model") ||
+                    CONFIG.visual?.["perplexity-model"] ||
+                    "";
+
+                // 문서/예시 기준 허용 모델 후보 (제시 예: "sonar")
+                const modelCandidates = [
+                    "sonar",
+                    "sonar-small-online",
+                    "sonar-medium-online",
+                    "sonar-large-online",
+                    "sonar-huge-online",
+                    "sonar-small-chat",
+                    "sonar-medium-chat",
+                    "sonar-large-chat",
+                    "sonar-huge-chat",
+                ];
+
+                let candidateModels = userModel
+                    ? [userModel, ...modelCandidates]
+                    : modelCandidates;
+
+                // Build prompt for Perplexity API
+                const languageMap = {
+                    'ko': 'Korean',
+                    'en': 'English',
+                    'ja': 'Japanese',
+                    'zh': 'Chinese',
+                    'es': 'Spanish',
+                    'fr': 'French',
+                    'de': 'German',
+                    'it': 'Italian',
+                    'pt': 'Portuguese',
+                    'ru': 'Russian',
+                    'ar': 'Arabic',
+                    'fa': 'Persian',
+                    'hi': 'Hindi',
+                    'bn': 'Bengali',
+                    'th': 'Thai',
+                    'vi': 'Vietnamese',
+                    'id': 'Indonesian'
+                };
+
+                const targetLang = languageMap[userLang] || 'Korean';
+                const lyricsLines = text.split('\n').filter(line => line.trim());
+                
+                let prompt;
+                if (wantSmartPhonetic) {
+                    // Check if Korean phonetic is requested
+                    const isKoreanPhonetic = provider === "perplexity_phonetic_ko";
+                    if (isKoreanPhonetic) {
+                        // Request Korean phonetic transcription (한글 발음)
+                        prompt = `Provide Korean phonetic transcription (한글 발음) for each line. Convert the text to how it sounds in Korean pronunciation. Return ONLY the Korean phonetic transcription, line by line, same structure. No explanations.\n\n${text}`;
+                    } else {
+                        // Request phonetic transcription (romaji, pinyin, etc.)
+                        // "song lyrics" 표현을 피해서 저작권 문제 방지
+                        prompt = `Provide phonetic transcription (romaji for Japanese, pinyin for Chinese, etc.) for each line. Return ONLY the transcription, line by line, same structure. No explanations.\n\n${text}`;
+                    }
+                } else {
+                    // Request translation
+                    // "song lyrics" 표현을 피해서 저작권 문제 방지
+                    prompt = `Translate the following lines to ${targetLang}. Return ONLY the translation, line by line, same structure. No explanations.\n\n${text}`;
+                }
+
+                const category = wantSmartPhonetic ? 'phonetic' : 'translation';
+                let logId = null;
+                if (window.ApiTracker) {
+                    logId = window.ApiTracker.logRequest(category, endpoints[0], {
+                        trackId: finalTrackId,
+                        artist,
+                        title,
+                        lang: userLang,
+                        wantSmartPhonetic,
+                        textLength: text?.length || 0
+                    });
+                }
+
+                const tryFetch = async (url, modelName) => {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 800000);
+
+                    try {
+                        const res = await fetch(url, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${currentApiKey}`,
+                                Accept: "application/json",
+                            },
+                            body: JSON.stringify({
+                                model: modelName,
+                                messages: [
+                                    {
+                                        role: "system",
+                                        content: "You are a text translator/transcriber. Translate or transcribe the given text lines. Keep line order, return ONLY the requested content without explanations, disclaimers, or citations."
+                                    },
+                                    {
+                                        role: "user",
+                                        content: prompt
+                                    }
+                                ],
+                                temperature: 0.2,
+                                max_tokens: 4000,
+                                stream: false,
+                                return_citations: false
+                            }),
+                            signal: controller.signal,
+                            mode: "cors",
+                        });
+
+                        clearTimeout(timeoutId);
+                        return res;
+                    } catch (error) {
+                        clearTimeout(timeoutId);
+                        throw error;
+                    }
+                };
+
+                try {
+                    let res;
+                    let lastError;
+
+                    for (const url of endpoints) {
+                        for (const modelName of candidateModels) {
+                            try {
+                                res = await tryFetch(url, modelName);
+                                if (res.ok) break;
+                            } catch (error) {
+                                lastError = error;
+                                continue;
+                            }
+                        }
+                        if (res && res.ok) break;
+                    }
+
+                    if (!res || !res.ok) {
+                        if (res) {
+                            // 읽을 수 있는 에러 메시지를 최대한 확보
+                            const rawText = await res.text().catch(() => "");
+                            let errorData = {};
+                            try {
+                                errorData = rawText ? JSON.parse(rawText) : {};
+                            } catch (_) {
+                                errorData = { message: rawText || "Unknown error" };
+                            }
+
+                            if (res.status === 429) throw new Error("429 Rate Limit Exceeded");
+                            if (res.status === 403) throw new Error("403 Forbidden");
+                            if (errorData.error && errorData.message) throw new Error(errorData.message);
+                            if (errorData.error) throw new Error(typeof errorData.error === "string" ? errorData.error : JSON.stringify(errorData.error));
+                            throw new Error(`HTTP ${res.status}: ${errorData.message || rawText || "Unknown error"}`);
+                        }
+
+                        throw lastError || new Error("All endpoints failed");
+                    }
+
+                    let data;
+                    try {
+                        data = await res.json();
+                    } catch (jsonErr) {
+                        throw new Error(`Invalid JSON from Perplexity (${jsonErr?.message || "parse error"})`);
+                    }
+
+                    if (data.error) {
+                        const errorStr = typeof data.error === 'string' ? data.error : (data.message || JSON.stringify(data.error));
+                        const isRateLimitError = errorStr.includes('429') || errorStr.includes('rate_limit');
+                        const isForbiddenError = errorStr.includes('403') || errorStr.includes('Forbidden');
+
+                        if (isRateLimitError) throw new Error(`429 Rate Limit: ${errorStr}`);
+                        if (isForbiddenError) throw new Error(`403 Forbidden: ${errorStr}`);
+                        throw new Error(data.message || "Translation failed");
+                    }
+
+                    // Parse Perplexity response
+                    let translatedText = '';
+                    if (data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) {
+                        translatedText = data.choices[0].message.content.trim();
+                    } else {
+                        throw new Error("Invalid response format from Perplexity API");
+                    }
+
+                    // 저작권 관련 설명이나 추천 문구 제거
+                    // "I can't provide", "copyright", "recommend", "utaten.com" 등의 키워드가 포함된 줄 제거
+                    const unwantedPatterns = [
+                        /copyright/i,
+                        /can't provide/i,
+                        /cannot provide/i,
+                        /recommend/i,
+                        /utaten\.com/i,
+                        /youtube/i,
+                        /yomichan/i,
+                        /resources/i,
+                        /These resources/i,
+                        /If you're looking/i,
+                        /I'd recommend/i,
+                        /would constitute/i,
+                        /reproducing substantial/i
+                    ];
+                    
+                    let lines = translatedText.split('\n');
+                    // 불필요한 설명 줄 제거
+                    lines = lines.filter(line => {
+                        const trimmed = line.trim();
+                        if (!trimmed) return false;
+                        // 불필요한 패턴이 포함된 줄 제거
+                        if (unwantedPatterns.some(pattern => pattern.test(trimmed))) return false;
+                        // 번호나 불릿 포인트로 시작하는 추천 목록 제거
+                        if (/^[-*•]\s/.test(trimmed) || /^\d+[\.\)]\s/.test(trimmed)) return false;
+                        // 대괄호로 감싸진 참조 번호 제거 (예: [1], [5] 등)
+                        if (/^\[.*\]/.test(trimmed)) return false;
+                        return true;
+                    });
+
+                    // Split into lines and format response
+                    const translatedLines = lines.filter(line => line.trim());
+                    
+                    const result = wantSmartPhonetic 
+                        ? { phonetic: translatedLines }
+                        : { translation: translatedLines };
+
+                    if (window.ApiTracker && logId) {
+                        window.ApiTracker.logResponse(logId, {
+                            lineCount: translatedLines.length,
+                            cached: false
+                        }, 'success');
+                    }
+
+                    LyricsCache.setTranslation(finalTrackId, userLang, wantSmartPhonetic, result, provider).catch(() => { });
+
+                    return result;
+                } catch (error) {
+                    if (window.ApiTracker && logId) {
+                        window.ApiTracker.logResponse(logId, null, 'error', error.message);
+                    }
+                    throw error;
+                }
+            };
+
+            const runWithRotation = async () => {
+                let lastError;
+                for (let i = 0; i < apiKeys.length; i++) {
+                    const key = apiKeys[i];
+                    try {
+                        return await executeRequest(key);
+                    } catch (error) {
+                        lastError = error;
+                        const isRateLimit = error.message.includes("429") || error.message.includes("Rate Limit");
+                        const isForbidden = error.message.includes("403") || error.message.includes("Forbidden");
+
+                        if (isRateLimit || isForbidden) {
+                            console.warn(`[Translator] Perplexity API Key ${key.substring(0, 8)}... failed. Rotating...`);
+                            if (i === apiKeys.length - 1) break;
+                            continue;
+                        }
+
+                        throw error;
+                    }
+                }
+                throw new Error(`Translation failed: ${lastError ? lastError.message : "All keys failed"}`);
+            };
+
+            const requestPromise = runWithRotation().finally(() => {
+                _translatorInflightRequests.delete(requestKey);
+            });
+
+            if (!ignoreCache) {
+                _translatorInflightRequests.set(requestKey, requestPromise);
+            }
+
+            return requestPromise;
+        }
+
+        static async callPerplexity({
+            trackId,
+            artist,
+            title,
+            text,
+            wantSmartPhonetic = false,
+            provider = null,
+            ignoreCache = false,
+        }) {
+            if (!text?.trim()) throw new Error("No text provided for translation");
+
+            const apiKeyRaw = getStorageItem("ivLyrics:visual:perplexity-api-key");
+            let apiKeys = [];
+
+            try {
+                if (apiKeyRaw) {
+                    const trimmed = apiKeyRaw.trim();
+                    if (trimmed.startsWith('[')) {
+                        const parsed = JSON.parse(trimmed);
+                        if (Array.isArray(parsed)) {
+                            apiKeys = parsed;
+                        } else {
+                            apiKeys = [trimmed];
+                        }
+                    } else {
+                        apiKeys = [trimmed];
+                    }
+                }
+            } catch (e) {
+                console.warn("Failed to parse Perplexity API keys:", e);
+                apiKeys = [apiKeyRaw];
+            }
+
+            apiKeys = apiKeys.filter(k => k && k.trim().length > 0);
+
+            if (apiKeys.length === 0) {
+                throw new Error(getTranslatorErrorMessage("translator.missingApiKey", "Perplexity API key is required"));
+            }
+
+            let finalTrackId = trackId;
+            if (!finalTrackId) {
+                finalTrackId = Spicetify.Player.data?.item?.uri?.split(':')[2];
+            }
+            if (!finalTrackId) {
+                throw new Error("No track ID available");
+            }
+
+            const userLang = getCurrentLanguage();
+
+            if (!ignoreCache) {
+                try {
+                    const localCached = await LyricsCache.getTranslation(finalTrackId, userLang, wantSmartPhonetic, provider);
+                    if (localCached) {
+                        if (window.ApiTracker) {
+                            window.ApiTracker.logCacheHit(
+                                wantSmartPhonetic ? 'phonetic' : 'translation',
+                                `${finalTrackId}:${userLang}`,
+                                { lineCount: localCached.phonetic?.length || localCached.translation?.length || 0 }
+                            );
+                        }
+                        return localCached;
+                    }
+                } catch (e) {
+                    console.warn('[Translator] Local cache check failed:', e);
+                }
+            }
+
+            const requestKey = getTranslatorRequestKey(finalTrackId, wantSmartPhonetic, userLang) + ":perplexity";
+
+            if (!ignoreCache && _translatorInflightRequests.has(requestKey)) {
+                return _translatorInflightRequests.get(requestKey);
+            }
+
+            const executeRequest = async (currentApiKey) => {
+                const endpoints = ["https://api.perplexity.ai/chat/completions"];
+                
+                // 모델 후보 리스트 (sonar 모델 우선)
+                const modelCandidates = [
+                    "sonar",
+                    "sonar-small-online",
+                    "sonar-medium-online",
+                    "sonar-large-online",
+                    "sonar-huge-online",
+                    "sonar-small-chat",
+                    "sonar-medium-chat",
+                    "sonar-large-chat",
+                    "sonar-huge-chat"
+                ];
+                
+                // 사용자 설정 모델이 있으면 우선 사용
+                const userModel = getStorageItem("ivLyrics:visual:perplexity-model") || 
+                    CONFIG.visual?.["perplexity-model"];
+                const modelsToTry = userModel 
+                    ? [userModel, ...modelCandidates]
+                    : modelCandidates;
+
+                // Build prompt for Perplexity API
+                const languageMap = {
+                    'ko': 'Korean',
+                    'en': 'English',
+                    'ja': 'Japanese',
+                    'zh': 'Chinese',
+                    'es': 'Spanish',
+                    'fr': 'French',
+                    'de': 'German',
+                    'it': 'Italian',
+                    'pt': 'Portuguese',
+                    'ru': 'Russian',
+                    'ar': 'Arabic',
+                    'fa': 'Persian',
+                    'hi': 'Hindi',
+                    'bn': 'Bengali',
+                    'th': 'Thai',
+                    'vi': 'Vietnamese',
+                    'id': 'Indonesian'
+                };
+
+                const targetLang = languageMap[userLang] || 'Korean';
+                
+                let prompt;
+                if (wantSmartPhonetic) {
+                    // Request phonetic transcription (romaji, pinyin, etc.)
+                    // "song lyrics" 표현을 피해서 저작권 문제 방지
+                    prompt = `Provide phonetic transcription (romaji for Japanese, pinyin for Chinese, etc.) for each line. Return ONLY the transcription, line by line, same structure. No explanations.\n\n${text}`;
+                } else {
+                    // Request translation
+                    // "song lyrics" 표현을 피해서 저작권 문제 방지
+                    prompt = `Translate the following lines to ${targetLang}. Return ONLY the translation, line by line, same structure. No explanations.\n\n${text}`;
+                }
+
+                const category = wantSmartPhonetic ? 'phonetic' : 'translation';
+                let logId = null;
+                if (window.ApiTracker) {
+                    logId = window.ApiTracker.logRequest(category, endpoints[0], {
+                        trackId: finalTrackId,
+                        artist,
+                        title,
+                        lang: userLang,
+                        wantSmartPhonetic,
+                        textLength: text?.length || 0
+                    });
+                }
+
+                const tryFetch = async (url, modelName) => {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 800000);
+
+                    try {
+                        const res = await fetch(url, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${currentApiKey}`,
+                                Accept: "application/json",
+                            },
+                            body: JSON.stringify({
+                                model: modelName,
+                                messages: [
+                                    {
+                                        role: "system",
+                                        content: "You are a text translator/transcriber. Translate or transcribe the given text lines. Keep line order, return ONLY the requested content without explanations, disclaimers, or citations."
+                                    },
+                                    {
+                                        role: "user",
+                                        content: prompt
+                                    }
+                                ],
+                                temperature: 0.2,
+                                max_tokens: 4000,
+                                stream: false,
+                                return_citations: false
+                            }),
+                            signal: controller.signal,
+                            mode: "cors",
+                        });
+
+                        clearTimeout(timeoutId);
+                        return res;
+                    } catch (error) {
+                        clearTimeout(timeoutId);
+                        throw error;
+                    }
+                };
+
+                try {
+                    let res;
+                    let lastError;
+                    let lastModelError = null;
+
+                    // 모델을 순회하며 시도
+                    for (const modelName of modelsToTry) {
+                        try {
+                            res = await tryFetch(endpoints[0], modelName);
+                            if (res.ok) break;
+                            
+                            // 400 에러면 모델 문제일 수 있으므로 다음 모델 시도
+                            if (res.status === 400) {
+                                const errorText = await res.text().catch(() => "");
+                                try {
+                                    const errorData = JSON.parse(errorText);
+                                    if (errorData.type === "invalid_model" || errorData.message?.includes("Invalid model")) {
+                                        lastModelError = errorData.message || `Invalid model: ${modelName}`;
+                                        continue; // 다음 모델 시도
+                                    }
+                                } catch (_) {}
+                            }
+                            
+                            lastError = new Error(`HTTP ${res.status}`);
+                        } catch (error) {
+                            lastError = error;
+                            continue;
+                        }
+                    }
+
+                    if (!res || !res.ok) {
+                        if (res) {
+                            // 읽을 수 있는 에러 메시지를 최대한 확보
+                            const rawText = await res.text().catch(() => "");
+                            let errorData = {};
+                            try {
+                                errorData = rawText ? JSON.parse(rawText) : {};
+                            } catch (_) {
+                                errorData = { message: rawText || "Unknown error" };
+                            }
+
+                            if (res.status === 429) throw new Error("429 Rate Limit Exceeded");
+                            if (res.status === 403) throw new Error("403 Forbidden");
+                            if (errorData.error && errorData.message) throw new Error(errorData.message);
+                            if (errorData.error) throw new Error(typeof errorData.error === "string" ? errorData.error : JSON.stringify(errorData.error));
+                            throw new Error(`HTTP ${res.status}: ${errorData.message || rawText || "Unknown error"}`);
+                        }
+
+                        throw lastError || new Error("All endpoints failed");
+                    }
+
+                    let data;
+                    try {
+                        data = await res.json();
+                    } catch (jsonErr) {
+                        throw new Error(`Invalid JSON from Perplexity (${jsonErr?.message || "parse error"})`);
+                    }
+
+                    if (data.error) {
+                        const errorStr = typeof data.error === 'string' ? data.error : (data.message || JSON.stringify(data.error));
+                        const isRateLimitError = errorStr.includes('429') || errorStr.includes('rate_limit');
+                        const isForbiddenError = errorStr.includes('403') || errorStr.includes('Forbidden');
+
+                        if (isRateLimitError) throw new Error(`429 Rate Limit: ${errorStr}`);
+                        if (isForbiddenError) throw new Error(`403 Forbidden: ${errorStr}`);
+                        throw new Error(data.message || "Translation failed");
+                    }
+
+                    // Parse Perplexity response
+                    let translatedText = '';
+                    if (data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) {
+                        translatedText = data.choices[0].message.content.trim();
+                    } else {
+                        throw new Error("Invalid response format from Perplexity API");
+                    }
+
+                    // 저작권 관련 설명이나 추천 문구 제거
+                    const unwantedPatterns = [
+                        /copyright/i,
+                        /can't provide/i,
+                        /cannot provide/i,
+                        /recommend/i,
+                        /utaten\.com/i,
+                        /youtube/i,
+                        /yomichan/i,
+                        /resources/i,
+                        /These resources/i,
+                        /If you're looking/i,
+                        /I'd recommend/i,
+                        /would constitute/i,
+                        /reproducing substantial/i
+                    ];
+                    
+                    let lines = translatedText.split('\n');
+                    // 불필요한 설명 줄 제거
+                    lines = lines.filter(line => {
+                        const trimmed = line.trim();
+                        if (!trimmed) return false;
+                        // 불필요한 패턴이 포함된 줄 제거
+                        if (unwantedPatterns.some(pattern => pattern.test(trimmed))) return false;
+                        // 번호나 불릿 포인트로 시작하는 추천 목록 제거
+                        if (/^[-*•]\s/.test(trimmed) || /^\d+[\.\)]\s/.test(trimmed)) return false;
+                        // 대괄호로 감싸진 참조 번호 제거 (예: [1], [5] 등)
+                        if (/^\[.*\]/.test(trimmed)) return false;
+                        return true;
+                    });
+
+                    // Split into lines and format response
+                    const translatedLines = lines.filter(line => line.trim());
+                    
+                    const result = wantSmartPhonetic 
+                        ? { phonetic: translatedLines }
+                        : { translation: translatedLines };
+
+                    if (window.ApiTracker && logId) {
+                        window.ApiTracker.logResponse(logId, {
+                            lineCount: translatedLines.length,
+                            cached: false
+                        }, 'success');
+                    }
+
+                    LyricsCache.setTranslation(finalTrackId, userLang, wantSmartPhonetic, result, provider).catch(() => { });
+
+                    return result;
+                } catch (error) {
+                    if (window.ApiTracker && logId) {
+                        window.ApiTracker.logResponse(logId, null, 'error', error.message);
+                    }
+                    throw error;
+                }
+            };
+
+            const runWithRotation = async () => {
+                let lastError;
+                for (let i = 0; i < apiKeys.length; i++) {
+                    const key = apiKeys[i];
+                    try {
+                        return await executeRequest(key);
+                    } catch (error) {
+                        lastError = error;
+                        const isRateLimit = error.message.includes("429") || error.message.includes("Rate Limit");
+                        const isForbidden = error.message.includes("403") || error.message.includes("Forbidden");
+
+                        if (isRateLimit || isForbidden) {
+                            console.warn(`[Translator] Perplexity API Key ${key.substring(0, 8)}... failed. Rotating...`);
                             if (i === apiKeys.length - 1) break;
                             continue;
                         }

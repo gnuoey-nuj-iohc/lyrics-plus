@@ -369,9 +369,13 @@ window.LANG_KO = {
     "translationLabel": "번역",
     "translationInfo": "원문 가사를 한국어로 번역하여 표시합니다",
     "apiSettings": "API 설정",
-    "apiSettingsSubtitle": "Gemini API를 구성하세요",
+    "apiSettingsSubtitle": "Gemini 및 Perplexity API를 구성하세요",
     "apiKeySettings": "API 키 설정",
-    "apiKeySettingsInfo": "Gemini API 키를 설정하려면 여기를 클릭하세요",
+    "apiKeySettingsInfo": "Gemini 및 Perplexity API 키를 설정하려면 여기를 클릭하세요",
+    "pronunciationLanguage": "발음 언어",
+    "pronunciationLanguageInfo": "발음 표기 방식을 선택합니다",
+    "pronunciationEnglish": "영어 (로마자)",
+    "pronunciationKorean": "한국어 (한글)",
     "openSettings": "설정 열기",
     "translationSettings": "변환 설정",
     "regenerateTranslation": "번역 재생성",
@@ -486,6 +490,12 @@ window.LANG_KO = {
     "geminiKo": "번역",
     "romajiGemini": "로마자 (제미니)",
     "koGemini": "한국어 (제미니)",
+    "perplexityRomaji": "발음 (영어)",
+    "perplexityKo": "번역",
+    "perplexityPhoneticKo": "발음 (한국어)",
+    "romajiPerplexity": "로마자 (Perplexity)",
+    "koPerplexity": "한국어 (Perplexity)",
+    "phoneticKoPerplexity": "한글 발음 (Perplexity)",
     "simplifiedChinese": "간체 중국어",
     "traditionalChineseHK": "번체 중국어 (홍콩)",
     "traditionalChineseTW": "번체 중국어 (대만)",
@@ -1136,6 +1146,10 @@ window.LANG_KO = {
       "geminiKey": {
         "desc": "Gemini API 키",
         "info": "Google Gemini AI를 활용한 가사 번역 기능을 사용하려면 API 키가 필요합니다"
+      },
+      "perplexityKey": {
+        "desc": "Perplexity API 키",
+        "info": "Perplexity AI를 활용한 가사 번역 기능을 사용하려면 API 키가 필요합니다"
       }
     },
     "update": {

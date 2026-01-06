@@ -929,7 +929,7 @@ const StorageManager = {
   // Unified config save method to reduce duplication
   saveConfig(name, value) {
     saveStorageKeys(`${APP_NAME}:visual:${name}`);
-    if (name === "gemini-api-key" || name === "gemini-api-key-romaji") {
+    if (name === "gemini-api-key" || name === "gemini-api-key-romaji" || name === "perplexity-api-key") {
       // Save sensitive keys to both storages for persistence
       this.setPersisted(`${APP_NAME}:visual:${name}`, value);
     } else if (name === "language") {
@@ -1185,7 +1185,7 @@ const CONFIG = {
     "translate:translated-lyrics-source":
       StorageManager.getItem(
         "ivLyrics:visual:translate:translated-lyrics-source"
-      ) || "geminiKo",
+      ) || "perplexityKo",
     "translate:display-mode":
       StorageManager.getItem("ivLyrics:visual:translate:display-mode") ||
       "replace",
@@ -1314,11 +1314,19 @@ const CONFIG = {
     "translation-mode-2:gemini":
       StorageManager.getItem("ivLyrics:visual:translation-mode-2:gemini") ||
       "none",
+    "translation-mode:perplexity":
+      StorageManager.getItem("ivLyrics:visual:translation-mode:perplexity") ||
+      "none",
+    "translation-mode-2:perplexity":
+      StorageManager.getItem("ivLyrics:visual:translation-mode-2:perplexity") ||
+      "none",
     "gemini-api-key":
       StorageManager.getPersisted("ivLyrics:visual:gemini-api-key") || "",
     "gemini-api-key-romaji":
       StorageManager.getPersisted("ivLyrics:visual:gemini-api-key-romaji") ||
       "",
+    "perplexity-api-key":
+      StorageManager.getPersisted("ivLyrics:visual:perplexity-api-key") || "",
     translate: StorageManager.get("ivLyrics:visual:translate", false),
     "furigana-enabled": StorageManager.get(
       "ivLyrics:visual:furigana-enabled",
@@ -1972,7 +1980,9 @@ const Prefetcher = {
     }
 
     const provider = CONFIG.visual["translate:translated-lyrics-source"];
-    const modeKey = provider === "geminiKo" && !friendlyLanguage ? "gemini" : friendlyLanguage;
+    const modeKey = (provider === "geminiKo" || provider === "perplexityKo") && !friendlyLanguage 
+      ? (provider === "perplexityKo" ? "perplexity" : "gemini") 
+      : friendlyLanguage;
     const displayMode1 = CONFIG.visual[`translation-mode:${modeKey}`];
     const displayMode2 = CONFIG.visual[`translation-mode-2:${modeKey}`];
 
@@ -1989,9 +1999,11 @@ const Prefetcher = {
     if (!text.trim()) return;
 
     // 발음이 필요한지, 번역이 필요한지 확인
-    const needPhonetic = displayMode1 === "gemini_romaji" || displayMode2 === "gemini_romaji";
-    const needTranslation = (displayMode1 && displayMode1 !== "none" && displayMode1 !== "gemini_romaji") ||
-      (displayMode2 && displayMode2 !== "none" && displayMode2 !== "gemini_romaji");
+    const needPhonetic = displayMode1 === "gemini_romaji" || displayMode2 === "gemini_romaji" || 
+      displayMode1 === "perplexity_romaji" || displayMode2 === "perplexity_romaji" ||
+      displayMode1 === "perplexity_phonetic_ko" || displayMode2 === "perplexity_phonetic_ko";
+    const needTranslation = (displayMode1 && displayMode1 !== "none" && displayMode1 !== "gemini_romaji" && displayMode1 !== "perplexity_romaji" && displayMode1 !== "perplexity_phonetic_ko") ||
+      (displayMode2 && displayMode2 !== "none" && displayMode2 !== "gemini_romaji" && displayMode2 !== "perplexity_romaji" && displayMode2 !== "perplexity_phonetic_ko");
 
     const prefetchPromise = (async () => {
       try {
@@ -2041,21 +2053,42 @@ const Prefetcher = {
         // 발음 요청 (wantSmartPhonetic = true)
         if (needPhonetic) {
           try {
-            const phoneticResponse = await window.Translator.callGemini({
-              trackId,
-              artist: trackInfo.artist,
-              title: trackInfo.title,
-              text,
-              wantSmartPhonetic: true,
-              provider: lyrics.provider,
-              ignoreCache: false,
-            });
+            const isPerplexity = displayMode1 === "perplexity_romaji" || displayMode2 === "perplexity_romaji" ||
+              displayMode1 === "perplexity_phonetic_ko" || displayMode2 === "perplexity_phonetic_ko";
+            const isKoreanPhonetic = displayMode1 === "perplexity_phonetic_ko" || displayMode2 === "perplexity_phonetic_ko";
+            const phoneticResponse = isPerplexity && window.Translator?.callPerplexity
+              ? await window.Translator.callPerplexity({
+                  trackId,
+                  artist: trackInfo.artist,
+                  title: trackInfo.title,
+                  text,
+                  wantSmartPhonetic: true,
+                  provider: isKoreanPhonetic ? "perplexity_phonetic_ko" : lyrics.provider,
+                  ignoreCache: false,
+                })
+              : await window.Translator.callGemini({
+                  trackId,
+                  artist: trackInfo.artist,
+                  title: trackInfo.title,
+                  text,
+                  wantSmartPhonetic: true,
+                  provider: lyrics.provider,
+                  ignoreCache: false,
+                });
 
             if (phoneticResponse.phonetic) {
               const mapped = processTranslationResult(phoneticResponse.phonetic);
               if (mapped) {
-                CacheManager.set(`${uri}:${lyrics.provider}:gemini_romaji`, mapped);
-                console.log(`[Prefetcher] Phonetic cached for: ${trackInfo.title} (provider: ${lyrics.provider})`);
+                let modeKey;
+                if (isKoreanPhonetic) {
+                  modeKey = "perplexity_phonetic_ko";
+                } else if (isPerplexity) {
+                  modeKey = "perplexity_romaji";
+                } else {
+                  modeKey = "gemini_romaji";
+                }
+                CacheManager.set(`${uri}:${lyrics.provider}:${modeKey}`, mapped);
+                console.log(`[Prefetcher] Phonetic cached for: ${trackInfo.title} (provider: ${lyrics.provider}, mode: ${modeKey})`);
               }
             }
           } catch (error) {
@@ -2066,24 +2099,37 @@ const Prefetcher = {
         // 번역 요청 (wantSmartPhonetic = false)
         if (needTranslation) {
           try {
-            const translationResponse = await window.Translator.callGemini({
-              trackId,
-              artist: trackInfo.artist,
-              title: trackInfo.title,
-              text,
-              wantSmartPhonetic: false,
-              provider: lyrics.provider,
-              ignoreCache: false,
-            });
+            const isPerplexity = (displayMode1 && displayMode1.startsWith("perplexity")) || 
+              (displayMode2 && displayMode2.startsWith("perplexity"));
+            const translationResponse = isPerplexity && window.Translator?.callPerplexity
+              ? await window.Translator.callPerplexity({
+                  trackId,
+                  artist: trackInfo.artist,
+                  title: trackInfo.title,
+                  text,
+                  wantSmartPhonetic: false,
+                  provider: lyrics.provider,
+                  ignoreCache: false,
+                })
+              : await window.Translator.callGemini({
+                  trackId,
+                  artist: trackInfo.artist,
+                  title: trackInfo.title,
+                  text,
+                  wantSmartPhonetic: false,
+                  provider: lyrics.provider,
+                  ignoreCache: false,
+                });
 
-            if (translationResponse.vi) {
-              const mapped = processTranslationResult(translationResponse.vi);
+            const translationData = translationResponse.vi || translationResponse.translation;
+            if (translationData) {
+              const mapped = processTranslationResult(translationData);
               if (mapped) {
                 // mode1, mode2 중 번역이 필요한 것에 캐시 저장
-                if (displayMode1 && displayMode1 !== "none" && displayMode1 !== "gemini_romaji") {
+                if (displayMode1 && displayMode1 !== "none" && displayMode1 !== "gemini_romaji" && displayMode1 !== "perplexity_romaji" && displayMode1 !== "perplexity_phonetic_ko") {
                   CacheManager.set(`${uri}:${lyrics.provider}:${displayMode1}`, mapped);
                 }
-                if (displayMode2 && displayMode2 !== "none" && displayMode2 !== "gemini_romaji") {
+                if (displayMode2 && displayMode2 !== "none" && displayMode2 !== "gemini_romaji" && displayMode2 !== "perplexity_romaji" && displayMode2 !== "perplexity_phonetic_ko") {
                   CacheManager.set(`${uri}:${lyrics.provider}:${displayMode2}`, mapped);
                 }
                 console.log(`[Prefetcher] Translation cached for: ${trackInfo.title} (provider: ${lyrics.provider})`);
@@ -2446,24 +2492,30 @@ class LyricsContainer extends react.Component {
         .of(originalLanguage.split("-")[0])
         ?.toLowerCase();
     const modeKey =
-      provider === "geminiKo" && !friendlyLanguage
-        ? "gemini"
+      (provider === "geminiKo" || provider === "perplexityKo") && !friendlyLanguage
+        ? (provider === "perplexityKo" ? "perplexity" : "gemini")
         : friendlyLanguage;
     const mode1 = CONFIG.visual[`translation-mode:${modeKey}`];
     const mode2 = CONFIG.visual[`translation-mode-2:${modeKey}`];
 
-    // Gemini 번역인지 확인
+    // Gemini 또는 Perplexity 번역인지 확인
     const isGeminiMode =
       mode1?.startsWith("gemini") || mode2?.startsWith("gemini");
+    const isPerplexityMode =
+      mode1?.startsWith("perplexity") || mode2?.startsWith("perplexity");
 
-    if (!isGeminiMode) {
+    if (!isGeminiMode && !isPerplexityMode) {
       Toast.error(I18n.t("notifications.translationRegenerateGeminiOnly"));
       return;
     }
 
     // 발음과 번역 중 어떤 것이 필요한지 확인
-    const needPhonetic = mode1 === "gemini_romaji" || mode2 === "gemini_romaji";
-    const needTranslation = mode1 === "gemini_ko" || mode2 === "gemini_ko";
+    const needPhonetic = mode1 === "gemini_romaji" || mode2 === "gemini_romaji" || 
+      mode1 === "perplexity_romaji" || mode2 === "perplexity_romaji" ||
+      mode1 === "perplexity_phonetic_ko" || mode2 === "perplexity_phonetic_ko";
+    const needTranslation = mode1 === "gemini_ko" || mode2 === "gemini_ko" ||
+      (mode1 && mode1.startsWith("perplexity") && mode1 !== "perplexity_romaji" && mode1 !== "perplexity_phonetic_ko") ||
+      (mode2 && mode2.startsWith("perplexity") && mode2 !== "perplexity_romaji" && mode2 !== "perplexity_phonetic_ko");
 
     // trackId 가져오기
     const trackId = Spicetify.Player.data?.item?.uri?.split(':')[2];
@@ -2520,22 +2572,35 @@ class LyricsContainer extends react.Component {
       let phoneticResponse = null;
       let translationResponse = null;
 
-      // 발음 요청 (gemini_romaji)
+      // 발음 요청 (gemini_romaji, perplexity_romaji, 또는 perplexity_phonetic_ko)
       if (needPhonetic) {
-        phoneticResponse = await window.Translator.callGemini({
+        const isPerplexity = mode1 === "perplexity_romaji" || mode2 === "perplexity_romaji" ||
+          mode1 === "perplexity_phonetic_ko" || mode2 === "perplexity_phonetic_ko";
+        const isKoreanPhonetic = mode1 === "perplexity_phonetic_ko" || mode2 === "perplexity_phonetic_ko";
+        const callFunction = isPerplexity && window.Translator?.callPerplexity 
+          ? window.Translator.callPerplexity 
+          : window.Translator.callGemini;
+        
+        phoneticResponse = await callFunction({
           trackId,
           artist: this.state.artist || lyricsState.artist,
           title: this.state.title || lyricsState.title,
           text,
           wantSmartPhonetic: true,
-          provider: lyricsState.provider,
+          provider: isKoreanPhonetic ? "perplexity_phonetic_ko" : lyricsState.provider,
           ignoreCache: true,
         });
       }
 
-      // 번역 요청 (gemini_ko)
+      // 번역 요청 (gemini_ko 또는 perplexity_ko 등)
       if (needTranslation) {
-        translationResponse = await window.Translator.callGemini({
+        const isPerplexity = (mode1 && mode1.startsWith("perplexity")) || 
+          (mode2 && mode2.startsWith("perplexity"));
+        const callFunction = isPerplexity && window.Translator?.callPerplexity 
+          ? window.Translator.callPerplexity 
+          : window.Translator.callGemini;
+        
+        translationResponse = await callFunction({
           trackId,
           artist: this.state.artist || lyricsState.artist,
           title: this.state.title || lyricsState.title,
@@ -2624,17 +2689,23 @@ class LyricsContainer extends react.Component {
       let translatedLyrics2 = null;
 
       // mode1 처리
-      if (mode1 === "gemini_romaji" && phoneticResponse?.phonetic) {
+      if ((mode1 === "gemini_romaji" || mode1 === "perplexity_romaji" || mode1 === "perplexity_phonetic_ko") && phoneticResponse?.phonetic) {
         translatedLyrics1 = processTranslationResult(phoneticResponse.phonetic, originalLyrics);
-      } else if (mode1 === "gemini_ko" && translationResponse?.vi) {
-        translatedLyrics1 = processTranslationResult(translationResponse.vi, originalLyrics);
+      } else if (mode1 && (mode1.startsWith("gemini_") || mode1.startsWith("perplexity_")) && mode1 !== "gemini_romaji" && mode1 !== "perplexity_romaji" && mode1 !== "perplexity_phonetic_ko") {
+        const translationData = translationResponse?.vi || translationResponse?.translation;
+        if (translationData) {
+          translatedLyrics1 = processTranslationResult(translationData, originalLyrics);
+        }
       }
 
       // mode2 처리 (mode1과 독립적으로)
-      if (mode2 === "gemini_romaji" && phoneticResponse?.phonetic) {
+      if ((mode2 === "gemini_romaji" || mode2 === "perplexity_romaji" || mode2 === "perplexity_phonetic_ko") && phoneticResponse?.phonetic) {
         translatedLyrics2 = processTranslationResult(phoneticResponse.phonetic, originalLyrics);
-      } else if (mode2 === "gemini_ko" && translationResponse?.vi) {
-        translatedLyrics2 = processTranslationResult(translationResponse.vi, originalLyrics);
+      } else if (mode2 && (mode2.startsWith("gemini_") || mode2.startsWith("perplexity_")) && mode2 !== "gemini_romaji" && mode2 !== "perplexity_romaji" && mode2 !== "perplexity_phonetic_ko") {
+        const translationData = translationResponse?.vi || translationResponse?.translation;
+        if (translationData) {
+          translatedLyrics2 = processTranslationResult(translationData, originalLyrics);
+        }
       }
 
       // _dmResults에 번역 결과 저장
@@ -2982,11 +3053,11 @@ class LyricsContainer extends react.Component {
       }
     }
 
-    // For Gemini mode, use generic keys if no specific language detected
+    // For Gemini/Perplexity mode, use generic keys if no specific language detected
     const provider = CONFIG.visual["translate:translated-lyrics-source"];
     const modeKey =
-      provider === "geminiKo" && !friendlyLanguage
-        ? "gemini"
+      (provider === "geminiKo" || provider === "perplexityKo") && !friendlyLanguage
+        ? (provider === "perplexityKo" ? "perplexity" : "gemini")
         : friendlyLanguage;
 
     const displayMode1 = CONFIG.visual[`translation-mode:${modeKey}`];
@@ -3003,13 +3074,13 @@ class LyricsContainer extends react.Component {
       }
       console.log("[processMode] Processing mode:", mode);
       try {
-        if (String(mode).startsWith("gemini")) {
+        if (String(mode).startsWith("gemini") || String(mode).startsWith("perplexity")) {
           const result = await this.getGeminiTranslation(
             lyricsState,
             baseLyrics,
             mode
           );
-          console.log("[processMode] Gemini result sample:", result?.[0]);
+          console.log("[processMode] Translation result sample:", result?.[0]);
           return result;
         } else {
           return await this.getTraditionalConversion(
@@ -3021,7 +3092,7 @@ class LyricsContainer extends react.Component {
         }
       } catch (error) {
         const modeDisplayName =
-          mode === "gemini_romaji"
+          mode === "gemini_romaji" || mode === "perplexity_romaji" || mode === "perplexity_phonetic_ko"
             ? I18n.t("notifications.romajiTranslationFailed")
             : I18n.t("notifications.koreanTranslationFailed");
         Toast.error(`${modeDisplayName}: ${error.message || "Unknown error"}`);
@@ -3273,9 +3344,9 @@ class LyricsContainer extends react.Component {
       return [];
     }
 
-    // Determine which mode is phonetic (romaji) and which is translation
-    const mode1IsPhonetic = displayMode1 === "gemini_romaji";
-    const mode2IsPhonetic = displayMode2 === "gemini_romaji";
+    // Determine which mode is phonetic (romaji or Korean phonetic) and which is translation
+    const mode1IsPhonetic = displayMode1 === "gemini_romaji" || displayMode1 === "perplexity_romaji" || displayMode1 === "perplexity_phonetic_ko";
+    const mode2IsPhonetic = displayMode2 === "gemini_romaji" || displayMode2 === "perplexity_romaji" || displayMode2 === "perplexity_phonetic_ko";
 
     // Helper: note/placeholder-only line (e.g., ♪, …)
     const isNoteLine = (text) => {
@@ -3360,8 +3431,8 @@ class LyricsContainer extends react.Component {
         (normalizedTrans1 === normalizedTrans2 ||
           areTranslationsSimilar(translation1, translation2));
 
-      let finalText = null; // This will be phonetic (romaji/발음)
-      let finalText2 = null; // This will be translation (번역)
+      let finalText = null; // 1줄: 발음 (romaji/발음)
+      let finalText2 = null; // 2줄: 번역
 
       // Helper function to process phonetic hyphen replacement
       const processPhoneticHyphen = (text) => {
@@ -3373,48 +3444,35 @@ class LyricsContainer extends react.Component {
         return text;
       };
 
-      // Assign to correct slots based on mode types
-      let phoneticText = "";
-      let translationText = "";
-
-      if (mode1IsPhonetic) {
-        phoneticText = processPhoneticHyphen(translation1);
-      } else if (mode1) {
-        translationText = translation1;
-      }
-
-      if (mode2IsPhonetic) {
-        phoneticText = processPhoneticHyphen(translation2);
-      } else if (mode2) {
-        translationText = translation2;
-      }
-
-      // Deduplication logic
-      if (translationsSame) {
-        // Both are the same, always show in translation slot (not phonetic)
-        const combinedText = translation1 || translation2;
-        if (!trans1SameAsOriginal) {
-          finalText2 = combinedText; // Always use translation slot when they're the same
+      // --- 단순 매핑 규칙 ---
+      // - mode1 = 발음 모드일 때: 1줄(text)에 발음
+      // - mode2 = 번역 모드일 때: 2줄(text2)에 번역
+      // - 둘 다 켜져 있으면 둘 다 항상 표시
+      
+      // mode1 처리: 발음이면 finalText에, 번역이면 finalText2에
+      if (mode1 && translation1 && !trans1SameAsOriginal) {
+        if (mode1IsPhonetic) {
+          finalText = processPhoneticHyphen(translation1);
+        } else {
+          finalText2 = translation1;
         }
-      } else {
-        // Different results - assign to correct slots
-        // finalText = phonetic, finalText2 = translation
-        if (!trans1SameAsOriginal && phoneticText) finalText = phoneticText;
-        if (!trans2SameAsOriginal && translationText)
-          finalText2 = translationText;
-        // Also handle case where trans1 is same but trans2 is not
-        if (trans1SameAsOriginal && !trans2SameAsOriginal) {
-          if (mode2IsPhonetic) {
-            finalText = translation2;
-          } else {
+      }
+
+      // mode2 처리: 발음이면 finalText에, 번역이면 finalText2에
+      // mode1과 mode2가 같은 타입이면 덮어쓰지 않고, 다른 타입이면 각각 할당
+      if (mode2 && translation2 && !trans2SameAsOriginal) {
+        if (mode2IsPhonetic) {
+          // mode2가 발음인 경우: mode1이 발음이 아니거나 없으면 finalText에 할당
+          if (!mode1IsPhonetic || !translation1 || trans1SameAsOriginal) {
+            finalText = processPhoneticHyphen(translation2);
+          }
+          // mode1도 발음이면 mode1 우선 (덮어쓰지 않음)
+        } else {
+          // mode2가 번역인 경우: mode1이 번역이 아니거나 없으면 finalText2에 할당
+          if (mode1IsPhonetic || !translation1 || trans1SameAsOriginal) {
             finalText2 = translation2;
           }
-        } else if (!trans1SameAsOriginal && trans2SameAsOriginal) {
-          if (mode1IsPhonetic) {
-            finalText = translation1;
-          } else {
-            finalText2 = translation1;
-          }
+          // mode1도 번역이면 mode1 우선 (덮어쓰지 않음)
         }
       }
 
@@ -3434,30 +3492,33 @@ class LyricsContainer extends react.Component {
 
   getGeminiTranslation(lyricsState, lyrics, mode) {
     return new Promise((resolve, reject) => {
-      const viKey = StorageManager.getPersisted(
-        `${APP_NAME}:visual:gemini-api-key`
-      );
-      const romajiKey = StorageManager.getPersisted(
-        `${APP_NAME}:visual:gemini-api-key-romaji`
-      );
+      const isPerplexity = String(mode).startsWith("perplexity");
+      
+      const viKey = isPerplexity 
+        ? StorageManager.getPersisted(`${APP_NAME}:visual:perplexity-api-key`)
+        : StorageManager.getPersisted(`${APP_NAME}:visual:gemini-api-key`);
+      const romajiKey = isPerplexity
+        ? StorageManager.getPersisted(`${APP_NAME}:visual:perplexity-api-key`)
+        : StorageManager.getPersisted(`${APP_NAME}:visual:gemini-api-key-romaji`);
 
       // Determine mode type and API key
       let wantSmartPhonetic = false;
       let apiKey;
 
-      if (mode === "gemini_romaji") {
-        // Use Smart Phonetic logic for the unified Romaji, Romaja, Pinyin button
+      if (mode === "gemini_romaji" || mode === "perplexity_romaji" || mode === "perplexity_phonetic_ko") {
+        // Use Smart Phonetic logic for the unified Romaji, Romaja, Pinyin button, or Korean phonetic
         wantSmartPhonetic = true;
-        apiKey = "no";
+        apiKey = romajiKey || viKey || "no";
       } else {
-        // Default to Korean
-        apiKey = "no";
+        // Default to translation
+        apiKey = viKey || "no";
       }
 
-      if (!apiKey || !Array.isArray(lyrics) || lyrics.length === 0) {
+      if (!apiKey || apiKey === "no" || !Array.isArray(lyrics) || lyrics.length === 0) {
+        const apiName = isPerplexity ? "Perplexity" : "Gemini";
         return reject(
           new Error(
-            "Gemini API key missing. Please add at least one key in Settings."
+            `${apiName} API key missing. Please add at least one key in Settings.`
           )
         );
       }
@@ -3504,10 +3565,10 @@ class LyricsContainer extends react.Component {
       }
 
       // Use optimized rate limiter with separate keys for each translation type
-      const rateLimitKey = mode.replace("gemini_", "gemini-");
+      const rateLimitKey = mode.replace("gemini_", "gemini-").replace("perplexity_", "perplexity-");
       if (!RateLimiter.canMakeCall(rateLimitKey, 5, 2000)) {
         const modeName =
-          mode === "gemini_romaji" ? "Romaji, Romaja, Pinyin" : "Korean";
+          mode === "gemini_romaji" || mode === "perplexity_romaji" ? "Romaji, Romaja, Pinyin" : "Translation";
         return reject(
           new Error(
             I18n.t("notifications.tooManyTranslationRequests")
@@ -3529,8 +3590,12 @@ class LyricsContainer extends react.Component {
         this.startTranslationLoading();
       }
 
-      const inflightPromise = window.Translator.callGemini({
-        apiKey,
+      const callFunction = isPerplexity && window.Translator?.callPerplexity 
+        ? window.Translator.callPerplexity 
+        : window.Translator.callGemini;
+      
+      const inflightPromise = callFunction({
+        trackId: lyricsState.uri?.split(':')[2],
         artist: this.state.artist || lyricsState.artist,
         title: this.state.title || lyricsState.title,
         text,
@@ -3542,10 +3607,13 @@ class LyricsContainer extends react.Component {
           if (wantSmartPhonetic) {
             outText = response.phonetic;
           } else {
-            outText = response.vi;
+            outText = response.vi || response.translation;
           }
 
-          if (!outText) throw new Error("Empty result from Gemini.");
+          if (!outText) {
+            const apiName = isPerplexity ? "Perplexity" : "Gemini";
+            throw new Error(`Empty result from ${apiName}.`);
+          }
 
           // Handle nested JSON packaging (API issue workaround)
           if (Array.isArray(outText) && outText.length === 1 && typeof outText[0] === 'string') {
@@ -3574,7 +3642,8 @@ class LyricsContainer extends react.Component {
           } else if (typeof outText === "string") {
             lines = outText.split("\n");
           } else {
-            throw new Error("Invalid translation format received from Gemini.");
+            const apiName = isPerplexity ? "Perplexity" : "Gemini";
+            throw new Error(`Invalid translation format received from ${apiName}.`);
           }
 
           // Create mapping arrays for proper alignment
@@ -3705,8 +3774,8 @@ class LyricsContainer extends react.Component {
 
     const provider = CONFIG.visual["translate:translated-lyrics-source"];
 
-    // For Gemini API, always detect language from lyrics (no override needed)
-    if (provider === "geminiKo") {
+    // For Gemini/Perplexity API, always detect language from lyrics (no override needed)
+    if (provider === "geminiKo" || provider === "perplexityKo") {
       // If we have a cached language in state, use it
       if (this.state.language) {
         // Update Utils detected language for furigana check
@@ -4712,11 +4781,11 @@ class LyricsContainer extends react.Component {
         .of(originalLanguage.split("-")[0])
         ?.toLowerCase();
 
-    // For Gemini mode, use generic keys if no specific language detected
+    // For Gemini/Perplexity mode, use generic keys if no specific language detected
     const provider = CONFIG.visual["translate:translated-lyrics-source"];
     const modeKey =
-      provider === "geminiKo" && !friendlyLanguage
-        ? "gemini"
+      (provider === "geminiKo" || provider === "perplexityKo") && !friendlyLanguage
+        ? (provider === "perplexityKo" ? "perplexity" : "gemini")
         : friendlyLanguage;
 
     const displayMode1 = CONFIG.visual[`translation-mode:${modeKey}`];
@@ -4762,8 +4831,12 @@ class LyricsContainer extends react.Component {
       hasTranslationEnabled &&
       (displayMode1?.startsWith("gemini") ||
         displayMode2?.startsWith("gemini"));
+    const hasPerplexityTranslation =
+      hasTranslationEnabled &&
+      (displayMode1?.startsWith("perplexity") ||
+        displayMode2?.startsWith("perplexity"));
 
-    // Gemini 번역이 실제로 로드되었는지 확인 (_dmResults 확인)
+    // Gemini/Perplexity 번역이 실제로 로드되었는지 확인 (_dmResults 확인)
     const currentUri = this.state.uri;
     const hasLoadedGeminiTranslation = !!(
       hasGeminiTranslation &&
@@ -4774,8 +4847,17 @@ class LyricsContainer extends react.Component {
         (displayMode2?.startsWith("gemini") &&
           this._dmResults[currentUri].mode2))
     );
+    const hasLoadedPerplexityTranslation = !!(
+      hasPerplexityTranslation &&
+      this._dmResults &&
+      this._dmResults[currentUri] &&
+      ((displayMode1?.startsWith("perplexity") &&
+        this._dmResults[currentUri].mode1) ||
+        (displayMode2?.startsWith("perplexity") &&
+          this._dmResults[currentUri].mode2))
+    );
 
-    const canRegenerateTranslation = hasLoadedGeminiTranslation;
+    const canRegenerateTranslation = hasLoadedGeminiTranslation || hasLoadedPerplexityTranslation;
 
     if (mode !== -1) {
       if (mode === KARAOKE && this.state.karaoke) {

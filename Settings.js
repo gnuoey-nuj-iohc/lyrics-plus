@@ -968,7 +968,7 @@ const DebugInfoPanel = () => {
   );
 };
 
-const ConfigButton = ({ name, settingKey, info, text, onChange = () => { } }) => {
+const ConfigButton = ({ name, info, text, onChange = () => { } }) => {
   return react.createElement(
     "div",
     {
@@ -996,7 +996,7 @@ const ConfigButton = ({ name, settingKey, info, text, onChange = () => { } }) =>
           "button",
           {
             className: "btn",
-            onClick: (event) => onChange(settingKey || name, event),
+            onClick: onChange,
           },
           text
         )
@@ -1635,16 +1635,16 @@ const ConfigSelection = ({
   );
 };
 
-const ConfigInput = ({ name, settingKey, defaultValue, onChange = () => { }, inputType = "text" }) => {
+const ConfigInput = ({ name, defaultValue, onChange = () => { }, inputType = "text" }) => {
   const [value, setValue] = useState(defaultValue);
 
   const setValueCallback = useCallback(
     (event) => {
       const value = event.target.value;
       setValue(value);
-      onChange(settingKey || name, value);
+      onChange(value);
     },
-    [value, name, settingKey]
+    [value]
   );
 
   return react.createElement(
@@ -1881,7 +1881,7 @@ const ConfigAdjust = ({
   );
 };
 
-const ConfigHotkey = ({ name, settingKey, defaultValue, onChange = () => { } }) => {
+const ConfigHotkey = ({ name, defaultValue, onChange = () => { } }) => {
   const [value, setValue] = useState(defaultValue);
   const [trap] = useState(new Spicetify.Mousetrap());
 
@@ -1890,7 +1890,7 @@ const ConfigHotkey = ({ name, settingKey, defaultValue, onChange = () => { } }) 
       if (e.type === "keydown") {
         const sequence = [...new Set([...modifiers, character])];
         if (sequence.length === 1 && sequence[0] === "esc") {
-          onChange(settingKey || name, "");
+          onChange("");
           setValue("");
           return;
         }
@@ -1901,7 +1901,7 @@ const ConfigHotkey = ({ name, settingKey, defaultValue, onChange = () => { } }) 
 
   function finishRecord() {
     trap.handleKey = () => { };
-    onChange(settingKey || name, value);
+    onChange(value);
   }
 
   return react.createElement(
@@ -1931,7 +1931,7 @@ const ConfigHotkey = ({ name, settingKey, defaultValue, onChange = () => { } }) 
   );
 };
 
-const ConfigKeyList = ({ name, settingKey, defaultValue, onChange = () => { } }) => {
+const ConfigKeyList = ({ name, defaultValue, onChange = () => { } }) => {
   const [keys, setKeys] = useState(() => {
     try {
       if (!defaultValue) return [""];
@@ -1950,7 +1950,7 @@ const ConfigKeyList = ({ name, settingKey, defaultValue, onChange = () => { } })
   const updateKeys = (newKeys) => {
     setKeys(newKeys);
     // Save as JSON string
-    onChange(settingKey || name, JSON.stringify(newKeys.filter(k => k.trim() !== "")));
+    onChange(JSON.stringify(newKeys.filter(k => k.trim() !== "")));
   };
 
   const addKey = () => {
@@ -2231,26 +2231,22 @@ const OptionList = ({ type, items, onChange }) => {
       item.type === ConfigKeyList ||
       item.type === VideoHelperToggle
     ) {
-      // item.onChange가 있으면 그것을 우선 사용 (업데이트 확인, 내보내기 등 커스텀 핸들러)
-      const itemOnChange = item.onChange || ((name, value, event) => {
-        if (!isDisabled) {
-          onChangeItem(item.key || name, value, event);
-          forceUpdate({});
-        }
-      });
-
       return react.createElement(item.type, {
         ...item,
         key: index,
-        name: item.desc || item.key,
-        settingKey: item.key,
+        name: item.key || item.desc,
         text: item.text,
         disabled: isDisabled,
         defaultValue:
           item.defaultValue !== undefined
             ? item.defaultValue
             : CONFIG.visual[item.key],
-        onChange: itemOnChange,
+        onChange: (name, value, event) => {
+          if (!isDisabled) {
+            onChangeItem(item.key || name, value, event);
+            forceUpdate({});
+          }
+        },
       });
     }
 
@@ -2617,7 +2613,7 @@ const ConfigModal = () => {
       settingKey: "gemini-api",
       name: "Gemini API",
       desc: I18n.t("menu.apiSettings"),
-      keywords: ["gemini", "api", "키", "key", "번역", "translation", "ai"]
+      keywords: ["gemini", "perplexity", "api", "키", "key", "번역", "translation", "ai"]
     },
 
     // 전체화면 탭
@@ -5641,6 +5637,13 @@ const ConfigModal = () => {
               info: I18n.t("settingsAdvanced.playback.replaceFullscreenButton.info") || "Replaces Spotify's default fullscreen button with ivLyrics fullscreen",
               type: ConfigSlider,
             },
+
+            {
+              desc: I18n.t("settingsAdvanced.playback.fullscreenShortcut.label"),
+              key: "fullscreen-key",
+              info: I18n.t("settingsAdvanced.playback.fullscreenShortcut.desc"),
+              type: ConfigHotkey,
+            },
             {
               desc: I18n.t("settingsAdvanced.playback.panelLyrics.label") || "Show Lyrics in Right Panel",
               key: "panel-lyrics-enabled",
@@ -5894,6 +5897,12 @@ const ConfigModal = () => {
               desc: I18n.t("settingsAdvanced.api.geminiKey.desc"),
               info: I18n.t("settingsAdvanced.api.geminiKey.info"),
               key: "gemini-api-key",
+              type: ConfigKeyList,
+            },
+            {
+              desc: I18n.t("settingsAdvanced.api.perplexityKey.desc"),
+              info: I18n.t("settingsAdvanced.api.perplexityKey.info"),
+              key: "perplexity-api-key",
               type: ConfigKeyList,
             },
 

@@ -891,6 +891,11 @@ const getStaticOptions = () => ({
     gemini_romaji: I18n.t("translationMenu.geminiRomaji"),
     gemini_ko: I18n.t("translationMenu.geminiKo"),
   },
+  perplexityModes: {
+    perplexity_romaji: I18n.t("translationMenu.perplexityRomaji"),
+    perplexity_phonetic_ko: I18n.t("translationMenu.perplexityPhoneticKo"),
+    perplexity_ko: I18n.t("translationMenu.perplexityKo"),
+  },
   languageModes: {
     japanese: {
       furigana: I18n.t("translationMenu.furigana"),
@@ -907,62 +912,76 @@ const getStaticOptions = () => ({
       tw: I18n.t("translationMenu.traditionalChineseTW"),
       pinyin: I18n.t("translationMenu.pinyin"),
     },
-    // Gemini-powered languages
+    // Perplexity-powered languages (Perplexity를 메인으로)
     russian: {
-      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
-      gemini_ko: I18n.t("translationMenu.koGemini"),
+      perplexity_romaji: I18n.t("translationMenu.romajiPerplexity"),
+      perplexity_phonetic_ko: I18n.t("translationMenu.phoneticKoPerplexity"),
+      perplexity_ko: I18n.t("translationMenu.koPerplexity"),
     },
     vietnamese: {
-      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
-      gemini_ko: I18n.t("translationMenu.koGemini"),
+      perplexity_romaji: I18n.t("translationMenu.romajiPerplexity"),
+      perplexity_phonetic_ko: I18n.t("translationMenu.phoneticKoPerplexity"),
+      perplexity_ko: I18n.t("translationMenu.koPerplexity"),
     },
     german: {
-      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
-      gemini_ko: I18n.t("translationMenu.koGemini"),
+      perplexity_romaji: I18n.t("translationMenu.romajiPerplexity"),
+      perplexity_phonetic_ko: I18n.t("translationMenu.phoneticKoPerplexity"),
+      perplexity_ko: I18n.t("translationMenu.koPerplexity"),
     },
     spanish: {
-      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
-      gemini_ko: I18n.t("translationMenu.koGemini"),
+      perplexity_romaji: I18n.t("translationMenu.romajiPerplexity"),
+      perplexity_phonetic_ko: I18n.t("translationMenu.phoneticKoPerplexity"),
+      perplexity_ko: I18n.t("translationMenu.koPerplexity"),
     },
     french: {
-      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
-      gemini_ko: I18n.t("translationMenu.koGemini"),
+      perplexity_romaji: I18n.t("translationMenu.romajiPerplexity"),
+      perplexity_phonetic_ko: I18n.t("translationMenu.phoneticKoPerplexity"),
+      perplexity_ko: I18n.t("translationMenu.koPerplexity"),
     },
     italian: {
-      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
-      gemini_ko: I18n.t("translationMenu.koGemini"),
+      perplexity_romaji: I18n.t("translationMenu.romajiPerplexity"),
+      perplexity_phonetic_ko: I18n.t("translationMenu.phoneticKoPerplexity"),
+      perplexity_ko: I18n.t("translationMenu.koPerplexity"),
     },
     portuguese: {
-      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
-      gemini_ko: I18n.t("translationMenu.koGemini"),
+      perplexity_romaji: I18n.t("translationMenu.romajiPerplexity"),
+      perplexity_phonetic_ko: I18n.t("translationMenu.phoneticKoPerplexity"),
+      perplexity_ko: I18n.t("translationMenu.koPerplexity"),
     },
     dutch: {
-      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
-      gemini_ko: I18n.t("translationMenu.koGemini"),
+      perplexity_romaji: I18n.t("translationMenu.romajiPerplexity"),
+      perplexity_phonetic_ko: I18n.t("translationMenu.phoneticKoPerplexity"),
+      perplexity_ko: I18n.t("translationMenu.koPerplexity"),
     },
     polish: {
-      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
-      gemini_ko: I18n.t("translationMenu.koGemini"),
+      perplexity_romaji: I18n.t("translationMenu.romajiPerplexity"),
+      perplexity_phonetic_ko: I18n.t("translationMenu.phoneticKoPerplexity"),
+      perplexity_ko: I18n.t("translationMenu.koPerplexity"),
     },
     turkish: {
-      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
-      gemini_ko: I18n.t("translationMenu.koGemini"),
+      perplexity_romaji: I18n.t("translationMenu.romajiPerplexity"),
+      perplexity_phonetic_ko: I18n.t("translationMenu.phoneticKoPerplexity"),
+      perplexity_ko: I18n.t("translationMenu.koPerplexity"),
     },
     arabic: {
-      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
-      gemini_ko: I18n.t("translationMenu.koGemini"),
+      perplexity_romaji: I18n.t("translationMenu.romajiPerplexity"),
+      perplexity_phonetic_ko: I18n.t("translationMenu.phoneticKoPerplexity"),
+      perplexity_ko: I18n.t("translationMenu.koPerplexity"),
     },
     hindi: {
-      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
-      gemini_ko: I18n.t("translationMenu.koGemini"),
+      perplexity_romaji: I18n.t("translationMenu.romajiPerplexity"),
+      perplexity_phonetic_ko: I18n.t("translationMenu.phoneticKoPerplexity"),
+      perplexity_ko: I18n.t("translationMenu.koPerplexity"),
     },
     thai: {
-      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
-      gemini_ko: I18n.t("translationMenu.koGemini"),
+      perplexity_romaji: I18n.t("translationMenu.romajiPerplexity"),
+      perplexity_phonetic_ko: I18n.t("translationMenu.phoneticKoPerplexity"),
+      perplexity_ko: I18n.t("translationMenu.koPerplexity"),
     },
     indonesian: {
-      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
-      gemini_ko: I18n.t("translationMenu.koGemini"),
+      perplexity_romaji: I18n.t("translationMenu.romajiPerplexity"),
+      perplexity_phonetic_ko: I18n.t("translationMenu.phoneticKoPerplexity"),
+      perplexity_ko: I18n.t("translationMenu.koPerplexity"),
     },
   },
 });
@@ -970,11 +989,11 @@ const getStaticOptions = () => ({
 const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
   // Open modal on click instead of ContextMenu to avoid xpui hook errors
   const open = () => {
-    // Force geminiKo provider
-    CONFIG.visual["translate:translated-lyrics-source"] = "geminiKo";
+    // Force perplexityKo provider (Perplexity를 메인으로)
+    CONFIG.visual["translate:translated-lyrics-source"] = "perplexityKo";
     StorageManager.setItem(
       `${APP_NAME}:visual:translate:translated-lyrics-source`,
-      "geminiKo"
+      "perplexityKo"
     );
 
     // Force "below" display mode
@@ -987,8 +1006,8 @@ const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
     // Determine the correct mode key based on language
     const provider = CONFIG.visual["translate:translated-lyrics-source"];
     const modeKey =
-      provider === "geminiKo" && !friendlyLanguage
-        ? "gemini"
+      (provider === "geminiKo" || provider === "perplexityKo") && !friendlyLanguage
+        ? (provider === "perplexityKo" ? "perplexity" : "gemini")
         : friendlyLanguage;
 
     console.log(
@@ -1008,7 +1027,8 @@ const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
     );
 
     const STATIC_OPTIONS = getStaticOptions();
-    let modeOptions = STATIC_OPTIONS.geminiModes;
+    // Perplexity만 사용 (메인으로 설정, 중복 방지)
+    let modeOptions = STATIC_OPTIONS.perplexityModes;
 
     // 감지된 언어를 사용자 친화적인 이름으로 변환
     const getDisplayLanguageName = (lang) => {
@@ -1095,6 +1115,28 @@ const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
               CONFIG.visual[`translation-mode:${modeKey}`] !== "none",
             renderInline: true,
             info: I18n.t("menu.pronunciationInfo"),
+          },
+          {
+            desc: react.createElement(SettingRowDescription, {
+              icon: ICONS.mode,
+              text: I18n.t("menu.pronunciationLanguage"),
+            }),
+            key: `pronunciation-language:${modeKey}`,
+            type: OptionsMenu,
+            options: [
+              { key: "perplexity_romaji", value: I18n.t("translationMenu.perplexityRomaji") || I18n.t("menu.pronunciationEnglish") },
+              { key: "perplexity_phonetic_ko", value: I18n.t("translationMenu.perplexityPhoneticKo") || I18n.t("menu.pronunciationKorean") },
+            ],
+            defaultValue: (() => {
+              const currentMode = CONFIG.visual[`translation-mode:${modeKey}`];
+              if (currentMode === "perplexity_phonetic_ko") {
+                return { key: "perplexity_phonetic_ko", value: I18n.t("translationMenu.perplexityPhoneticKo") || I18n.t("menu.pronunciationKorean") };
+              }
+              return { key: "perplexity_romaji", value: I18n.t("translationMenu.perplexityRomaji") || I18n.t("menu.pronunciationEnglish") };
+            })(),
+            info: I18n.t("menu.pronunciationLanguageInfo"),
+            renderInline: true,
+            disabled: CONFIG.visual[`translation-mode:${modeKey}`] === "none",
           },
           {
             desc: react.createElement(SettingRowDescription, {
@@ -1186,15 +1228,101 @@ const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
         return;
       }
 
+      // Handle pronunciation language selection
+      if (name.startsWith("pronunciation-language:")) {
+        const currentMode = CONFIG.visual[`translation-mode:${modeKey}`];
+        // If pronunciation is enabled, update the mode to selected language
+        if (currentMode !== "none") {
+          const newMode = value.key || value;
+          const oldMode = CONFIG.visual[`translation-mode:${modeKey}`];
+          
+          // Only regenerate if mode actually changed
+          if (oldMode !== newMode) {
+            CONFIG.visual[`translation-mode:${modeKey}`] = newMode;
+            StorageManager.setItem(`${APP_NAME}:visual:translation-mode:${modeKey}`, newMode);
+            
+            // Generate new pronunciation without clearing existing cache
+            if (window.lyricContainer && window.Translator) {
+              const trackId = Spicetify.Player.data?.item?.uri?.split(':')[2];
+              if (trackId) {
+                // Clear only the memory cache for this specific mode to force reload
+                // Keep other language caches intact
+                window.lyricContainer._dmResults = {};
+                window.lyricContainer.lastProcessedUri = null;
+                window.lyricContainer.lastProcessedMode = null;
+                
+                // Generate new pronunciation for selected language only
+                // This will create a new cache entry without deleting existing ones
+                const lyricsState = window.lyricContainer.state;
+                const currentMode = window.lyricContainer.getCurrentMode();
+                
+                // Get original lyrics
+                let originalLyrics = [];
+                if (currentMode === window.lyricContainer.KARAOKE && lyricsState.karaoke) {
+                  originalLyrics = lyricsState.karaoke;
+                } else if (currentMode === window.lyricContainer.SYNCED && lyricsState.synced) {
+                  originalLyrics = lyricsState.synced;
+                } else if (currentMode === window.lyricContainer.UNSYNCED && lyricsState.unsynced) {
+                  originalLyrics = lyricsState.unsynced;
+                } else {
+                  originalLyrics = lyricsState.currentLyrics || [];
+                }
+                
+                // Extract text (use same logic as regenerateTranslation)
+                const allLines = originalLyrics.map((l) => l?.text || "").filter(Boolean);
+                // Use window.Utils.isSectionHeader if available
+                const isSectionHeader = window.Utils?.isSectionHeader || 
+                  ((line) => line && typeof line === 'string' && /^\[.*\]$/.test(line.trim()));
+                const nonSectionLines = allLines.filter((line) => !isSectionHeader(line));
+                const text = nonSectionLines.join("\n");
+                
+                if (text) {
+                  const isPerplexity = newMode.startsWith("perplexity");
+                  const isKoreanPhonetic = newMode === "perplexity_phonetic_ko";
+                  const callFunction = isPerplexity && window.Translator?.callPerplexity 
+                    ? window.Translator.callPerplexity 
+                    : window.Translator.callGemini;
+                  
+                  // Generate new pronunciation (will create new cache entry)
+                  callFunction({
+                    trackId,
+                    artist: lyricsState.artist,
+                    title: lyricsState.title,
+                    text,
+                    wantSmartPhonetic: true,
+                    provider: isKoreanPhonetic ? "perplexity_phonetic_ko" : lyricsState.provider,
+                    ignoreCache: false, // Check cache first, but will create new entry for different provider
+                  }).then(() => {
+                    // Force update to show new pronunciation
+                    window.lyricContainer.forceUpdate();
+                  }).catch(err => {
+                    console.warn('[OptionsMenu] Failed to generate pronunciation:', err);
+                    window.lyricContainer.forceUpdate();
+                  });
+                } else {
+                  window.lyricContainer.forceUpdate();
+                }
+              } else {
+                window.lyricContainer.forceUpdate();
+              }
+            } else {
+              lyricContainerUpdate?.();
+            }
+          }
+        }
+        lyricContainerUpdate?.();
+        return;
+      }
+
       // Handle toggle values - convert boolean to appropriate mode string
       if (name.startsWith("translation-mode")) {
-        // For first line (발음), set to romaji or none
+        // For first line (발음), set to perplexity_romaji or none (Perplexity를 메인으로)
         if (name.startsWith(`translation-mode:`) && !name.includes("mode-2")) {
-          value = value ? "gemini_romaji" : "none";
+          value = value ? "perplexity_romaji" : "none";
         }
-        // For second line (번역), set to korean or none
+        // For second line (번역), set to perplexity_ko or none (Perplexity를 메인으로)
         else if (name.startsWith(`translation-mode-2:`)) {
-          value = value ? "gemini_ko" : "none";
+          value = value ? "perplexity_ko" : "none";
         }
       }
 
