@@ -2670,16 +2670,14 @@
                     const isKoreanPhonetic = provider === "perplexity_phonetic_ko";
                     if (isKoreanPhonetic) {
                         // Request Korean phonetic transcription (한글 발음)
-                        prompt = `Provide Korean phonetic transcription (한글 발음) for each line. Convert the text to how it sounds in Korean pronunciation. Return ONLY the Korean phonetic transcription, line by line, same structure. No explanations.\n\n${text}`;
+                        prompt = `Convert each line below to Korean phonetic transcription (한글 발음). Write ONLY the phonetic transcription, one line per line, matching the original line count exactly. Do not add explanations, disclaimers, or any other text.\n\nExample:\nInput: "Hello world"\nOutput: "헬로 월드"\n\nNow convert these lines:\n${text}`;
                     } else {
                         // Request phonetic transcription (romaji, pinyin, etc.)
-                        // "song lyrics" 표현을 피해서 저작권 문제 방지
-                        prompt = `Provide phonetic transcription (romaji for Japanese, pinyin for Chinese, etc.) for each line. Return ONLY the transcription, line by line, same structure. No explanations.\n\n${text}`;
+                        prompt = `Convert each line below to phonetic transcription (romaji for Japanese, pinyin for Chinese, etc.). Write ONLY the phonetic transcription, one line per line, matching the original line count exactly. Do not add explanations, disclaimers, or any other text.\n\nExample:\nInput: "こんにちは"\nOutput: "konnichiwa"\n\nNow convert these lines:\n${text}`;
                     }
                 } else {
                     // Request translation
-                    // "song lyrics" 표현을 피해서 저작권 문제 방지
-                    prompt = `Translate the following lines to ${targetLang}. Return ONLY the translation, line by line, same structure. No explanations.\n\n${text}`;
+                    prompt = `Translate each line below to ${targetLang}. Write ONLY the translation, one line per line, matching the original line count exactly. Do not add explanations, disclaimers, or any other text.\n\nExample:\nInput: "Hello world"\nOutput: "안녕하세요 세상"\n\nNow translate these lines:\n${text}`;
                 }
 
                 const category = wantSmartPhonetic ? 'phonetic' : 'translation';
@@ -2712,7 +2710,7 @@
                                 messages: [
                                     {
                                         role: "system",
-                                        content: "You are a text translator/transcriber. Translate or transcribe the given text lines. Keep line order, return ONLY the requested content without explanations, disclaimers, or citations."
+                                        content: "You are a text processing tool. Your task is to process text lines exactly as requested. You must return ONLY the processed text lines, one per line, matching the input line count. Never add explanations, disclaimers, apologies, citations, or any other text. Never refuse or explain why you cannot process the text. Just process and return the result."
                                     },
                                     {
                                         role: "user",
@@ -2805,6 +2803,12 @@
                         /copyright/i,
                         /can't provide/i,
                         /cannot provide/i,
+                        /I'm happy to assist/i,
+                        /If you have a specific/i,
+                        /I'm here to help/i,
+                        /I can help/i,
+                        /Let me know/i,
+                        /feel free to ask/i,
                         /recommend/i,
                         /utaten\.com/i,
                         /youtube/i,
@@ -2814,7 +2818,10 @@
                         /If you're looking/i,
                         /I'd recommend/i,
                         /would constitute/i,
-                        /reproducing substantial/i
+                        /reproducing substantial/i,
+                        /instead/i,
+                        /happy to assist/i,
+                        /specific word or phrase/i
                     ];
                     
                     let lines = translatedText.split('\n');
@@ -2828,6 +2835,18 @@
                         if (/^[-*•]\s/.test(trimmed) || /^\d+[\.\)]\s/.test(trimmed)) return false;
                         // 대괄호로 감싸진 참조 번호 제거 (예: [1], [5] 등)
                         if (/^\[.*\]/.test(trimmed)) return false;
+                        
+                        // 긴 영어 문장 제거 (발음/번역이 아닌 안내 문장)
+                        // 50자 이상이고 영어 단어가 많이 포함된 경우 제거
+                        if (trimmed.length > 50) {
+                            const englishWordCount = (trimmed.match(/\b[a-zA-Z]{3,}\b/g) || []).length;
+                            const totalWordCount = trimmed.split(/\s+/).length;
+                            if (totalWordCount > 0 && englishWordCount / totalWordCount > 0.7) {
+                                // 영어 비율이 높고 긴 문장은 안내 문장일 가능성이 높음
+                                return false;
+                            }
+                        }
+                        
                         return true;
                     });
 
@@ -3050,7 +3069,7 @@
                                 messages: [
                                     {
                                         role: "system",
-                                        content: "You are a text translator/transcriber. Translate or transcribe the given text lines. Keep line order, return ONLY the requested content without explanations, disclaimers, or citations."
+                                        content: "You are a text processing tool. Your task is to process text lines exactly as requested. You must return ONLY the processed text lines, one per line, matching the input line count. Never add explanations, disclaimers, apologies, citations, or any other text. Never refuse or explain why you cannot process the text. Just process and return the result."
                                     },
                                     {
                                         role: "user",
@@ -3178,6 +3197,18 @@
                         if (/^[-*•]\s/.test(trimmed) || /^\d+[\.\)]\s/.test(trimmed)) return false;
                         // 대괄호로 감싸진 참조 번호 제거 (예: [1], [5] 등)
                         if (/^\[.*\]/.test(trimmed)) return false;
+                        
+                        // 긴 영어 문장 제거 (발음/번역이 아닌 안내 문장)
+                        // 50자 이상이고 영어 단어가 많이 포함된 경우 제거
+                        if (trimmed.length > 50) {
+                            const englishWordCount = (trimmed.match(/\b[a-zA-Z]{3,}\b/g) || []).length;
+                            const totalWordCount = trimmed.split(/\s+/).length;
+                            if (totalWordCount > 0 && englishWordCount / totalWordCount > 0.7) {
+                                // 영어 비율이 높고 긴 문장은 안내 문장일 가능성이 높음
+                                return false;
+                            }
+                        }
+                        
                         return true;
                     });
 
