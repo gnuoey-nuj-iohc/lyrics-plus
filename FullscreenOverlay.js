@@ -1,7 +1,7 @@
 // Fullscreen Overlay Component - Enhanced UI/UX
 const FullscreenOverlay = (() => {
-    const React = Spicetify.React;
-    const { useState, useEffect, useCallback, useRef } = React;
+    const react = Spicetify.React;
+    const { useState, useEffect, useCallback, useRef } = react;
 
     // Format time helper (ms to mm:ss)
     const formatTime = (ms) => {
@@ -47,7 +47,7 @@ const FullscreenOverlay = (() => {
 
         if (!show) return null;
 
-        return React.createElement("div", {
+        return react.createElement("div", {
             className: "fullscreen-clock",
             style: { fontSize: `${size}px` }
         },
@@ -144,14 +144,14 @@ const FullscreenOverlay = (() => {
 
         if (!show || !contextName) return null;
 
-        return React.createElement("div", { className: "fullscreen-context-info" },
-            showImage && contextImage && React.createElement("img", {
+        return react.createElement("div", { className: "fullscreen-context-info" },
+            showImage && contextImage && react.createElement("img", {
                 src: contextImage,
                 className: "fullscreen-context-image"
             }),
-            React.createElement("div", { className: "fullscreen-context-text" },
-                contextType && React.createElement("span", { className: "fullscreen-context-type" }, contextType),
-                React.createElement("span", { className: "fullscreen-context-name" }, contextName)
+            react.createElement("div", { className: "fullscreen-context-text" },
+                contextType && react.createElement("span", { className: "fullscreen-context-type" }, contextType),
+                react.createElement("span", { className: "fullscreen-context-name" }, contextName)
             )
         );
     };
@@ -220,16 +220,16 @@ const FullscreenOverlay = (() => {
 
         if (!show || !visible || !nextTrack) return null;
 
-        return React.createElement("div", { className: "fullscreen-next-track" },
-            React.createElement("div", { className: "fullscreen-next-track-label" }, I18n.t("fullscreen.controls.nextTrackLabel")),
-            React.createElement("div", { className: "fullscreen-next-track-content" },
-                nextTrack.image && React.createElement("img", {
+        return react.createElement("div", { className: "fullscreen-next-track" },
+            react.createElement("div", { className: "fullscreen-next-track-label" }, I18n.t("fullscreen.controls.nextTrackLabel")),
+            react.createElement("div", { className: "fullscreen-next-track-content" },
+                nextTrack.image && react.createElement("img", {
                     src: nextTrack.image,
                     className: "fullscreen-next-track-image"
                 }),
-                React.createElement("div", { className: "fullscreen-next-track-info" },
-                    React.createElement("div", { className: "fullscreen-next-track-title" }, nextTrack.title),
-                    React.createElement("div", { className: "fullscreen-next-track-artist" }, nextTrack.artist)
+                react.createElement("div", { className: "fullscreen-next-track-info" },
+                    react.createElement("div", { className: "fullscreen-next-track-title" }, nextTrack.title),
+                    react.createElement("div", { className: "fullscreen-next-track-artist" }, nextTrack.artist)
                 )
             )
         );
@@ -295,24 +295,24 @@ const FullscreenOverlay = (() => {
 
         const progressPercent = duration > 0 ? (progress / duration) * 100 : 0;
 
-        return React.createElement("div", { className: "fullscreen-progress-standalone" },
-            React.createElement("span", { className: "fullscreen-time" }, formatTime(progress)),
-            React.createElement("div", {
+        return react.createElement("div", { className: "fullscreen-progress-standalone" },
+            react.createElement("span", { className: "fullscreen-time" }, formatTime(progress)),
+            react.createElement("div", {
                 className: "fullscreen-progress-bar",
                 ref: progressRef,
                 onClick: handleProgressClick,
                 onMouseDown: handleMouseDown
             },
-                React.createElement("div", {
+                react.createElement("div", {
                     className: "fullscreen-progress-fill",
                     style: { width: `${progressPercent}%` }
                 }),
-                React.createElement("div", {
+                react.createElement("div", {
                     className: "fullscreen-progress-handle",
                     style: { left: `${progressPercent}%` }
                 })
             ),
-            React.createElement("span", { className: "fullscreen-time" }, formatTime(duration))
+            react.createElement("span", { className: "fullscreen-time" }, formatTime(duration))
         );
     };
 
@@ -454,19 +454,19 @@ const FullscreenOverlay = (() => {
             }
         };
 
-        return React.createElement("div", {
+        return react.createElement("div", {
             className: `fullscreen-player-controls ${showBackground ? 'with-background' : ''}`
         },
             // Main control row: like, shuffle, prev, play, next, repeat, add-to-playlist
-            React.createElement("div", { className: "fullscreen-control-row fullscreen-control-main-row" },
+            react.createElement("div", { className: "fullscreen-control-row fullscreen-control-main-row" },
                 // Like button (left side)
-                React.createElement("button", {
+                react.createElement("button", {
                     className: `fullscreen-control-btn fullscreen-like-btn ${isLiked ? 'liked' : ''}`,
                     style: smallButtonStyle,
                     onClick: toggleLike,
                     title: isLiked ? I18n.t("fullscreen.controls.unlike") : I18n.t("fullscreen.controls.like")
                 },
-                    React.createElement("svg", {
+                    react.createElement("svg", {
                         viewBox: "0 0 16 16",
                         fill: isLiked ? "currentColor" : "none",
                         stroke: "currentColor",
@@ -475,7 +475,7 @@ const FullscreenOverlay = (() => {
                     })
                 ),
                 // Shuffle
-                React.createElement("button", {
+                react.createElement("button", {
                     className: `fullscreen-control-btn ${isShuffle ? 'active' : ''}`,
                     style: smallButtonStyle,
                     onClick: () => {
@@ -484,66 +484,66 @@ const FullscreenOverlay = (() => {
                     },
                     title: I18n.t("fullscreen.controls.shuffle")
                 },
-                    React.createElement("svg", {
+                    react.createElement("svg", {
                         viewBox: "0 0 16 16",
                         fill: "currentColor",
                         dangerouslySetInnerHTML: { __html: Spicetify.SVGIcons.shuffle }
                     })
                 ),
                 // Previous
-                React.createElement("button", {
+                react.createElement("button", {
                     className: "fullscreen-control-btn",
                     style: buttonStyle,
                     onClick: () => Spicetify.Player.back(),
                     title: I18n.t("fullscreen.controls.previous")
                 },
-                    React.createElement("svg", {
+                    react.createElement("svg", {
                         viewBox: "0 0 16 16",
                         fill: "currentColor",
                         dangerouslySetInnerHTML: { __html: Spicetify.SVGIcons["skip-back"] }
                     })
                 ),
                 // Play/Pause (main button)
-                React.createElement("button", {
+                react.createElement("button", {
                     className: "fullscreen-control-btn fullscreen-control-play",
                     style: mainButtonStyle,
                     onClick: () => Spicetify.Player.togglePlay(),
                     title: isPlaying ? I18n.t("fullscreen.controls.pause") : I18n.t("fullscreen.controls.play")
                 },
-                    React.createElement("svg", {
+                    react.createElement("svg", {
                         viewBox: "0 0 16 16",
                         fill: "currentColor",
                         dangerouslySetInnerHTML: { __html: isPlaying ? Spicetify.SVGIcons.pause : Spicetify.SVGIcons.play }
                     })
                 ),
                 // Next
-                React.createElement("button", {
+                react.createElement("button", {
                     className: "fullscreen-control-btn",
                     style: buttonStyle,
                     onClick: () => Spicetify.Player.next(),
                     title: I18n.t("fullscreen.controls.next")
                 },
-                    React.createElement("svg", {
+                    react.createElement("svg", {
                         viewBox: "0 0 16 16",
                         fill: "currentColor",
                         dangerouslySetInnerHTML: { __html: Spicetify.SVGIcons["skip-forward"] }
                     })
                 ),
                 // Repeat
-                React.createElement("button", {
+                react.createElement("button", {
                     className: `fullscreen-control-btn ${repeatMode > 0 ? 'active' : ''}`,
                     style: smallButtonStyle,
                     onClick: cycleRepeat,
                     title: repeatMode === 0 ? I18n.t("fullscreen.controls.repeatOff") : repeatMode === 1 ? I18n.t("fullscreen.controls.repeatAll") : I18n.t("fullscreen.controls.repeatOne")
                 },
-                    React.createElement("svg", {
+                    react.createElement("svg", {
                         viewBox: "0 0 16 16",
                         fill: "currentColor",
                         dangerouslySetInnerHTML: { __html: repeatMode === 2 ? (Spicetify.SVGIcons["repeat-once"] || Spicetify.SVGIcons.repeat) : Spicetify.SVGIcons.repeat }
                     })
                 ),
                 // Share link button (right side, for symmetry)
-                React.createElement("button", {
+                react.createElement("button", {
                     className: "fullscreen-control-btn",
                     style: smallButtonStyle,
                     onClick: async () => {
@@ -564,7 +564,7 @@ const FullscreenOverlay = (() => {
                     },
                     title: I18n.t("fullscreen.controls.share")
                 },
-                    React.createElement("svg", {
+                    react.createElement("svg", {
                         viewBox: "0 0 16 16",
                         fill: "currentColor",
                         dangerouslySetInnerHTML: { __html: Spicetify.SVGIcons["share"] || '<path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>' }
@@ -572,20 +572,20 @@ const FullscreenOverlay = (() => {
                 )
             ),
             // Volume row
-            showVolume && React.createElement("div", { className: "fullscreen-control-row fullscreen-control-volume-row" },
-                React.createElement("div", {
+            showVolume && react.createElement("div", { className: "fullscreen-control-row fullscreen-control-volume-row" },
+                react.createElement("div", {
                     className: "fullscreen-volume-wrapper",
                     onMouseEnter: () => setIsVolumeHovered(true),
                     onMouseLeave: () => setIsVolumeHovered(false),
                     onWheel: handleVolumeWheel
                 },
-                    React.createElement("button", {
+                    react.createElement("button", {
                         className: "fullscreen-control-btn",
                         style: smallButtonStyle,
                         onClick: toggleMute,
                         title: isMuted ? I18n.t("fullscreen.controls.unmute") : I18n.t("fullscreen.controls.mute")
                     },
-                        React.createElement("svg", {
+                        react.createElement("svg", {
                             viewBox: "0 0 16 16",
                             fill: "currentColor",
                             dangerouslySetInnerHTML: {
@@ -597,7 +597,7 @@ const FullscreenOverlay = (() => {
                             }
                         })
                     ),
-                    React.createElement("input", {
+                    react.createElement("input", {
                         type: "range",
                         className: "fullscreen-volume-slider",
                         min: 0,
@@ -606,7 +606,7 @@ const FullscreenOverlay = (() => {
                         value: volume,
                         onChange: handleVolumeChange
                     }),
-                    (isVolumeChanging || isVolumeHovered) && React.createElement("span", {
+                    (isVolumeChanging || isVolumeHovered) && react.createElement("span", {
                         className: "fullscreen-volume-percent",
                         style: {
                             marginLeft: "8px",
@@ -627,14 +627,14 @@ const FullscreenOverlay = (() => {
 
         const percent = Math.round(((currentLine + 1) / totalLines) * 100);
 
-        return React.createElement("div", { className: "fullscreen-lyrics-progress" },
-            React.createElement("div", { className: "fullscreen-lyrics-progress-bar" },
-                React.createElement("div", {
+        return react.createElement("div", { className: "fullscreen-lyrics-progress" },
+            react.createElement("div", { className: "fullscreen-lyrics-progress-bar" },
+                react.createElement("div", {
                     className: "fullscreen-lyrics-progress-fill",
                     style: { width: `${percent}%` }
                 })
             ),
-            React.createElement("span", { className: "fullscreen-lyrics-progress-text" },
+            react.createElement("span", { className: "fullscreen-lyrics-progress-text" },
                 `${currentLine + 1} / ${totalLines}`
             )
         );
@@ -748,63 +748,63 @@ const FullscreenOverlay = (() => {
 
         if (!show || !isFullscreen) return null;
 
-        return React.createElement("div", {
+        return react.createElement("div", {
             className: "fullscreen-queue-wrapper",
             onMouseLeave: () => setIsHovered(false)
         },
             // Hover trigger area (투명한 오른쪽 영역)
-            React.createElement("div", {
+            react.createElement("div", {
                 className: "fullscreen-queue-trigger-area",
                 onMouseEnter: () => setIsHovered(true)
             }),
 
             // Queue panel (항상 렌더링, visible 클래스로 애니메이션 제어)
-            React.createElement("div", {
+            react.createElement("div", {
                 className: `fullscreen-queue-panel ${isHovered ? 'visible' : ''}`,
                 onMouseEnter: () => setIsHovered(true)
             },
                 // Content
-                React.createElement("div", { className: "fullscreen-queue-content" },
-                    activeTab === 'queue' ? React.createElement(React.Fragment, null,
+                react.createElement("div", { className: "fullscreen-queue-content" },
+                    activeTab === 'queue' ? react.createElement(react.Fragment, null,
                         // 현재 재생 중
-                        currentTrack && React.createElement("div", { className: "fullscreen-queue-section" },
-                            React.createElement("div", { className: "fullscreen-queue-section-title" },
+                        currentTrack && react.createElement("div", { className: "fullscreen-queue-section" },
+                            react.createElement("div", { className: "fullscreen-queue-section-title" },
                                 I18n.t("fullscreen.queue.nowPlaying")
                             ),
-                            React.createElement("div", { className: "fullscreen-queue-item current" },
-                                currentTrack.image && React.createElement("img", {
+                            react.createElement("div", { className: "fullscreen-queue-item current" },
+                                currentTrack.image && react.createElement("img", {
                                     src: currentTrack.image,
                                     className: "fullscreen-queue-item-image"
                                 }),
-                                React.createElement("div", { className: "fullscreen-queue-item-info" },
-                                    React.createElement("div", { className: "fullscreen-queue-item-title" }, currentTrack.title),
-                                    React.createElement("div", { className: "fullscreen-queue-item-artist" }, currentTrack.artist)
+                                react.createElement("div", { className: "fullscreen-queue-item-info" },
+                                    react.createElement("div", { className: "fullscreen-queue-item-title" }, currentTrack.title),
+                                    react.createElement("div", { className: "fullscreen-queue-item-artist" }, currentTrack.artist)
                                 ),
-                                React.createElement("div", { className: "fullscreen-queue-item-playing" },
-                                    React.createElement("span", { className: "fullscreen-queue-playing-icon" }, "♪")
+                                react.createElement("div", { className: "fullscreen-queue-item-playing" },
+                                    react.createElement("span", { className: "fullscreen-queue-playing-icon" }, "♪")
                                 )
                             )
                         ),
 
                         // 다음 재생 곡들
-                        nextTracks.length > 0 && React.createElement("div", { className: "fullscreen-queue-section" },
-                            React.createElement("div", { className: "fullscreen-queue-section-title" },
+                        nextTracks.length > 0 && react.createElement("div", { className: "fullscreen-queue-section" },
+                            react.createElement("div", { className: "fullscreen-queue-section-title" },
                                 I18n.t("fullscreen.queue.upNext")
                             ),
-                            React.createElement("div", { className: "fullscreen-queue-list" },
+                            react.createElement("div", { className: "fullscreen-queue-list" },
                                 nextTracks.map((track, idx) =>
-                                    React.createElement("div", {
+                                    react.createElement("div", {
                                         key: `next-${idx}`,
                                         className: "fullscreen-queue-item",
                                         onClick: () => handleTrackClick(track.uri)
                                     },
-                                        track.image && React.createElement("img", {
+                                        track.image && react.createElement("img", {
                                             src: track.image,
                                             className: "fullscreen-queue-item-image"
                                         }),
-                                        React.createElement("div", { className: "fullscreen-queue-item-info" },
-                                            React.createElement("div", { className: "fullscreen-queue-item-title" }, track.title),
-                                            React.createElement("div", { className: "fullscreen-queue-item-artist" }, track.artist)
+                                        react.createElement("div", { className: "fullscreen-queue-item-info" },
+                                            react.createElement("div", { className: "fullscreen-queue-item-title" }, track.title),
+                                            react.createElement("div", { className: "fullscreen-queue-item-artist" }, track.artist)
                                         )
                                     )
                                 )
@@ -812,41 +812,41 @@ const FullscreenOverlay = (() => {
                         ),
 
                         // 대기열이 비어있는 경우
-                        nextTracks.length === 0 && React.createElement("div", { className: "fullscreen-queue-empty" },
+                        nextTracks.length === 0 && react.createElement("div", { className: "fullscreen-queue-empty" },
                             I18n.t("fullscreen.queue.empty")
                         )
-                    ) : React.createElement(React.Fragment, null,
+                    ) : react.createElement(react.Fragment, null,
                         // 최근 재생 곡들
-                        recentTracks.length > 0 ? React.createElement("div", { className: "fullscreen-queue-list" },
+                        recentTracks.length > 0 ? react.createElement("div", { className: "fullscreen-queue-list" },
                             recentTracks.map((track, idx) =>
-                                React.createElement("div", {
+                                react.createElement("div", {
                                     key: `recent-${idx}`,
                                     className: "fullscreen-queue-item",
                                     onClick: () => handleTrackClick(track.uri)
                                 },
-                                    track.image && React.createElement("img", {
+                                    track.image && react.createElement("img", {
                                         src: track.image,
                                         className: "fullscreen-queue-item-image"
                                     }),
-                                    React.createElement("div", { className: "fullscreen-queue-item-info" },
-                                        React.createElement("div", { className: "fullscreen-queue-item-title" }, track.title),
-                                        React.createElement("div", { className: "fullscreen-queue-item-artist" }, track.artist)
+                                    react.createElement("div", { className: "fullscreen-queue-item-info" },
+                                        react.createElement("div", { className: "fullscreen-queue-item-title" }, track.title),
+                                        react.createElement("div", { className: "fullscreen-queue-item-artist" }, track.artist)
                                     )
                                 )
                             )
-                        ) : React.createElement("div", { className: "fullscreen-queue-empty" },
+                        ) : react.createElement("div", { className: "fullscreen-queue-empty" },
                             I18n.t("fullscreen.queue.noRecent")
                         )
                     )
                 ),
 
                 // Footer with tabs (하단에 탭 버튼)
-                React.createElement("div", { className: "fullscreen-queue-footer" },
-                    React.createElement("button", {
+                react.createElement("div", { className: "fullscreen-queue-footer" },
+                    react.createElement("button", {
                         className: `fullscreen-queue-tab ${activeTab === 'queue' ? 'active' : ''}`,
                         onClick: () => setActiveTab('queue')
                     }, I18n.t("fullscreen.queue.title")),
-                    React.createElement("button", {
+                    react.createElement("button", {
                         className: `fullscreen-queue-tab ${activeTab === 'recent' ? 'active' : ''}`,
                         onClick: () => setActiveTab('recent')
                     }, I18n.t("fullscreen.queue.recentlyPlayed"))
@@ -1041,13 +1041,13 @@ const FullscreenOverlay = (() => {
         // In TV mode, hide the left panel (album/info shown at bottom-left instead)
         const hideLeftPanelForTvMode = tvModeEnabled;
 
-        return React.createElement(React.Fragment, null,
+        return react.createElement(react.Fragment, null,
             // Bottom-left: TV Mode Song Info OR Context info
-            tvModeEnabled ? React.createElement("div", {
+            tvModeEnabled ? react.createElement("div", {
                 className: "fullscreen-tv-song-info"
             },
                 // Album art
-                React.createElement("img", {
+                react.createElement("img", {
                     src: coverUrl || Spicetify.Player.data?.item?.metadata?.image_url,
                     className: "fullscreen-tv-album",
                     style: {
@@ -1057,9 +1057,9 @@ const FullscreenOverlay = (() => {
                     }
                 }),
                 // Track info
-                React.createElement("div", { className: "fullscreen-tv-track-info" },
+                react.createElement("div", { className: "fullscreen-tv-track-info" },
                     // Title
-                    React.createElement("div", {
+                    react.createElement("div", {
                         className: "fullscreen-tv-title",
                         style: { fontSize: `${Math.round(tvAlbumSize * 0.26)}px` }
                     },
@@ -1077,7 +1077,7 @@ const FullscreenOverlay = (() => {
                         })()
                     ),
                     // Artist
-                    React.createElement("div", {
+                    react.createElement("div", {
                         className: "fullscreen-tv-artist",
                         style: { fontSize: `${Math.round(tvAlbumSize * 0.16)}px` }
                     },
@@ -1095,7 +1095,7 @@ const FullscreenOverlay = (() => {
                         })()
                     ),
                     // Album name (from context)
-                    React.createElement("div", { className: "fullscreen-tv-album-name" },
+                    react.createElement("div", { className: "fullscreen-tv-album-name" },
                         (() => {
                             try {
                                 const albumName = Spicetify.Player.data?.item?.metadata?.album_title;
@@ -1107,37 +1107,37 @@ const FullscreenOverlay = (() => {
                         })()
                     )
                 )
-            ) : React.createElement("div", {
+            ) : react.createElement("div", {
                 className: `fullscreen-bottom-left ${!uiVisible ? 'hidden' : ''}`
             },
-                React.createElement(ContextInfo, { show: showContext, showImage: showContextImage })
+                react.createElement(ContextInfo, { show: showContext, showImage: showContextImage })
             ),
             // Top-right: Clock & Next track
-            React.createElement("div", {
+            react.createElement("div", {
                 className: `fullscreen-top-right ${!uiVisible ? 'hidden' : ''}`
             },
-                React.createElement(Clock, {
+                react.createElement(Clock, {
                     show: showClock,
                     showSeconds: clockShowSeconds,
                     size: clockSize
                 }),
-                React.createElement(NextTrackPreview, {
+                react.createElement(NextTrackPreview, {
                     show: showNextTrack,
                     secondsBeforeEnd: nextTrackSeconds
                 })
             ),
             // Left panel (Album, Info & Controls) OR TMI View - Hidden in TV Mode
-            isTwoColumn && !hideLeftPanel && !hideLeftPanelForTvMode && React.createElement("div", {
+            isTwoColumn && !hideLeftPanel && !hideLeftPanelForTvMode && react.createElement("div", {
                 className: `lyrics-fullscreen-left-panel ${!uiVisible && showControlsInLeftPanel ? 'controls-hidden' : ''} ${tmiMode ? 'tmi-mode' : ''}`
             },
                 // TMI Mode View
                 tmiMode ? (
                     tmiLoading ?
-                        React.createElement(window.SongInfoTMI?.TMILoadingView || 'div', {
+                        react.createElement(window.SongInfoTMI?.TMILoadingView || 'div', {
                             onClose: closeTmiMode,
                             tmiScale: tmiScale
                         }) :
-                        React.createElement(window.SongInfoTMI?.TMIFullView || 'div', {
+                        react.createElement(window.SongInfoTMI?.TMIFullView || 'div', {
                             info: tmiData,
                             onClose: closeTmiMode,
                             tmiScale: tmiScale,
@@ -1172,12 +1172,12 @@ const FullscreenOverlay = (() => {
                         })
                 ) :
                     // Normal Mode
-                    React.createElement("div", {
+                    react.createElement("div", {
                         className: "lyrics-fullscreen-left-content",
                         style: { gap: `${infoGap}px` }
                     },
                         // Album art container (clickable for TMI)
-                        showAlbum && React.createElement("div", {
+                        showAlbum && react.createElement("div", {
                             className: `lyrics-fullscreen-album-container clickable-album-container`,
                             style: {
                                 width: `${albumSize}px`,
@@ -1189,7 +1189,7 @@ const FullscreenOverlay = (() => {
                             },
                             onClick: handleAlbumClick
                         },
-                            React.createElement("img", {
+                            react.createElement("img", {
                                 src: coverUrl || Spicetify.Player.data?.item?.metadata?.image_url,
                                 className: `lyrics-fullscreen-album-art ${albumShadow ? 'with-shadow' : ''}`,
                                 style: {
@@ -1199,12 +1199,12 @@ const FullscreenOverlay = (() => {
                                 }
                             }),
                             // TMI Hint Overlay
-                            React.createElement("div", {
+                            react.createElement("div", {
                                 className: "album-tmi-hint",
                                 style: { borderRadius: `${albumRadius}px` }
                             },
-                                React.createElement("div", { className: "album-tmi-hint-content" },
-                                    React.createElement("span", { className: "album-tmi-text" },
+                                react.createElement("div", { className: "album-tmi-hint-content" },
+                                    react.createElement("span", { className: "album-tmi-text" },
                                         CONFIG.visual?.["gemini-api-key"]
                                             ? I18n.t("tmi.viewInfo")
                                             : I18n.t("tmi.requireKey")
@@ -1213,9 +1213,9 @@ const FullscreenOverlay = (() => {
                             )
                         ),
                         // Track info with translated metadata support
-                        showInfo && React.createElement("div", { className: "lyrics-fullscreen-track-info" },
+                        showInfo && react.createElement("div", { className: "lyrics-fullscreen-track-info" },
                             // Title (based on display mode)
-                            React.createElement("div", { className: "lyrics-fullscreen-title-container" },
+                            react.createElement("div", { className: "lyrics-fullscreen-title-container" },
                                 (() => {
                                     const mode = CONFIG?.visual?.["translate-metadata-mode"] || "translated";
                                     const originalTitle = title || Spicetify.Player.data?.item?.metadata?.title;
@@ -1226,7 +1226,7 @@ const FullscreenOverlay = (() => {
                                     switch (mode) {
                                         case "translated":
                                             // 번역만 표시 (없으면 원어)
-                                            elements.push(React.createElement("div", {
+                                            elements.push(react.createElement("div", {
                                                 key: "title-main",
                                                 className: "lyrics-fullscreen-title",
                                                 style: { fontSize: `${titleSize}px` }
@@ -1235,7 +1235,7 @@ const FullscreenOverlay = (() => {
 
                                         case "romanized":
                                             // 발음만 표시 (없으면 원어)
-                                            elements.push(React.createElement("div", {
+                                            elements.push(react.createElement("div", {
                                                 key: "title-main",
                                                 className: "lyrics-fullscreen-title",
                                                 style: { fontSize: `${titleSize}px` }
@@ -1244,13 +1244,13 @@ const FullscreenOverlay = (() => {
 
                                         case "original-translated":
                                             // 원어 + 번역
-                                            elements.push(React.createElement("div", {
+                                            elements.push(react.createElement("div", {
                                                 key: "title-original",
                                                 className: "lyrics-fullscreen-title",
                                                 style: { fontSize: `${titleSize}px` }
                                             }, originalTitle));
                                             if (translatedTitle && translatedTitle !== originalTitle) {
-                                                elements.push(React.createElement("div", {
+                                                elements.push(react.createElement("div", {
                                                     key: "title-translated",
                                                     className: "lyrics-fullscreen-title-translated",
                                                     style: { fontSize: `${Math.round(titleSize * 0.6)}px` }
@@ -1260,13 +1260,13 @@ const FullscreenOverlay = (() => {
 
                                         case "original-romanized":
                                             // 원어 + 발음
-                                            elements.push(React.createElement("div", {
+                                            elements.push(react.createElement("div", {
                                                 key: "title-original",
                                                 className: "lyrics-fullscreen-title",
                                                 style: { fontSize: `${titleSize}px` }
                                             }, originalTitle));
                                             if (romanizedTitle && romanizedTitle !== originalTitle) {
-                                                elements.push(React.createElement("div", {
+                                                elements.push(react.createElement("div", {
                                                     key: "title-romanized",
                                                     className: "lyrics-fullscreen-title-romanized",
                                                     style: { fontSize: `${Math.round(titleSize * 0.5)}px` }
@@ -1277,20 +1277,20 @@ const FullscreenOverlay = (() => {
                                         case "all":
                                         default:
                                             // 모두 표시 (원어 + 번역 + 발음)
-                                            elements.push(React.createElement("div", {
+                                            elements.push(react.createElement("div", {
                                                 key: "title-original",
                                                 className: "lyrics-fullscreen-title",
                                                 style: { fontSize: `${titleSize}px` }
                                             }, originalTitle));
                                             if (translatedTitle && translatedTitle !== originalTitle) {
-                                                elements.push(React.createElement("div", {
+                                                elements.push(react.createElement("div", {
                                                     key: "title-translated",
                                                     className: "lyrics-fullscreen-title-translated",
                                                     style: { fontSize: `${Math.round(titleSize * 0.6)}px` }
                                                 }, translatedTitle));
                                             }
                                             if (romanizedTitle && romanizedTitle !== originalTitle && romanizedTitle !== translatedTitle) {
-                                                elements.push(React.createElement("div", {
+                                                elements.push(react.createElement("div", {
                                                     key: "title-romanized",
                                                     className: "lyrics-fullscreen-title-romanized",
                                                     style: { fontSize: `${Math.round(titleSize * 0.5)}px` }
@@ -1303,7 +1303,7 @@ const FullscreenOverlay = (() => {
                                 })()
                             ),
                             // Artist (based on display mode)
-                            React.createElement("div", { className: "lyrics-fullscreen-artist-container" },
+                            react.createElement("div", { className: "lyrics-fullscreen-artist-container" },
                                 (() => {
                                     const mode = CONFIG?.visual?.["translate-metadata-mode"] || "translated";
                                     const originalArtist = artist || Spicetify.Player.data?.item?.metadata?.artist_name;
@@ -1313,7 +1313,7 @@ const FullscreenOverlay = (() => {
 
                                     switch (mode) {
                                         case "translated":
-                                            elements.push(React.createElement("div", {
+                                            elements.push(react.createElement("div", {
                                                 key: "artist-main",
                                                 className: "lyrics-fullscreen-artist",
                                                 style: { fontSize: `${artistSize}px` }
@@ -1321,7 +1321,7 @@ const FullscreenOverlay = (() => {
                                             break;
 
                                         case "romanized":
-                                            elements.push(React.createElement("div", {
+                                            elements.push(react.createElement("div", {
                                                 key: "artist-main",
                                                 className: "lyrics-fullscreen-artist",
                                                 style: { fontSize: `${artistSize}px` }
@@ -1329,13 +1329,13 @@ const FullscreenOverlay = (() => {
                                             break;
 
                                         case "original-translated":
-                                            elements.push(React.createElement("div", {
+                                            elements.push(react.createElement("div", {
                                                 key: "artist-original",
                                                 className: "lyrics-fullscreen-artist",
                                                 style: { fontSize: `${artistSize}px` }
                                             }, originalArtist));
                                             if (translatedArtist && translatedArtist !== originalArtist) {
-                                                elements.push(React.createElement("div", {
+                                                elements.push(react.createElement("div", {
                                                     key: "artist-translated",
                                                     className: "lyrics-fullscreen-artist-translated",
                                                     style: { fontSize: `${Math.round(artistSize * 0.8)}px` }
@@ -1344,13 +1344,13 @@ const FullscreenOverlay = (() => {
                                             break;
 
                                         case "original-romanized":
-                                            elements.push(React.createElement("div", {
+                                            elements.push(react.createElement("div", {
                                                 key: "artist-original",
                                                 className: "lyrics-fullscreen-artist",
                                                 style: { fontSize: `${artistSize}px` }
                                             }, originalArtist));
                                             if (romanizedArtist && romanizedArtist !== originalArtist) {
-                                                elements.push(React.createElement("div", {
+                                                elements.push(react.createElement("div", {
                                                     key: "artist-romanized",
                                                     className: "lyrics-fullscreen-artist-romanized",
                                                     style: { fontSize: `${Math.round(artistSize * 0.8)}px` }
@@ -1360,13 +1360,13 @@ const FullscreenOverlay = (() => {
 
                                         case "all":
                                         default:
-                                            elements.push(React.createElement("div", {
+                                            elements.push(react.createElement("div", {
                                                 key: "artist-original",
                                                 className: "lyrics-fullscreen-artist",
                                                 style: { fontSize: `${artistSize}px` }
                                             }, originalArtist));
                                             if (translatedArtist && translatedArtist !== originalArtist) {
-                                                elements.push(React.createElement("div", {
+                                                elements.push(react.createElement("div", {
                                                     key: "artist-translated",
                                                     className: "lyrics-fullscreen-artist-translated",
                                                     style: { fontSize: `${Math.round(artistSize * 0.8)}px` }
@@ -1380,13 +1380,13 @@ const FullscreenOverlay = (() => {
                             )
                         ),
                         // Controls in left panel (under album)
-                        showControlsInLeftPanel && React.createElement("div", {
+                        showControlsInLeftPanel && react.createElement("div", {
                             className: `fullscreen-left-controls ${!uiVisible ? 'hidden' : ''}`
                         },
                             // Progress bar (독립적으로 표시)
-                            showProgress && React.createElement(ProgressBar, { show: true }),
+                            showProgress && react.createElement(ProgressBar, { show: true }),
                             // Player controls
-                            React.createElement(PlayerControls, {
+                            react.createElement(PlayerControls, {
                                 show: true,
                                 showVolume: showVolume,
                                 buttonSize: controlButtonSize,
@@ -1394,19 +1394,19 @@ const FullscreenOverlay = (() => {
                             })
                         ),
                         // Progress bar only (컨트롤 없이 진행바만 표시)
-                        !showControls && showProgress && React.createElement("div", {
+                        !showControls && showProgress && react.createElement("div", {
                             className: `fullscreen-left-controls ${!uiVisible ? 'hidden' : ''}`
                         },
-                            React.createElement(ProgressBar, { show: true })
+                            react.createElement(ProgressBar, { show: true })
                         )
                     )
             ),
             // Bottom: Player controls (alternative position)
-            showControlsInBottom && React.createElement("div", {
+            showControlsInBottom && react.createElement("div", {
                 className: `fullscreen-bottom ${!uiVisible ? 'hidden' : ''}`
             },
-                showProgress && React.createElement(ProgressBar, { show: true }),
-                React.createElement(PlayerControls, {
+                showProgress && react.createElement(ProgressBar, { show: true }),
+                react.createElement(PlayerControls, {
                     show: true,
                     showVolume: showVolume,
                     buttonSize: controlButtonSize,
@@ -1414,23 +1414,23 @@ const FullscreenOverlay = (() => {
                 })
             ),
             // Progress bar only at bottom (컨트롤 없이 진행바만 표시, bottom 위치)
-            !showControls && showProgress && controlsPosition === "bottom" && React.createElement("div", {
+            !showControls && showProgress && controlsPosition === "bottom" && react.createElement("div", {
                 className: `fullscreen-bottom ${!uiVisible ? 'hidden' : ''}`
             },
-                React.createElement(ProgressBar, { show: true })
+                react.createElement(ProgressBar, { show: true })
             ),
             // Lyrics progress (always at bottom right if enabled)
-            showLyricsProgress && React.createElement("div", {
+            showLyricsProgress && react.createElement("div", {
                 className: `fullscreen-lyrics-progress-container ${!uiVisible ? 'hidden' : ''}`
             },
-                React.createElement(LyricsProgress, {
+                react.createElement(LyricsProgress, {
                     show: true,
                     currentLine: currentLyricIndex,
                     totalLines: totalLyrics
                 })
             ),
             // Queue panel (right side hover)
-            React.createElement(QueuePanel, {
+            react.createElement(QueuePanel, {
                 show: showQueue,
                 isFullscreen: isFullscreen
             })
